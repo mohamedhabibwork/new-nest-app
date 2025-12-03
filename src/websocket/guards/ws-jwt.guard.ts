@@ -3,15 +3,17 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { WsException } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
+import { AuthService } from '../../auth/auth.service';
 
 @Injectable()
 export class WsJwtGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
+    private authService: AuthService,
   ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const client: Socket = context.switchToWs().getClient();
     const token = this.extractTokenFromHeader(client);
 
@@ -23,7 +25,18 @@ export class WsJwtGuard implements CanActivate {
       const payload = this.jwtService.verify(token, {
         secret: this.configService.get('JWT_SECRET') || 'your-secret-key',
       });
-      client.data.user = payload;
+
+      // Validate session if JTI is present
+      if (payload.jti) {
+        const user = await this.authService.validateJwtPayload(payload);
+        if (!user) {
+          throw new WsException('Session invalid or revoked');
+        }
+        client.data.user = { ...payload, ...user };
+      } else {
+        client.data.user = payload;
+      }
+
       return true;
     } catch {
       throw new WsException('Unauthorized');

@@ -1,5 +1,10 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import {
+  ValidationPipe,
+  VersioningType,
+  ClassSerializerInterceptor,
+  BadRequestException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { join } from 'path';
@@ -7,12 +12,24 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { Request, Response, NextFunction } from 'express';
-import { CsrfService } from './csrf/csrf.service';
+import helmet from 'helmet';
+import compression from 'compression';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { ValidationExceptionFilter } from './common/filters/validation-exception.filter';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { Reflector } from '@nestjs/core';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-  const csrfService = app.get(CsrfService);
+  const reflector = app.get(Reflector);
+
+  // Security headers with Helmet
+  app.use(helmet());
+
+  // Compression middleware
+  app.use(compression());
 
   // Cookie parser (required for CSRF)
   app.use(cookieParser());
@@ -22,57 +39,72 @@ async function bootstrap() {
     origin: configService.get('FRONTEND_URL') || 'http://localhost:3000',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-CSRF-Token',
+      'X-Request-ID',
+      'X-Correlation-ID',
+    ],
   });
 
-  // Global validation pipe
+  // Enable API Versioning
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+  });
+
+  // Global validation pipe with enhanced options
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+        excludeExtraneousValues: false,
+      },
+      skipMissingProperties: false,
+      skipNullProperties: false,
+      skipUndefinedProperties: false,
+      validationError: {
+        target: false,
+        value: false,
+      },
+      exceptionFactory: (errors) => {
+        const formatted: Record<string, string[]> = {};
+        errors.forEach((error) => {
+          formatted[error.property] = Object.values(error.constraints || {});
+        });
+        return new BadRequestException({
+          message: 'Validation failed',
+          errors: formatted,
+        });
+      },
     }),
   );
 
-  // CSRF protection middleware - exclude public endpoints
-  // Only enable if CSRF_ENABLED is true (default: true)
+  // Global exception filters
+  app.useGlobalFilters(
+    new ValidationExceptionFilter(),
+    new HttpExceptionFilter(),
+  );
+
+  // Global interceptors
+  app.useGlobalInterceptors(
+    new ClassSerializerInterceptor(reflector, {
+      excludeExtraneousValues: true,
+      exposeDefaultValues: false,
+    }),
+    new TransformInterceptor(),
+    new LoggingInterceptor(),
+  );
+
+  // CSRF protection is handled by CsrfMiddleware in CsrfModule
+  // Configured via NestModule.configure() method
   const csrfEnabled = configService.get('CSRF_ENABLED') !== 'false';
-  
   if (csrfEnabled) {
-    app.use((req: Request, res: Response, next: NextFunction) => {
-      // Exclude public endpoints from CSRF protection
-      const publicPaths = [
-        '/auth/register',
-        '/auth/login',
-        '/auth/forgot-password',
-        '/auth/reset-password',
-        '/auth/verify-email',
-        '/health',
-        '/api',
-        '/csrf/token',
-      ];
-
-      if (publicPaths.some((path) => req.path.startsWith(path))) {
-        return next();
-      }
-
-      // Get secret from cookie or generate new one
-      let secret: string = (req.cookies?.['csrf-secret'] as string) || '';
-      if (!secret) {
-        secret = csrfService.generateSecret();
-        res.cookie('csrf-secret', secret, csrfService.getCookieOptions());
-      }
-
-      // Get token from header
-      const token = req.headers['x-csrf-token'] as string;
-
-      if (!token || !csrfService.verifyToken(secret, token)) {
-        return res.status(403).json({ message: 'Invalid CSRF token' });
-      }
-
-      next();
-    });
-    console.log('✅ CSRF protection enabled');
+    console.log('✅ CSRF protection enabled via middleware');
   } else {
     console.log('⚠️  CSRF protection disabled (CSRF_ENABLED=false)');
   }
@@ -80,11 +112,12 @@ async function bootstrap() {
 
   // Swagger Configuration
   const config = new DocumentBuilder()
-    .setTitle('Authentication API')
+    .setTitle('PMS API')
     .setDescription(
-      'Complete authentication system with login, register, password reset, and email verification',
+      'Complete Project Management System API with authentication, workspaces, projects, tasks, collaboration, notifications, and file management',
     )
     .setVersion('1.0')
+    .setContact('API Support', 'https://example.com', 'support@example.com')
     .addBearerAuth(
       {
         type: 'http',
@@ -97,6 +130,12 @@ async function bootstrap() {
       'JWT-auth',
     )
     .addTag('auth', 'Authentication endpoints')
+    .addTag('workspaces', 'Workspace management endpoints')
+    .addTag('projects', 'Project management endpoints')
+    .addTag('tasks', 'Task management endpoints')
+    .addTag('collaboration', 'Collaboration endpoints (comments, time logs)')
+    .addTag('notifications', 'Notification management endpoints')
+    .addTag('files', 'File management endpoints')
     .addTag('health', 'Health check endpoints')
     .build();
 
@@ -122,8 +161,9 @@ async function bootstrap() {
 
       await app.startAllMicroservices();
       console.log(`gRPC server is running on: 0.0.0.0:${grpcPort}`);
-    } catch (error: any) {
-      console.warn(`gRPC server failed to start: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.warn(`gRPC server failed to start: ${errorMessage}`);
     }
   }
 

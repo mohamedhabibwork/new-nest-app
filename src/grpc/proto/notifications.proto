@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package notifications;
+
+service NotificationService {
+  rpc ListNotifications (ListNotificationsRequest) returns (ListNotificationsResponse);
+  rpc GetNotification (GetNotificationRequest) returns (GetNotificationResponse);
+  rpc MarkAsRead (MarkAsReadRequest) returns (MarkAsReadResponse);
+  rpc MarkAllAsRead (MarkAllAsReadRequest) returns (MarkAllAsReadResponse);
+  rpc DeleteNotification (DeleteNotificationRequest) returns (DeleteNotificationResponse);
+}
+
+message ListNotificationsRequest {
+  string user_id = 1;
+  bool unread_only = 2;
+}
+
+message ListNotificationsResponse {
+  repeated Notification notifications = 1;
+}
+
+message GetNotificationRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message GetNotificationResponse {
+  Notification notification = 1;
+}
+
+message MarkAsReadRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message MarkAsReadResponse {
+  string message = 1;
+}
+
+message MarkAllAsReadRequest {
+  string user_id = 1;
+}
+
+message MarkAllAsReadResponse {
+  string message = 1;
+}
+
+message DeleteNotificationRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message DeleteNotificationResponse {
+  string message = 1;
+}
+
+message Notification {
+  string id = 1;
+  string user_id = 2;
+  string notification_type = 3;
+  string message = 4;
+  string entity_type = 5;
+  string entity_id = 6;
+  bool is_read = 7;
+  string created_at = 8;
+}
+

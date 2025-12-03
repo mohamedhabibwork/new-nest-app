@@ -3,7 +3,7 @@
 import 'dotenv/config';
 import { defineConfig, env } from 'prisma/config';
 
-const databaseUrl = env('DATABASE_URL');
+const databaseUrl = env('DATABASE_URL') || 'postgresql://postgres:@localhost:5432/mynestdb?schema=public';
 
 if (!databaseUrl) {
   throw new Error(

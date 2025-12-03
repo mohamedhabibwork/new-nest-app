@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
@@ -11,6 +11,12 @@ import { QueueModule } from './queue/queue.module';
 import { GrpcModule } from './grpc/grpc.module';
 import { WebSocketModule } from './websocket/websocket.module';
 import { CsrfModule } from './csrf/csrf.module';
+import { PmsModule } from './pms/pms.module';
+import { FilesModule } from './files/files.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
+import { LoggingMiddleware } from './common/middleware/logging.middleware';
+import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 
 @Module({
   imports: [
@@ -37,7 +43,14 @@ import { CsrfModule } from './csrf/csrf.module';
         limit: 10, // 10 requests per minute
       },
     ]),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 300, // 5 minutes default TTL
+      max: 100, // Maximum number of items in cache
+    }),
     CsrfModule,
+    PmsModule,
+    FilesModule,
   ],
   controllers: [AppController],
   providers: [
@@ -48,4 +61,10 @@ import { CsrfModule } from './csrf/csrf.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(RequestIdMiddleware, CorrelationIdMiddleware, LoggingMiddleware)
+      .forRoutes('*');
+  }
+}

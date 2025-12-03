@@ -1,4 +1,11 @@
-import { Controller, Get, Res, Req, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Res,
+  Req,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import type { Response, Request } from 'express';
 import {
   ApiTags,
@@ -7,6 +14,7 @@ import {
   ApiCookieAuth,
 } from '@nestjs/swagger';
 import { CsrfService } from './csrf.service';
+import { SkipCsrf } from './decorators/skip-csrf.decorator';
 
 @ApiTags('csrf')
 @Controller('csrf')
@@ -14,11 +22,12 @@ export class CsrfController {
   constructor(private readonly csrfService: CsrfService) {}
 
   @Get('token')
+  @SkipCsrf() // Skip CSRF protection for token endpoint
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Get CSRF token',
     description:
-      'Generates a CSRF token and sets it in a cookie. The token should be included in the X-CSRF-Token header for protected requests.',
+      'Generates a CSRF token and sets it in a cookie. The token should be included in the X-CSRF-Token header for protected requests. This endpoint is public and does not require CSRF protection.',
   })
   @ApiResponse({
     status: 200,

@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package projects;
+
+service ProjectService {
+  rpc ListProjects (ListProjectsRequest) returns (ListProjectsResponse);
+  rpc GetProject (GetProjectRequest) returns (GetProjectResponse);
+  rpc CreateProject (CreateProjectRequest) returns (CreateProjectResponse);
+  rpc UpdateProject (UpdateProjectRequest) returns (UpdateProjectResponse);
+  rpc DeleteProject (DeleteProjectRequest) returns (DeleteProjectResponse);
+}
+
+message ListProjectsRequest {
+  string workspace_id = 1;
+  string user_id = 2;
+}
+
+message ListProjectsResponse {
+  repeated Project projects = 1;
+}
+
+message GetProjectRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message GetProjectResponse {
+  Project project = 1;
+}
+
+message CreateProjectRequest {
+  string user_id = 1;
+  string workspace_id = 2;
+  string project_name = 3;
+  string description = 4;
+  string start_date = 5;
+  string end_date = 6;
+  string priority = 7;
+}
+
+message CreateProjectResponse {
+  Project project = 1;
+}
+
+message UpdateProjectRequest {
+  string id = 1;
+  string user_id = 2;
+  string project_name = 3;
+  string description = 4;
+  string status = 5;
+  string start_date = 6;
+  string end_date = 7;
+  string priority = 8;
+}
+
+message UpdateProjectResponse {
+  Project project = 1;
+}
+
+message DeleteProjectRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message DeleteProjectResponse {
+  string message = 1;
+}
+
+message Project {
+  string id = 1;
+  string workspace_id = 2;
+  string project_name = 3;
+  string description = 4;
+  string status = 5;
+  string priority = 6;
+  string start_date = 7;
+  string end_date = 8;
+  string created_at = 9;
+  string updated_at = 10;
+}
+

@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package tasks;
+
+service TaskService {
+  rpc ListTasks (ListTasksRequest) returns (ListTasksResponse);
+  rpc GetTask (GetTaskRequest) returns (GetTaskResponse);
+  rpc CreateTask (CreateTaskRequest) returns (CreateTaskResponse);
+  rpc UpdateTask (UpdateTaskRequest) returns (UpdateTaskResponse);
+  rpc DeleteTask (DeleteTaskRequest) returns (DeleteTaskResponse);
+}
+
+message ListTasksRequest {
+  string project_id = 1;
+  string user_id = 2;
+}
+
+message ListTasksResponse {
+  repeated Task tasks = 1;
+}
+
+message GetTaskRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message GetTaskResponse {
+  Task task = 1;
+}
+
+message CreateTaskRequest {
+  string user_id = 1;
+  string project_id = 2;
+  string task_title = 3;
+  string description = 4;
+  string status = 5;
+  string priority = 6;
+  string due_date = 7;
+  double estimated_hours = 8;
+  string parent_task_id = 9;
+}
+
+message CreateTaskResponse {
+  Task task = 1;
+}
+
+message UpdateTaskRequest {
+  string id = 1;
+  string user_id = 2;
+  string task_title = 3;
+  string description = 4;
+  string status = 5;
+  string priority = 6;
+  string due_date = 7;
+  double estimated_hours = 8;
+}
+
+message UpdateTaskResponse {
+  Task task = 1;
+}
+
+message DeleteTaskRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message DeleteTaskResponse {
+  string message = 1;
+}
+
+message Task {
+  string id = 1;
+  string project_id = 2;
+  string task_title = 3;
+  string description = 4;
+  string status = 5;
+  string priority = 6;
+  string due_date = 7;
+  double estimated_hours = 8;
+  string parent_task_id = 9;
+  string created_by = 10;
+  string created_at = 11;
+  string updated_at = 12;
+}
+

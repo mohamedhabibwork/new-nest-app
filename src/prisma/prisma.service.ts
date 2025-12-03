@@ -10,14 +10,11 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor(private configService: ConfigService) {
-    const connectionString = configService.get<string>('DATABASE_URL');
-
-    if (!connectionString) {
-      throw new Error(
-        'DATABASE_URL environment variable is not set. Please set it in your .env file.\n' +
-          'Format: postgresql://username:password@host:port/database_name?schema=public',
-      );
-    }
+    const connectionString =
+      configService.get<string>(
+        'DATABASE_URL',
+        'postgresql://postgres:@localhost:5432/mynestdb?schema=public',
+      ) || 'postgresql://postgres:@localhost:5432/mynestdb?schema=public';
 
     const pool = new Pool({ connectionString });
     const adapter = new PrismaPg(pool);

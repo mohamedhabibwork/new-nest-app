@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package workspaces;
+
+service WorkspaceService {
+  rpc ListWorkspaces (ListWorkspacesRequest) returns (ListWorkspacesResponse);
+  rpc GetWorkspace (GetWorkspaceRequest) returns (GetWorkspaceResponse);
+  rpc CreateWorkspace (CreateWorkspaceRequest) returns (CreateWorkspaceResponse);
+  rpc UpdateWorkspace (UpdateWorkspaceRequest) returns (UpdateWorkspaceResponse);
+  rpc DeleteWorkspace (DeleteWorkspaceRequest) returns (DeleteWorkspaceResponse);
+}
+
+message ListWorkspacesRequest {
+  string user_id = 1;
+}
+
+message ListWorkspacesResponse {
+  repeated Workspace workspaces = 1;
+}
+
+message GetWorkspaceRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message GetWorkspaceResponse {
+  Workspace workspace = 1;
+}
+
+message CreateWorkspaceRequest {
+  string user_id = 1;
+  string workspace_name = 2;
+  string description = 3;
+}
+
+message CreateWorkspaceResponse {
+  Workspace workspace = 1;
+}
+
+message UpdateWorkspaceRequest {
+  string id = 1;
+  string user_id = 2;
+  string workspace_name = 3;
+  string description = 4;
+}
+
+message UpdateWorkspaceResponse {
+  Workspace workspace = 1;
+}
+
+message DeleteWorkspaceRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message DeleteWorkspaceResponse {
+  string message = 1;
+}
+
+message Workspace {
+  string id = 1;
+  string workspace_name = 2;
+  string description = 3;
+  string owner_id = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+

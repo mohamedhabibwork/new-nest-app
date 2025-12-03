@@ -8,6 +8,8 @@ import { AuthService } from './auth.service';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { EmailService } from './services/email.service';
+import { SessionService } from './services/session.service';
+import { TwoFactorService } from './services/two-factor.service';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
@@ -29,7 +31,14 @@ import { PrismaModule } from '../prisma/prisma.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, EmailService],
-  exports: [AuthService],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    EmailService,
+    SessionService,
+    TwoFactorService,
+  ],
+  exports: [AuthService, SessionService, TwoFactorService],
 })
 export class AuthModule {}
