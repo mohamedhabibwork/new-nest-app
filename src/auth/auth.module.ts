@@ -8,6 +8,7 @@ import { AuthPublicController } from './auth-public.controller';
 import { AuthService } from './auth.service';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { OptionalJwtAuthGuard } from './guards/optional-jwt-auth/optional-jwt-auth.guard';
 import { EmailService } from './services/email.service';
 import { SessionService } from './services/session.service';
 import { TwoFactorService } from './services/two-factor.service';
@@ -39,6 +40,7 @@ import { PasskeysModule } from './passkeys/passkeys.module';
     AuthService,
     LocalStrategy,
     JwtStrategy,
+    OptionalJwtAuthGuard,
     EmailService,
     SessionService,
     TwoFactorService,

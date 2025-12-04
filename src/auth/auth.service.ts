@@ -312,6 +312,16 @@ export class AuthService {
       return null;
     }
 
+    // Validate session if JTI is present
+    if (payload.jti) {
+      const isValidSession = await this.sessionService.isValidSession(
+        payload.jti,
+      );
+      if (!isValidSession) {
+        return null;
+      }
+    }
+
     const { password: _, ...result } = user;
     return result;
   }
@@ -339,6 +349,51 @@ export class AuthService {
 
     return {
       message: 'Email verified successfully',
+    };
+  }
+
+  async resendVerificationEmail(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    // Don't reveal if user exists or not for security
+    if (!user) {
+      return {
+        message:
+          'If the email exists and is not verified, a verification email has been sent.',
+      };
+    }
+
+    // If email is already verified, don't send
+    if (user.emailVerified) {
+      return {
+        message:
+          'If the email exists and is not verified, a verification email has been sent.',
+      };
+    }
+
+    // Generate new verification token
+    const verificationToken = generateUlid();
+
+    // Update user with new token
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerificationToken: verificationToken,
+      },
+    });
+
+    // Queue verification email
+    await this.emailQueue.add('verification', {
+      type: 'verification',
+      email,
+      token: verificationToken,
+    });
+
+    return {
+      message:
+        'If the email exists and is not verified, a verification email has been sent.',
     };
   }
 
