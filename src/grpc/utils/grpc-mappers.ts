@@ -2,7 +2,7 @@
  * Mappers to convert Prisma models to gRPC response types
  */
 
-import { Comment, TimeLog, Notification, Project, Workspace, Task, Attachment, User } from '@prisma/client';
+import { Comment, TimeLog, Notification, Project, Workspace, Task, File, User } from '@prisma/client';
 import type {
   CommentResponse,
   TimeLogResponse,
@@ -129,25 +129,25 @@ export function mapTaskToGrpc(task: Task): TaskResponse {
 /**
  * Map Prisma Attachment to gRPC FileResponse
  */
-export function mapAttachmentToGrpc(attachment: Attachment & { uploader?: { id: string; email: string; firstName: string | null; lastName: string | null } }): FileResponse {
+export function mapFileToGrpc(file: File & { uploader?: { id: string; email: string; firstName: string | null; lastName: string | null } }): FileResponse {
   return {
-    id: attachment.id,
-    entity_type: attachment.entityType,
-    entity_id: attachment.entityId,
-    file_name: attachment.fileName,
-    file_path: attachment.filePath,
-    file_url: attachment.fileUrl || '',
-    file_type: attachment.fileType,
-    file_size: attachment.fileSize,
-    storage_type: attachment.storageType,
-    metadata: attachment.metadata as Record<string, unknown> | null,
-    uploaded_by: attachment.uploadedBy,
-    uploaded_at: attachment.uploadedAt,
-    uploader: attachment.uploader ? {
-      id: attachment.uploader.id,
-      email: attachment.uploader.email,
-      first_name: attachment.uploader.firstName,
-      last_name: attachment.uploader.lastName,
+    id: file.id,
+    entity_type: file.entityType,
+    entity_id: file.entityId,
+    file_name: file.fileName,
+    file_path: file.filePath,
+    file_url: file.fileUrl || '',
+    file_type: file.fileType,
+    file_size: file.fileSize,
+    storage_type: file.storageType,
+    metadata: file.metadata as Record<string, unknown> | null,
+    uploaded_by: file.uploadedBy,
+    uploaded_at: file.uploadedAt,
+    uploader: file.uploader ? {
+      id: file.uploader.id,
+      email: file.uploader.email,
+      first_name: file.uploader.firstName,
+      last_name: file.uploader.lastName,
     } : undefined,
   };
 }

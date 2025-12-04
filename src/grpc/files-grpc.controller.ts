@@ -11,7 +11,7 @@ import type {
   MoveFileRequest,
   MoveFileResponse,
 } from './types';
-import { mapAttachmentToGrpc, toGrpcPaginationResponse } from './utils';
+import { mapFileToGrpc, toGrpcPaginationResponse } from './utils';
 import { PaginationMetaDto } from '../common/dto/pagination-response.dto';
 
 @Controller()
@@ -37,7 +37,7 @@ export class FilesGrpcController {
       hasPrevious: result.pagination.page > 1,
     };
     return {
-      files: result.files.map(mapAttachmentToGrpc),
+      files: result.files.map(mapFileToGrpc),
       pagination: toGrpcPaginationResponse(paginationMeta),
     };
   }
@@ -45,7 +45,7 @@ export class FilesGrpcController {
   @GrpcMethod('FileService', 'GetFile')
   async getFile(data: GetFileRequest): Promise<GetFileResponse> {
     const file = await this.filesService.getFile(data.id, data.user_id);
-    return { file: mapAttachmentToGrpc(file) };
+    return { file: mapFileToGrpc(file) };
   }
 
   @GrpcMethod('FileService', 'UploadFile')
@@ -69,7 +69,7 @@ export class FilesGrpcController {
       data.entity_id,
       data.user_id,
     );
-    return { file: mapAttachmentToGrpc(file) };
+    return { file: mapFileToGrpc(file) };
   }
 }
 

@@ -286,11 +286,11 @@ export class CollaborationService {
     return buildPaginationResponse(timeLogs, total, page, limit);
   }
 
-  // Attachments - Now using unified file system
+  // Files - Now using unified file system
   async getTaskAttachments(taskId: string, userId: string) {
     await this.verifyTaskAccess(taskId, userId);
 
-    return this.prisma.attachment.findMany({
+    return this.prisma.file.findMany({
       where: {
         entityType: 'task',
         entityId: taskId,

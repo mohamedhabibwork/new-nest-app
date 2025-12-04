@@ -45,11 +45,21 @@ model User {
   notifications         Notification[]
   workspaces            Workspace[] @relation("WorkspaceOwner")
   createdTasks          Task[] @relation("TaskCreator")
-  uploadedAttachments   Attachment[]
+  uploadedFiles         File[]
   activityLogs          ActivityLog[]
   teamMembers           TeamMember[]
   sessions              Session[]
   workspaceInvitations  WorkspaceInvitation[] @relation("WorkspaceInviter")
+  // CRM Relations
+  ownedContacts         Contact[] @relation("ContactOwner")
+  ownedCompanies        Company[] @relation("CompanyOwner")
+  crmActivities         CrmActivity[] @relation("CrmActivityUser")
+  ownedDeals            Deal[] @relation("DealOwner")
+  assignedTickets       Ticket[] @relation("TicketAssignee")
+  ticketComments        TicketComment[] @relation("TicketCommentUser")
+  createdForms          Form[] @relation("FormCreator")
+  createdEmailCampaigns EmailCampaign[] @relation("EmailCampaignCreator")
+  createdWorkflows      Workflow[] @relation("WorkflowCreator")
 
   @@map("users")
 }
@@ -383,7 +393,7 @@ model TimeLog {
   @@map("time_logs")
 }
 
-model Attachment {
+model File {
   id          String    @id @db.Text
   entityType  String    @map("entity_type") @db.Text // workspace, project, task, comment, user, etc.
   entityId    String    @map("entity_id") @db.Text
@@ -403,7 +413,7 @@ model Attachment {
   @@index([entityType, entityId])
   @@index([uploadedBy])
   @@index([storageType])
-  @@map("attachments")
+  @@map("files")
 }
 
 model Notification {
@@ -493,4 +503,550 @@ model TaskTag {
   @@index([taskId])
   @@index([tagId])
   @@map("task_tags")
+}
+
+// ============================================
+// CRM Models - Phase 1: Core Foundation
+// ============================================
+
+model Contact {
+  id              String    @id @db.Text
+  email           String    @unique @db.Text
+  firstName       String?   @map("first_name") @db.Text
+  lastName        String?   @map("last_name") @db.Text
+  phone           String?   @db.Text
+  mobile          String?   @db.Text
+  companyId       String?   @map("company_id") @db.Text
+  lifecycleStage  String?   @map("lifecycle_stage") @db.Text // lead, mql, sql, opportunity, customer, evangelist, other
+  leadStatus      String?   @map("lead_status") @db.Text // new, contacted, qualified, unqualified, lost
+  leadSource      String?   @map("lead_source") @db.Text
+  ownerId         String?   @map("owner_id") @db.Text
+  leadScore       Int       @default(0) @map("lead_score")
+  lastContacted   DateTime? @map("last_contacted")
+  customProperties Json?     @map("custom_properties")
+  tags            String?   @db.Text
+  isDeleted       Boolean   @default(false) @map("is_deleted")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  company         Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  owner           User?     @relation("ContactOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  activities      CrmActivity[]
+  tickets         Ticket[]
+  submissions     Submission[]
+  emailSends      EmailSend[]
+  deals           Deal[]
+
+  @@index([email])
+  @@index([companyId])
+  @@index([ownerId])
+  @@index([lifecycleStage])
+  @@index([leadStatus])
+  @@index([isDeleted])
+  @@map("contacts")
+}
+
+model Company {
+  id              String    @id @db.Text
+  name            String    @db.Text
+  domain          String?   @unique @db.Text
+  industry        String?   @db.Text
+  phone           String?   @db.Text
+  city            String?   @db.Text
+  state           String?   @db.Text
+  country         String?   @db.Text
+  employeeCount   Int?      @map("employee_count")
+  annualRevenue   Decimal?  @map("annual_revenue") @db.Decimal(15, 2)
+  companyType     String?   @map("company_type") @db.Text // prospect, customer, partner, vendor
+  parentCompanyId String?   @map("parent_company_id") @db.Text
+  ownerId         String?   @map("owner_id") @db.Text
+  customProperties Json?     @map("custom_properties")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  parentCompany   Company?  @relation("CompanyHierarchy", fields: [parentCompanyId], references: [id], onDelete: SetNull)
+  subsidiaries    Company[] @relation("CompanyHierarchy")
+  owner           User?     @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  contacts        Contact[]
+  activities      CrmActivity[]
+  deals           Deal[]
+
+  @@index([name])
+  @@index([domain])
+  @@index([parentCompanyId])
+  @@index([ownerId])
+  @@index([companyType])
+  @@map("companies")
+}
+
+model ContactProperty {
+  id            String    @id @db.Text
+  propertyName  String    @unique @map("property_name") @db.Text
+  propertyLabel String    @map("property_label") @db.Text
+  entityType    String    @map("entity_type") @db.Text // contact, company, deal
+  dataType      String    @map("data_type") @db.Text // text, number, date, boolean, select, multi_select
+  options       Json?     // Options for select/multi_select fields
+  isCustom      Boolean   @default(true) @map("is_custom")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  formColumns   FormColumn[]
+
+  @@index([entityType])
+  @@index([propertyName])
+  @@map("contact_properties")
+}
+
+model CrmActivity {
+  id              String    @id @db.Text
+  activityType    String    @map("activity_type") @db.Text // email, call, meeting, note, task
+  contactId       String?   @map("contact_id") @db.Text
+  companyId       String?   @map("company_id") @db.Text
+  dealId          String?   @map("deal_id") @db.Text
+  userId          String    @map("user_id") @db.Text
+  subject         String?   @db.Text
+  description     String?   @db.Text
+  direction       String?   @db.Text // inbound, outbound
+  activityDate    DateTime  @map("activity_date")
+  durationMinutes Int?      @map("duration_minutes")
+  metadata        Json?
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  contact         Contact?  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  company         Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  deal            Deal?     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  user            User      @relation("CrmActivityUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([contactId])
+  @@index([companyId])
+  @@index([dealId])
+  @@index([userId])
+  @@index([activityType])
+  @@index([activityDate])
+  @@map("crm_activities")
+}
+
+// ============================================
+// CRM Models - Phase 2: Sales Pipeline
+// ============================================
+
+model Pipeline {
+  id          String    @id @db.Text
+  name        String    @db.Text
+  description String?   @db.Text
+  isDefault   Boolean   @default(false) @map("is_default")
+  displayOrder Int     @default(0) @map("display_order")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  stages      PipelineStage[]
+  deals       Deal[]
+
+  @@index([isDefault])
+  @@index([displayOrder])
+  @@map("pipelines")
+}
+
+model PipelineStage {
+  id                String    @id @db.Text
+  pipelineId        String    @map("pipeline_id") @db.Text
+  name              String    @db.Text
+  displayOrder      Int       @map("display_order")
+  defaultProbability Int       @default(0) @map("default_probability")
+  isClosedWon       Boolean   @default(false) @map("is_closed_won")
+  isClosedLost      Boolean   @default(false) @map("is_closed_lost")
+  automationTriggers Json?     @map("automation_triggers")
+
+  // Relations
+  pipeline          Pipeline  @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  deals             Deal[]
+
+  @@index([pipelineId])
+  @@index([displayOrder])
+  @@map("pipeline_stages")
+}
+
+model Deal {
+  id              String    @id @db.Text
+  dealName        String    @map("deal_name") @db.Text
+  contactId       String?   @map("contact_id") @db.Text
+  companyId       String?   @map("company_id") @db.Text
+  pipelineId      String    @map("pipeline_id") @db.Text
+  stageId         String    @map("stage_id") @db.Text
+  amount          Decimal?  @db.Decimal(15, 2)
+  currency        String?   @default("USD") @db.Text
+  closeDate       DateTime? @map("close_date")
+  probability     Int       @default(0)
+  status          String    @default("open") @db.Text // open, won, lost, abandoned
+  ownerId         String?   @map("owner_id") @db.Text
+  customProperties Json?     @map("custom_properties")
+  notes           String?   @db.Text
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  contact         Contact?  @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  company         Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  pipeline        Pipeline  @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  stage           PipelineStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  owner           User?     @relation("DealOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  activities      CrmActivity[]
+  dealProducts    DealProduct[]
+  submissions     Submission[]
+
+  @@index([contactId])
+  @@index([companyId])
+  @@index([pipelineId])
+  @@index([stageId])
+  @@index([ownerId])
+  @@index([status])
+  @@index([closeDate])
+  @@map("deals")
+}
+
+model DealProduct {
+  id          String    @id @db.Text
+  dealId      String    @map("deal_id") @db.Text
+  productId   String    @map("product_id") @db.Text
+  quantity    Int       @default(1)
+  unitPrice   Decimal   @map("unit_price") @db.Decimal(15, 2)
+  discount    Decimal   @default(0) @db.Decimal(15, 2)
+  total       Decimal   @db.Decimal(15, 2)
+
+  // Relations
+  deal        Deal      @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([dealId])
+  @@index([productId])
+  @@map("deal_products")
+}
+
+model Product {
+  id          String    @id @db.Text
+  name        String    @db.Text
+  sku         String?   @unique @db.Text
+  description String?   @db.Text
+  price       Decimal   @db.Decimal(15, 2)
+  currency    String    @default("USD") @db.Text
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  dealProducts DealProduct[]
+
+  @@index([sku])
+  @@index([isActive])
+  @@map("products")
+}
+
+// ============================================
+// CRM Models - Phase 3: Ticket System
+// ============================================
+
+model Ticket {
+  id              String    @id @db.Text
+  ticketNumber    String    @unique @map("ticket_number") @db.Text
+  subject         String    @db.Text
+  description     String?   @db.Text
+  contactId       String    @map("contact_id") @db.Text
+  assignedTo      String?   @map("assigned_to") @db.Text
+  status          String    @default("new") @db.Text // new, open, pending, resolved, closed
+  priority        String    @default("normal") @db.Text // low, normal, high, urgent
+  category        String?   @db.Text
+  customProperties Json?     @map("custom_properties")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  resolvedAt      DateTime? @map("resolved_at")
+  closedAt        DateTime? @map("closed_at")
+
+  // Relations
+  contact         Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  assignee        User?     @relation("TicketAssignee", fields: [assignedTo], references: [id], onDelete: SetNull)
+  comments        TicketComment[]
+  submissions     Submission[]
+
+  @@index([ticketNumber])
+  @@index([contactId])
+  @@index([assignedTo])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("tickets")
+}
+
+model TicketComment {
+  id          String    @id @db.Text
+  ticketId    String    @map("ticket_id") @db.Text
+  userId      String    @map("user_id") @db.Text
+  comment     String    @db.Text
+  isInternal  Boolean   @default(false) @map("is_internal")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  ticket      Ticket    @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user        User      @relation("TicketCommentUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("ticket_comments")
+}
+
+// ============================================
+// CRM Models - Phase 4: Dynamic Form Builder
+// ============================================
+
+model Form {
+  id              String    @id @db.Text
+  name            String    @db.Text
+  description     String?   @db.Text
+  formType        String    @map("form_type") @db.Text // lead_capture, contact_update, survey, ticket, registration, other
+  status          String    @default("draft") @db.Text // draft, published, archived
+  settings        Json?     // Form settings (thank you page, redirects, etc.)
+  publicUrl       String?   @unique @map("public_url") @db.Text
+  createdBy       String    @map("created_by") @db.Text
+  automationRules Json?     @map("automation_rules")
+  submissionCount Int       @default(0) @map("submission_count")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  creator         User      @relation("FormCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  columns         FormColumn[]
+  submissions     Submission[]
+  workflows       Workflow[]
+
+  @@index([formType])
+  @@index([status])
+  @@index([createdBy])
+  @@index([publicUrl])
+  @@map("forms")
+}
+
+model FormColumn {
+  id                String    @id @db.Text
+  formId            String    @map("form_id") @db.Text
+  fieldName         String    @map("field_name") @db.Text
+  fieldLabel        String    @map("field_label") @db.Text
+  dataType          String    @map("data_type") @db.Text // text, textarea, email, phone, number, date, datetime, boolean, single_select, multi_select, file, files, json, array, url
+  mappedPropertyId  String?   @map("mapped_property_id") @db.Text
+  validationRules   Json?     @map("validation_rules")
+  properties        Json?     // Field-specific properties (options, placeholder, etc.)
+  displayOrder      Int       @default(0) @map("display_order")
+  isRequired        Boolean   @default(false) @map("is_required")
+  conditionalLogic  Json?     @map("conditional_logic")
+  helpText          String?   @map("help_text") @db.Text
+  defaultValue      String?   @map("default_value") @db.Text
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  form              Form      @relation(fields: [formId], references: [id], onDelete: Cascade)
+  mappedProperty    ContactProperty? @relation(fields: [mappedPropertyId], references: [id], onDelete: SetNull)
+  submissionValues  SubmissionValue[]
+
+  @@index([formId])
+  @@index([displayOrder])
+  @@index([mappedPropertyId])
+  @@map("form_columns")
+}
+
+model Submission {
+  id                String    @id @db.Text
+  formId            String    @map("form_id") @db.Text
+  contactId         String?   @map("contact_id") @db.Text
+  submitterEmail    String    @map("submitter_email") @db.Text
+  submittedAt       DateTime  @default(now()) @map("submitted_at")
+  ipAddress         String?   @map("ip_address") @db.Text
+  userAgent         String?   @map("user_agent") @db.Text
+  utmParameters     Json?     @map("utm_parameters")
+  referrerUrl       String?   @map("referrer_url") @db.Text
+  processingStatus  String    @default("pending") @map("processing_status") @db.Text // pending, processed, failed
+  isDuplicate       Boolean   @default(false) @map("is_duplicate")
+  processedAt       DateTime? @map("processed_at")
+  metadata          Json?
+
+  // Relations
+  form              Form      @relation(fields: [formId], references: [id], onDelete: Cascade)
+  contact           Contact?  @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  deal              Deal?     @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  ticket            Ticket?   @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+  values            SubmissionValue[]
+
+  dealId            String?   @map("deal_id") @db.Text
+  ticketId          String?   @map("ticket_id") @db.Text
+
+  @@index([formId])
+  @@index([contactId])
+  @@index([submitterEmail])
+  @@index([submittedAt])
+  @@index([processingStatus])
+  @@map("submissions")
+}
+
+model SubmissionValue {
+  id            String    @id @db.Text
+  submissionId  String    @map("submission_id") @db.Text
+  formColumnId String    @map("form_column_id") @db.Text
+  valueType     String    @map("value_type") @db.Text // text, number, boolean, date, json, array, file, files
+  valueText     String?   @map("value_text") @db.Text
+  valueNumber   Decimal?  @map("value_number") @db.Decimal(15, 2)
+  valueBoolean  Boolean?  @map("value_boolean")
+  valueDate     DateTime? @map("value_date")
+  valueJson     Json?     @map("value_json")
+  valueArray    Json?     @map("value_array")
+  fileMetadata  Json?     @map("file_metadata") // For file uploads: { fileId, fileName, fileSize, mimeType }
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  formColumn    FormColumn @relation(fields: [formColumnId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@index([formColumnId])
+  @@map("submission_values")
+}
+
+// ============================================
+// CRM Models - Phase 5: Marketing Automation
+// ============================================
+
+model ContactSegment {
+  id            String    @id @db.Text
+  name          String    @db.Text
+  description   String?   @db.Text
+  segmentType   String    @map("segment_type") @db.Text // static, dynamic
+  contactCount  Int       @default(0) @map("contact_count")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  criteria      SegmentCriteria[]
+  campaigns     EmailCampaign[]
+
+  @@index([segmentType])
+  @@map("contact_segments")
+}
+
+model SegmentCriteria {
+  id            String    @id @db.Text
+  segmentId     String    @map("segment_id") @db.Text
+  propertyName  String    @map("property_name") @db.Text
+  operator      String    @db.Text // equals, not_equals, contains, greater_than, less_than, is_empty, is_not_empty
+  value         String?   @db.Text
+  logic         String?   @default("and") @db.Text // and, or
+
+  // Relations
+  segment       ContactSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+
+  @@index([segmentId])
+  @@map("segment_criteria")
+}
+
+model EmailCampaign {
+  id                String    @id @db.Text
+  name              String    @db.Text
+  subject           String    @db.Text
+  emailContent       String    @map("email_content") @db.Text
+  segmentId         String    @map("segment_id") @db.Text
+  status            String    @default("draft") @db.Text // draft, scheduled, sending, sent, cancelled
+  scheduledSendTime DateTime? @map("scheduled_send_time")
+  createdBy         String    @map("created_by") @db.Text
+  totalSent         Int       @default(0) @map("total_sent")
+  totalOpened       Int       @default(0) @map("total_opened")
+  totalClicked      Int       @default(0) @map("total_clicked")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  segment           ContactSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  creator           User      @relation("EmailCampaignCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  emailSends        EmailSend[]
+
+  @@index([segmentId])
+  @@index([status])
+  @@index([createdBy])
+  @@map("email_campaigns")
+}
+
+model EmailSend {
+  id          String    @id @db.Text
+  campaignId  String    @map("campaign_id") @db.Text
+  contactId   String    @map("contact_id") @db.Text
+  status      String    @default("queued") @db.Text // queued, sent, delivered, bounced, failed
+  sentAt      DateTime? @map("sent_at")
+  deliveredAt DateTime? @map("delivered_at")
+  openedAt    DateTime? @map("opened_at")
+  clickedAt   DateTime? @map("clicked_at")
+
+  // Relations
+  campaign    EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contact     Contact       @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  events      EmailEvent[]
+
+  @@index([campaignId])
+  @@index([contactId])
+  @@index([status])
+  @@map("email_sends")
+}
+
+model EmailEvent {
+  id          String    @id @db.Text
+  emailSendId String    @map("email_send_id") @db.Text
+  eventType   String    @map("event_type") @db.Text // sent, delivered, opened, clicked, bounced, unsubscribed, complained
+  eventTime   DateTime  @map("event_time")
+  eventData   Json?     @map("event_data")
+
+  // Relations
+  emailSend   EmailSend @relation(fields: [emailSendId], references: [id], onDelete: Cascade)
+
+  @@index([emailSendId])
+  @@index([eventType])
+  @@index([eventTime])
+  @@map("email_events")
+}
+
+// ============================================
+// CRM Models - Phase 6: Workflow Automation
+// ============================================
+
+model Workflow {
+  id              String    @id @db.Text
+  name            String    @db.Text
+  description     String?   @db.Text
+  triggerType     String    @map("trigger_type") @db.Text // form_submission, field_change, stage_change, date_based, manual
+  triggerConditions Json?   @map("trigger_conditions")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdBy       String    @map("created_by") @db.Text
+  executionCount  Int       @default(0) @map("execution_count")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  creator         User      @relation("WorkflowCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  form            Form?     @relation(fields: [formId], references: [id], onDelete: SetNull)
+  actions         WorkflowAction[]
+
+  formId          String?   @map("form_id") @db.Text
+
+  @@index([triggerType])
+  @@index([isActive])
+  @@index([createdBy])
+  @@index([formId])
+  @@map("workflows")
+}
+
+model WorkflowAction {
+  id              String    @id @db.Text
+  workflowId      String    @map("workflow_id") @db.Text
+  actionType      String    @map("action_type") @db.Text // create_task, send_email, update_field, create_deal, assign_owner, webhook, delay
+  executionOrder  Int       @map("execution_order")
+  actionConfig    Json      @map("action_config")
+  delayMinutes    Int?      @default(0) @map("delay_minutes")
+
+  // Relations
+  workflow        Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+  @@index([executionOrder])
+  @@map("workflow_actions")
 }

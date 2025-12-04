@@ -243,7 +243,7 @@ export class TasksService {
     const skip = (normalizedPage - 1) * normalizedLimit;
 
     const [attachments, total] = await Promise.all([
-      this.prisma.attachment.findMany({
+      this.prisma.file.findMany({
         where: {
           entityType: 'task',
           entityId: taskId,
@@ -262,7 +262,7 @@ export class TasksService {
         skip,
         take: normalizedLimit,
       }),
-      this.prisma.attachment.count({
+      this.prisma.file.count({
         where: {
           entityType: 'task',
           entityId: taskId,

@@ -79,7 +79,7 @@ export class FilesService {
       ? null 
       : (metadata as Prisma.InputJsonValue);
 
-    const attachment = await this.prisma.attachment.create({
+    const fileRecord = await this.prisma.file.create({
       data: withUlid({
         entityType,
         entityId,
@@ -92,7 +92,7 @@ export class FilesService {
           this.configService.get<string>('FILE_STORAGE_TYPE') || 'local',
         metadata: metadataValue,
         uploadedBy,
-      }) as Prisma.AttachmentUncheckedCreateInput,
+      }) as Prisma.FileUncheckedCreateInput,
       include: {
         uploader: {
           select: {
@@ -139,7 +139,7 @@ export class FilesService {
     // Notify users about file upload
     if (notifyUserIds.length > 0) {
       await this.notificationEvents.notifyFileUploaded(
-        attachment.id,
+        fileRecord.id,
         entityType,
         entityId,
         uploadedBy,
@@ -149,16 +149,16 @@ export class FilesService {
     }
 
     // Emit WebSocket event
-    this.wsEvents.emitFileUploaded(entityType, entityId, attachment);
+    this.wsEvents.emitFileUploaded(entityType, entityId, fileRecord);
 
-    return attachment;
+    return fileRecord;
   }
 
   /**
    * Get file by ID
    */
   async getFile(id: string, userId: string) {
-    const file = await this.prisma.attachment.findUnique({
+    const file = await this.prisma.file.findUnique({
       where: { id },
       include: {
         uploader: {
@@ -226,7 +226,7 @@ export class FilesService {
     const skip = (page - 1) * limit;
 
     const [files, total] = await Promise.all([
-      this.prisma.attachment.findMany({
+      this.prisma.file.findMany({
         where: {
           entityType,
           entityId,
@@ -247,7 +247,7 @@ export class FilesService {
         skip,
         take: limit,
       }),
-      this.prisma.attachment.count({
+      this.prisma.file.count({
         where: {
           entityType,
           entityId,
@@ -281,7 +281,7 @@ export class FilesService {
     await this.storageService.deleteFile(file.filePath);
 
     // Delete from database
-    await this.prisma.attachment.delete({
+    await this.prisma.file.delete({
       where: { id },
     });
 
@@ -320,7 +320,7 @@ export class FilesService {
     }
 
     // Update file record
-    return await this.prisma.attachment.update({
+    return await this.prisma.file.update({
       where: { id },
       data: {
         entityType: newEntityType,
