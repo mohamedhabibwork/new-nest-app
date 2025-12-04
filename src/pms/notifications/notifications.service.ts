@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { WebSocketEventsService } from '../../websocket/websocket-events.service';
 import { withUlid } from '../../common/utils/prisma-helpers';
-import { buildPaginationResponse, normalizePaginationParams } from '../../common/utils/pagination.util';
+import {
+  buildPaginationResponse,
+  normalizePaginationParams,
+} from '../../common/utils/pagination.util';
 import { NotificationQueryDto } from './dto/notification-query.dto';
 import { Prisma } from '@prisma/client';
 
@@ -39,7 +42,10 @@ export class NotificationsService {
   }
 
   async getUserNotifications(queryDto: NotificationQueryDto, userId: string) {
-    const { page, limit } = normalizePaginationParams(queryDto.page, queryDto.limit);
+    const { page, limit } = normalizePaginationParams(
+      queryDto.page,
+      queryDto.limit,
+    );
 
     // Build where clause
     const where: Prisma.NotificationWhereInput = {

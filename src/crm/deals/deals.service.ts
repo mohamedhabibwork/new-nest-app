@@ -1,15 +1,26 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { withUlid } from '../../common/utils/prisma-helpers';
-import { buildPaginationResponse, normalizePaginationParams } from '../../common/utils/pagination.util';
+import {
+  buildPaginationResponse,
+  normalizePaginationParams,
+} from '../../common/utils/pagination.util';
 import { CreateDealDto } from './dto/create-deal.dto';
 import { UpdateDealDto } from './dto/update-deal.dto';
 import { DealQueryDto } from './dto/deal-query.dto';
 import { Prisma } from '@prisma/client';
+import { NotificationEventsService } from '../../pms/notifications/notification-events.service';
 
 @Injectable()
 export class DealsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationEvents: NotificationEventsService,
+  ) {}
 
   async create(userId: string, data: CreateDealDto) {
     // Verify pipeline exists
@@ -25,7 +36,9 @@ export class DealsService {
     // Verify stage exists and belongs to pipeline
     const stage = pipeline.stages.find((s) => s.id === data.stageId);
     if (!stage) {
-      throw new NotFoundException('Pipeline stage not found or does not belong to this pipeline');
+      throw new NotFoundException(
+        'Pipeline stage not found or does not belong to this pipeline',
+      );
     }
 
     // Verify contact exists if provided
@@ -59,7 +72,10 @@ export class DealsService {
     }
 
     // Use stage's default probability if not provided
-    const probability = data.probability !== undefined ? data.probability : stage.defaultProbability;
+    const probability =
+      data.probability !== undefined
+        ? data.probability
+        : stage.defaultProbability;
 
     const deal = await this.prisma.deal.create({
       data: withUlid({
@@ -74,7 +90,7 @@ export class DealsService {
         probability,
         status: data.status || 'open',
         ownerId: data.ownerId || userId,
-        customProperties: data.customProperties,
+        customProperties: data.customProperties as Prisma.InputJsonValue,
         notes: data.notes,
       }),
       include: {
@@ -106,11 +122,28 @@ export class DealsService {
       },
     });
 
+    // Notify relevant users about deal creation
+    const notifyUserIds: string[] = [];
+    if (deal.ownerId) {
+      notifyUserIds.push(deal.ownerId);
+    }
+    // Add pipeline owner or workspace members if needed
+    if (notifyUserIds.length > 0) {
+      await this.notificationEvents.notifyDealCreated(
+        deal.id,
+        userId,
+        notifyUserIds,
+      );
+    }
+
     return deal;
   }
 
   async findAll(queryDto: DealQueryDto) {
-    const { page, limit } = normalizePaginationParams(queryDto.page, queryDto.limit);
+    const { page, limit } = normalizePaginationParams(
+      queryDto.page,
+      queryDto.limit,
+    );
 
     // Build where clause
     const where: Prisma.DealWhereInput = {};
@@ -334,7 +367,7 @@ export class DealsService {
       }
     }
 
-    return this.prisma.deal.update({
+    const updatedDeal = await this.prisma.deal.update({
       where: { id },
       data: {
         dealName: data.dealName,
@@ -347,7 +380,7 @@ export class DealsService {
         probability: data.probability,
         status: data.status,
         ownerId: data.ownerId,
-        customProperties: data.customProperties,
+        customProperties: data.customProperties as Prisma.InputJsonValue,
         notes: data.notes,
       },
       include: {
@@ -367,7 +400,12 @@ export class DealsService {
           },
         },
         pipeline: true,
-        stage: true,
+        stage: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         owner: {
           select: {
             id: true,
@@ -378,6 +416,24 @@ export class DealsService {
         },
       },
     });
+
+    // Notify if stage changed
+    if (data.stageId && data.stageId !== deal.stageId && updatedDeal.stage) {
+      const notifyUserIds: string[] = [];
+      if (updatedDeal.ownerId) {
+        notifyUserIds.push(updatedDeal.ownerId);
+      }
+      if (notifyUserIds.length > 0) {
+        await this.notificationEvents.notifyDealStageChanged(
+          updatedDeal.id,
+          updatedDeal.stage.name,
+          userId,
+          notifyUserIds,
+        );
+      }
+    }
+
+    return updatedDeal;
   }
 
   async remove(id: string, userId: string) {
@@ -414,7 +470,7 @@ export class DealsService {
       status = 'open';
     }
 
-    return this.prisma.deal.update({
+    const updatedDeal = await this.prisma.deal.update({
       where: { id: dealId },
       data: {
         stageId,
@@ -422,9 +478,26 @@ export class DealsService {
         status,
       },
       include: {
-        stage: true,
+        stage: {
+          select: { id: true, name: true },
+        },
       },
     });
+
+    // Notify relevant users about stage change
+    const notifyUserIds: string[] = [];
+    if (updatedDeal.ownerId) {
+      notifyUserIds.push(updatedDeal.ownerId);
+    }
+    if (notifyUserIds.length > 0 && updatedDeal.stage) {
+      await this.notificationEvents.notifyDealStageChanged(
+        updatedDeal.id,
+        updatedDeal.stage.name,
+        userId,
+        notifyUserIds,
+      );
+    }
+
+    return updatedDeal;
   }
 }
-

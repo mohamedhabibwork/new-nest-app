@@ -25,4 +25,3 @@ export class InviteUserDto {
   @IsNotEmpty()
   role: WorkspaceRole;
 }
-

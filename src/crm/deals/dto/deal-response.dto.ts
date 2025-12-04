@@ -3,7 +3,10 @@ import { Expose } from 'class-transformer';
 
 export class DealResponseDto {
   @Expose()
-  @ApiProperty({ description: 'Deal ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Deal ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
@@ -27,7 +30,7 @@ export class DealResponseDto {
   stageId: string;
 
   @Expose()
-  @ApiPropertyOptional({ description: 'Deal amount', example: 50000.00 })
+  @ApiPropertyOptional({ description: 'Deal amount', example: 50000.0 })
   amount?: number;
 
   @Expose()
@@ -69,4 +72,3 @@ export class DealResponseDto {
   @ApiProperty({ description: 'Last update timestamp' })
   updatedAt: Date;
 }
-

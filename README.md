@@ -31,6 +31,79 @@
 $ npm install
 ```
 
+## Environment Variables
+
+The application uses environment variables for configuration. Copy the appropriate example file based on your environment:
+
+```bash
+# For development
+cp .env.development.example .env.development
+
+# For production
+cp .env.production.example .env.production
+
+# For testing
+cp .env.test.example .env.test
+
+# Or use the default .env file
+cp .env.example .env
+```
+
+### Required Environment Variables
+
+#### Application Configuration
+- `NODE_ENV` - Environment (development, production, test)
+- `PORT` - Server port (default: 3005)
+- `APP_URL` - Application base URL
+- `APP_NAME` - Application name
+- `FRONTEND_URL` - Frontend application URL for CORS
+
+#### Database
+- `DATABASE_URL` - PostgreSQL connection string
+
+#### Authentication
+- `JWT_SECRET` - Secret key for JWT tokens (use a strong random string in production)
+- `JWT_EXPIRES_IN` - JWT token expiration time (default: 24h)
+
+#### Email (SMTP)
+- `SMTP_HOST` - SMTP server host
+- `SMTP_PORT` - SMTP server port
+- `SMTP_SECURE` - Use TLS/SSL (true/false)
+- `SMTP_USER` - SMTP username
+- `SMTP_PASS` - SMTP password
+- `SMTP_FROM` - Default sender email address
+
+#### Redis (for queues and caching)
+- `REDIS_HOST` - Redis server host
+- `REDIS_PORT` - Redis server port
+- `REDIS_PASSWORD` - Redis password (optional)
+
+#### File Storage
+- `FILE_STORAGE_TYPE` - Storage type: 'local' or 's3'
+- `MAX_FILE_SIZE` - Maximum file size in bytes (default: 10MB)
+- `UPLOAD_DIR` - Local upload directory (for local storage)
+
+#### AWS S3 (if using S3 storage)
+- `AWS_REGION` - AWS region
+- `AWS_ACCESS_KEY_ID` - AWS access key
+- `AWS_SECRET_ACCESS_KEY` - AWS secret key
+- `AWS_S3_BUCKET` - S3 bucket name
+
+#### Security
+- `CSRF_ENABLED` - Enable CSRF protection (true/false, default: true)
+
+#### gRPC (optional)
+- `GRPC_ENABLED` - Enable gRPC microservice (true/false, default: false)
+- `GRPC_PORT` - gRPC server port (default: 5000)
+
+### Generating a Secure JWT Secret
+
+For production, generate a strong random secret:
+
+```bash
+openssl rand -base64 32
+```
+
 ## Compile and run the project
 
 ```bash

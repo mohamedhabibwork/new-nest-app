@@ -116,7 +116,10 @@ describe('ProjectsController', () => {
 
       const result = await controller.findAll(queryDto, mockRequest);
 
-      expect(projectsService.findAll).toHaveBeenCalledWith(queryDto, mockRequest.user.id);
+      expect(projectsService.findAll).toHaveBeenCalledWith(
+        queryDto,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -144,7 +147,10 @@ describe('ProjectsController', () => {
 
       const result = await controller.findAll(queryDto, mockRequest);
 
-      expect(projectsService.findAll).toHaveBeenCalledWith(queryDto, mockRequest.user.id);
+      expect(projectsService.findAll).toHaveBeenCalledWith(
+        queryDto,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -172,7 +178,10 @@ describe('ProjectsController', () => {
 
       const result = await controller.findAll(queryDto, mockRequest);
 
-      expect(projectsService.findAll).toHaveBeenCalledWith(queryDto, mockRequest.user.id);
+      expect(projectsService.findAll).toHaveBeenCalledWith(
+        queryDto,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -201,7 +210,10 @@ describe('ProjectsController', () => {
 
       const result = await controller.findAll(queryDto, mockRequest);
 
-      expect(projectsService.findAll).toHaveBeenCalledWith(queryDto, mockRequest.user.id);
+      expect(projectsService.findAll).toHaveBeenCalledWith(
+        queryDto,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockResponse);
     });
   });
@@ -231,17 +243,25 @@ describe('ProjectsController', () => {
 
       const result = await controller.findOne(projectId, mockRequest);
 
-      expect(projectsService.findOne).toHaveBeenCalledWith(projectId, mockRequest.user.id);
+      expect(projectsService.findOne).toHaveBeenCalledWith(
+        projectId,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockProject);
     });
 
     it('should throw NotFoundException when project not found', async () => {
-      projectsService.findOne.mockRejectedValue(new NotFoundException('Project not found'));
+      projectsService.findOne.mockRejectedValue(
+        new NotFoundException('Project not found'),
+      );
 
       await expect(controller.findOne(projectId, mockRequest)).rejects.toThrow(
         NotFoundException,
       );
-      expect(projectsService.findOne).toHaveBeenCalledWith(projectId, mockRequest.user.id);
+      expect(projectsService.findOne).toHaveBeenCalledWith(
+        projectId,
+        mockRequest.user.id,
+      );
     });
 
     it('should throw ForbiddenException when user has no access', async () => {
@@ -293,11 +313,13 @@ describe('ProjectsController', () => {
     });
 
     it('should throw NotFoundException when project not found', async () => {
-      projectsService.update.mockRejectedValue(new NotFoundException('Project not found'));
-
-      await expect(controller.update(projectId, mockRequest, updateDto)).rejects.toThrow(
-        NotFoundException,
+      projectsService.update.mockRejectedValue(
+        new NotFoundException('Project not found'),
       );
+
+      await expect(
+        controller.update(projectId, mockRequest, updateDto),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException when user has no access', async () => {
@@ -305,9 +327,9 @@ describe('ProjectsController', () => {
         new ForbiddenException('No access to project'),
       );
 
-      await expect(controller.update(projectId, mockRequest, updateDto)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        controller.update(projectId, mockRequest, updateDto),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -327,12 +349,17 @@ describe('ProjectsController', () => {
 
       const result = await controller.remove(projectId, mockRequest);
 
-      expect(projectsService.remove).toHaveBeenCalledWith(projectId, mockRequest.user.id);
+      expect(projectsService.remove).toHaveBeenCalledWith(
+        projectId,
+        mockRequest.user.id,
+      );
       expect(result).toEqual({ message: 'Project deleted successfully' });
     });
 
     it('should throw NotFoundException when project not found', async () => {
-      projectsService.remove.mockRejectedValue(new NotFoundException('Project not found'));
+      projectsService.remove.mockRejectedValue(
+        new NotFoundException('Project not found'),
+      );
 
       await expect(controller.remove(projectId, mockRequest)).rejects.toThrow(
         NotFoundException,
@@ -350,4 +377,3 @@ describe('ProjectsController', () => {
     });
   });
 });
-

@@ -19,4 +19,3 @@ export class UpdateChecklistItemDto {
   @IsOptional()
   isCompleted?: boolean;
 }
-

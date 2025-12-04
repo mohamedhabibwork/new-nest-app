@@ -14,69 +14,95 @@ datasource db {
 // ============================================
 
 model User {
-  id                    String    @id @db.Text
-  email                 String    @unique @db.Text
-  password              String    @db.Text
-  firstName             String?   @map("first_name") @db.Text
-  lastName              String?   @map("last_name") @db.Text
-  avatarUrl             String?   @map("avatar_url") @db.Text
-  name                  String?   @db.Text
-  emailVerified         Boolean   @default(false) @map("email_verified")
-  emailVerificationToken String?  @unique @map("email_verification_token") @db.Text
-  passwordResetToken    String?   @unique @map("password_reset_token") @db.Text
-  passwordResetExpires  DateTime? @map("password_reset_expires")
-  lastLogin             DateTime? @map("last_login")
-  isActive              Boolean   @default(true) @map("is_active")
-  timezone              String?   @default("UTC") @db.Text
+  id                     String    @id @db.Text
+  email                  String    @unique @db.Text
+  password               String    @db.Text
+  firstName              String?   @map("first_name") @db.Text
+  lastName               String?   @map("last_name") @db.Text
+  avatarUrl              String?   @map("avatar_url") @db.Text
+  name                   String?   @db.Text
+  emailVerified          Boolean   @default(false) @map("email_verified")
+  emailVerificationToken String?   @unique @map("email_verification_token") @db.Text
+  passwordResetToken     String?   @unique @map("password_reset_token") @db.Text
+  passwordResetExpires   DateTime? @map("password_reset_expires")
+  lastLogin              DateTime? @map("last_login")
+  isActive               Boolean   @default(true) @map("is_active")
+  timezone               String?   @default("UTC") @db.Text
   // 2FA fields
-  is2FAEnabled          Boolean   @default(false) @map("is_2fa_enabled")
-  twoFactorSecret       String?   @map("two_factor_secret") @db.Text
-  twoFactorBackupCodes  Json?     @map("two_factor_backup_codes")
-  twoFactorVerifiedAt   DateTime? @map("two_factor_verified_at")
-  createdAt             DateTime  @default(now()) @map("created_at")
-  updatedAt             DateTime  @updatedAt @map("updated_at")
+  is2FAEnabled           Boolean   @default(false) @map("is_2fa_enabled")
+  twoFactorSecret        String?   @map("two_factor_secret") @db.Text
+  twoFactorBackupCodes   Json?     @map("two_factor_backup_codes")
+  twoFactorVerifiedAt    DateTime? @map("two_factor_verified_at")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
 
   // Relations
   userRoles             UserRole[]
   projectMembers        ProjectMember[]
-  taskAssignments       TaskAssignment[]
   comments              Comment[]
   timeLogs              TimeLog[]
   notifications         Notification[]
-  workspaces            Workspace[] @relation("WorkspaceOwner")
-  createdTasks          Task[] @relation("TaskCreator")
+  workspaces            Workspace[]           @relation("WorkspaceOwner")
+  createdTasks          Task[]                @relation("TaskCreator")
   uploadedFiles         File[]
   activityLogs          ActivityLog[]
   teamMembers           TeamMember[]
   sessions              Session[]
   workspaceInvitations  WorkspaceInvitation[] @relation("WorkspaceInviter")
+  // Polymorphic Sharing Relations
+  sharedContent         Share[]               @relation("ShareSharedBy")
+  assignments           Assignment[]          @relation("AssignmentAssignee")
+  createdAssignments    Assignment[]          @relation("AssignmentAssigner")
+  mentions              Mention[]
+  createdTags           Tag[]
+  taggings              Tagging[]
   // CRM Relations
-  ownedContacts         Contact[] @relation("ContactOwner")
-  ownedCompanies        Company[] @relation("CompanyOwner")
-  crmActivities         CrmActivity[] @relation("CrmActivityUser")
-  ownedDeals            Deal[] @relation("DealOwner")
-  assignedTickets       Ticket[] @relation("TicketAssignee")
-  ticketComments        TicketComment[] @relation("TicketCommentUser")
-  createdForms          Form[] @relation("FormCreator")
-  createdEmailCampaigns EmailCampaign[] @relation("EmailCampaignCreator")
-  createdWorkflows      Workflow[] @relation("WorkflowCreator")
+  ownedContacts         Contact[]             @relation("ContactOwner")
+  ownedCompanies        Company[]             @relation("CompanyOwner")
+  crmActivities         CrmActivity[]         @relation("CrmActivityUser")
+  ownedDeals            Deal[]                @relation("DealOwner")
+  assignedTickets       Ticket[]              @relation("TicketAssignee")
+  createdForms          Form[]                @relation("FormCreator")
+  createdEmailCampaigns EmailCampaign[]       @relation("EmailCampaignCreator")
+  createdWorkflows      Workflow[]            @relation("WorkflowCreator")
+  // Passkeys
+  passkeys              Passkey[]
 
   @@map("users")
 }
 
-model Session {
-  id          String    @id @db.Text
-  userId      String    @map("user_id") @db.Text
-  jti         String    @unique @db.Text // JWT ID for token revocation
-  ipAddress   String?   @map("ip_address") @db.Text
-  userAgent   String?   @map("user_agent") @db.Text
-  expiresAt   DateTime  @map("expires_at")
-  revokedAt   DateTime? @map("revoked_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  lastUsedAt  DateTime  @default(now()) @map("last_used_at")
+model Passkey {
+  id           String   @id @db.Text
+  userId       String   @map("user_id") @db.Text
+  credentialId String   @unique @map("credential_id") @db.Text // Base64URL encoded
+  publicKey    String   @map("public_key") @db.Text // Base64URL encoded
+  counter      BigInt   @default(0) // Signature counter
+  deviceName   String?  @map("device_name") @db.Text // User-friendly device name
+  lastUsedAt   DateTime? @map("last_used_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([credentialId])
+  @@map("passkeys")
+}
+
+model Session {
+  id         String    @id @db.Text
+  userId     String    @map("user_id") @db.Text
+  jti        String    @unique @db.Text // JWT ID for token revocation
+  ipAddress  String?   @map("ip_address") @db.Text
+  userAgent  String?   @map("user_agent") @db.Text
+  expiresAt  DateTime  @map("expires_at")
+  revokedAt  DateTime? @map("revoked_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  lastUsedAt DateTime  @default(now()) @map("last_used_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([jti])
@@ -85,15 +111,15 @@ model Session {
 }
 
 model Role {
-  id          String    @id @db.Text
-  roleName    String    @unique @map("role_name") @db.Text
-  description String?   @db.Text
-  permissions Json      // JSON structure: { "projects": ["create", "read", "update"], "tasks": ["create", "read"] }
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id          String   @id @db.Text
+  roleName    String   @unique @map("role_name") @db.Text
+  description String?  @db.Text
+  permissions Json // JSON structure: { "projects": ["create", "read", "update"], "tasks": ["create", "read"] }
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
-  userRoles   UserRole[]
+  userRoles UserRole[]
 
   @@map("roles")
 }
@@ -105,8 +131,8 @@ model UserRole {
   assignedAt DateTime @default(now()) @map("assigned_at")
 
   // Relations
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@unique([userId, roleId])
   @@index([userId])
@@ -119,19 +145,18 @@ model UserRole {
 // ============================================
 
 model Workspace {
-  id          String    @id @db.Text
-  workspaceName String  @map("workspace_name") @db.Text
-  description String?   @db.Text
-  ownerId     String    @map("owner_id") @db.Text
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id            String   @id @db.Text
+  workspaceName String   @map("workspace_name") @db.Text
+  description   String?  @db.Text
+  ownerId       String   @map("owner_id") @db.Text
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   // Relations
-  owner       User      @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  owner       User                  @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   projects    Project[]
   teams       Team[]
-  tags        Tag[]
   invitations WorkspaceInvitation[]
 
   @@index([ownerId])
@@ -139,15 +164,15 @@ model Workspace {
 }
 
 model Team {
-  id          String    @id @db.Text
-  workspaceId String    @map("workspace_id") @db.Text
-  teamName    String    @map("team_name") @db.Text
-  description String?   @db.Text
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id          String   @id @db.Text
+  workspaceId String   @map("workspace_id") @db.Text
+  teamName    String   @map("team_name") @db.Text
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   teamMembers TeamMember[]
 
   @@index([workspaceId])
@@ -155,14 +180,14 @@ model Team {
 }
 
 model TeamMember {
-  id        String   @id @db.Text
-  teamId    String   @map("team_id") @db.Text
-  userId    String   @map("user_id") @db.Text
-  joinedAt  DateTime @default(now()) @map("joined_at")
+  id       String   @id @db.Text
+  teamId   String   @map("team_id") @db.Text
+  userId   String   @map("user_id") @db.Text
+  joinedAt DateTime @default(now()) @map("joined_at")
 
   // Relations
-  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([teamId, userId])
   @@index([teamId])
@@ -184,8 +209,8 @@ model WorkspaceInvitation {
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  inviter         User      @relation("WorkspaceInviter", fields: [invitedBy], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  inviter   User      @relation("WorkspaceInviter", fields: [invitedBy], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@index([email])
@@ -199,24 +224,23 @@ model WorkspaceInvitation {
 // ============================================
 
 model Project {
-  id              String    @id @db.Text
-  workspaceId     String    @map("workspace_id") @db.Text
-  projectName     String    @map("project_name") @db.Text
-  description     String?   @db.Text
-  status          String    @default("planning") @db.Text // planning, active, on_hold, completed, cancelled
-  startDate       DateTime? @map("start_date")
-  endDate         DateTime? @map("end_date")
-  projectManagerId String?  @map("project_manager_id") @db.Text
-  priority        String    @default("medium") @db.Text // low, medium, high, critical
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id               String    @id @db.Text
+  workspaceId      String    @map("workspace_id") @db.Text
+  projectName      String    @map("project_name") @db.Text
+  description      String?   @db.Text
+  status           String    @default("planning") @db.Text // planning, active, on_hold, completed, cancelled
+  startDate        DateTime? @map("start_date")
+  endDate          DateTime? @map("end_date")
+  projectManagerId String?   @map("project_manager_id") @db.Text
+  priority         String    @default("medium") @db.Text // low, medium, high, critical
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  projectMembers  ProjectMember[]
-  tasks           Task[]
-  milestones      Milestone[]
-  projectTags     ProjectTag[]
+  workspace      Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  projectMembers ProjectMember[]
+  tasks          Task[]
+  milestones     Milestone[]
 
   @@index([workspaceId])
   @@index([projectManagerId])
@@ -225,15 +249,15 @@ model Project {
 }
 
 model ProjectMember {
-  id        String   @id @db.Text
-  projectId String   @map("project_id") @db.Text
-  userId    String   @map("user_id") @db.Text
-  memberRole String  @map("member_role") @db.Text // project_manager, team_member, viewer
-  joinedAt  DateTime @default(now()) @map("joined_at")
+  id         String   @id @db.Text
+  projectId  String   @map("project_id") @db.Text
+  userId     String   @map("user_id") @db.Text
+  memberRole String   @map("member_role") @db.Text // project_manager, team_member, viewer
+  joinedAt   DateTime @default(now()) @map("joined_at")
 
   // Relations
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])
   @@index([projectId])
@@ -252,7 +276,7 @@ model Milestone {
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
   @@index([status])
@@ -264,31 +288,28 @@ model Milestone {
 // ============================================
 
 model Task {
-  id            String    @id @db.Text
-  projectId    String    @map("project_id") @db.Text
-  parentTaskId String?   @map("parent_task_id") @db.Text
-  taskTitle     String    @map("task_title") @db.Text
-  description   String?   @db.Text
-  status        String    @default("to_do") @db.Text // to_do, in_progress, in_review, completed, blocked
-  priority      String    @default("medium") @db.Text // low, medium, high, critical
-  dueDate       DateTime? @map("due_date")
-  estimatedHours Int?     @map("estimated_hours")
-  createdBy    String    @map("created_by") @db.Text
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id             String    @id @db.Text
+  projectId      String    @map("project_id") @db.Text
+  parentTaskId   String?   @map("parent_task_id") @db.Text
+  taskTitle      String    @map("task_title") @db.Text
+  description    String?   @db.Text
+  status         String    @default("to_do") @db.Text // to_do, in_progress, in_review, completed, blocked
+  priority       String    @default("medium") @db.Text // low, medium, high, critical
+  dueDate        DateTime? @map("due_date")
+  estimatedHours Int?      @map("estimated_hours")
+  createdBy      String    @map("created_by") @db.Text
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  parentTask    Task?     @relation("TaskHierarchy", fields: [parentTaskId], references: [id], onDelete: SetNull)
-  subtasks      Task[]    @relation("TaskHierarchy")
-  creator       User      @relation("TaskCreator", fields: [createdBy], references: [id], onDelete: Cascade)
-  taskAssignments TaskAssignment[]
-  comments      Comment[]
-  timeLogs      TimeLog[]
+  project          Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parentTask       Task?            @relation("TaskHierarchy", fields: [parentTaskId], references: [id], onDelete: SetNull)
+  subtasks         Task[]           @relation("TaskHierarchy")
+  creator          User             @relation("TaskCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  timeLogs         TimeLog[]
   taskDependencies TaskDependency[] @relation("TaskDependsOn")
-  blockingTasks TaskDependency[] @relation("TaskBlocks")
-  taskTags      TaskTag[]
-  checklistItems ChecklistItem[]
+  blockingTasks    TaskDependency[] @relation("TaskBlocks")
+  checklistItems   ChecklistItem[]
 
   @@index([projectId])
   @@index([parentTaskId])
@@ -296,23 +317,6 @@ model Task {
   @@index([priority])
   @@index([createdBy])
   @@map("tasks")
-}
-
-model TaskAssignment {
-  id        String   @id @db.Text
-  taskId    String   @map("task_id") @db.Text
-  userId    String   @map("user_id") @db.Text
-  assignedAt DateTime @default(now()) @map("assigned_at")
-  isPrimary Boolean  @default(false) @map("is_primary")
-
-  // Relations
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([taskId, userId])
-  @@index([taskId])
-  @@index([userId])
-  @@map("task_assignments")
 }
 
 model TaskDependency {
@@ -323,8 +327,8 @@ model TaskDependency {
   createdAt       DateTime @default(now()) @map("created_at")
 
   // Relations
-  task            Task     @relation("TaskDependsOn", fields: [taskId], references: [id], onDelete: Cascade)
-  dependsOnTask   Task     @relation("TaskBlocks", fields: [dependsOnTaskId], references: [id], onDelete: Cascade)
+  task          Task @relation("TaskDependsOn", fields: [taskId], references: [id], onDelete: Cascade)
+  dependsOnTask Task @relation("TaskBlocks", fields: [dependsOnTaskId], references: [id], onDelete: Cascade)
 
   @@unique([taskId, dependsOnTaskId])
   @@index([taskId])
@@ -342,7 +346,7 @@ model ChecklistItem {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
-  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   @@index([taskId])
   @@map("checklist_items")
@@ -354,38 +358,42 @@ model ChecklistItem {
 
 model Comment {
   id              String    @id @db.Text
-  taskId          String    @map("task_id") @db.Text
+  commentableType String    @map("commentable_type") @db.Text // task, project, ticket, etc.
+  commentableId   String    @map("commentable_id") @db.Text
   userId          String    @map("user_id") @db.Text
   commentText     String    @map("comment_text") @db.Text
   parentCommentId String?   @map("parent_comment_id") @db.Text
+  isDeleted       Boolean   @default(false) @map("is_deleted")
+  deletedAt       DateTime? @map("deleted_at")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  task            Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parentComment   Comment?  @relation("CommentHierarchy", fields: [parentCommentId], references: [id], onDelete: SetNull)
-  replies         Comment[] @relation("CommentHierarchy")
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentComment Comment?  @relation("CommentHierarchy", fields: [parentCommentId], references: [id], onDelete: SetNull)
+  replies       Comment[] @relation("CommentHierarchy")
+  mentions      Mention[]
 
-  @@index([taskId])
+  @@index([commentableType, commentableId])
   @@index([userId])
   @@index([parentCommentId])
+  @@index([isDeleted])
   @@map("comments")
 }
 
 model TimeLog {
-  id          String    @id @db.Text
-  taskId      String    @map("task_id") @db.Text
-  userId      String    @map("user_id") @db.Text
-  hoursLogged Decimal   @map("hours_logged") @db.Decimal(10, 2)
-  logDate     DateTime  @map("log_date")
-  description String?   @db.Text
-  isBillable  Boolean   @default(false) @map("is_billable")
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id          String   @id @db.Text
+  taskId      String   @map("task_id") @db.Text
+  userId      String   @map("user_id") @db.Text
+  hoursLogged Decimal  @map("hours_logged") @db.Decimal(10, 2)
+  logDate     DateTime @map("log_date")
+  description String?  @db.Text
+  isBillable  Boolean  @default(false) @map("is_billable")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   // Relations
-  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([taskId])
   @@index([userId])
@@ -394,21 +402,21 @@ model TimeLog {
 }
 
 model File {
-  id          String    @id @db.Text
-  entityType  String    @map("entity_type") @db.Text // workspace, project, task, comment, user, etc.
-  entityId    String    @map("entity_id") @db.Text
-  fileName    String    @map("file_name") @db.Text
-  filePath    String    @map("file_path") @db.Text // Storage path (local or S3 key)
-  fileUrl     String?   @map("file_url") @db.Text // Public URL (optional, can be generated)
-  fileType    String    @map("file_type") @db.Text // MIME type
-  fileSize    Int       @map("file_size")
-  storageType String    @default("local") @map("storage_type") @db.Text // local, s3
-  metadata    Json?     // Additional metadata (dimensions, thumbnails, etc.)
-  uploadedBy  String    @map("uploaded_by") @db.Text
-  uploadedAt  DateTime  @default(now()) @map("uploaded_at")
+  id          String   @id @db.Text
+  entityType  String   @map("entity_type") @db.Text // workspace, project, task, comment, user, etc.
+  entityId    String   @map("entity_id") @db.Text
+  fileName    String   @map("file_name") @db.Text
+  filePath    String   @map("file_path") @db.Text // Storage path (local or S3 key)
+  fileUrl     String?  @map("file_url") @db.Text // Public URL (optional, can be generated)
+  fileType    String   @map("file_type") @db.Text // MIME type
+  fileSize    Int      @map("file_size")
+  storageType String   @default("local") @map("storage_type") @db.Text // local, s3
+  metadata    Json? // Additional metadata (dimensions, thumbnails, etc.)
+  uploadedBy  String   @map("uploaded_by") @db.Text
+  uploadedAt  DateTime @default(now()) @map("uploaded_at")
 
   // Relations
-  uploader    User      @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  uploader User @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
 
   @@index([entityType, entityId])
   @@index([uploadedBy])
@@ -417,17 +425,17 @@ model File {
 }
 
 model Notification {
-  id              String    @id @db.Text
-  userId          String    @map("user_id") @db.Text
+  id               String   @id @db.Text
+  userId           String   @map("user_id") @db.Text
   notificationType String   @map("notification_type") @db.Text
-  message         String    @db.Text
-  entityType      String?   @map("entity_type") @db.Text
-  entityId        String?   @map("entity_id") @db.Text
-  isRead          Boolean   @default(false) @map("is_read")
-  createdAt       DateTime  @default(now()) @map("created_at")
+  message          String   @db.Text
+  entityType       String?  @map("entity_type") @db.Text
+  entityId         String?  @map("entity_id") @db.Text
+  isRead           Boolean  @default(false) @map("is_read")
+  createdAt        DateTime @default(now()) @map("created_at")
 
   // Relations
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([isRead])
@@ -436,16 +444,16 @@ model Notification {
 }
 
 model ActivityLog {
-  id          String    @id @db.Text
-  userId      String    @map("user_id") @db.Text
-  entityType  String    @map("entity_type") @db.Text
-  entityId    String    @map("entity_id") @db.Text
-  actionType  String    @map("action_type") @db.Text
-  changes     Json?     // JSON structure for tracking changes
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id         String   @id @db.Text
+  userId     String   @map("user_id") @db.Text
+  entityType String   @map("entity_type") @db.Text
+  entityId   String   @map("entity_id") @db.Text
+  actionType String   @map("action_type") @db.Text
+  changes    Json? // JSON structure for tracking changes
+  createdAt  DateTime @default(now()) @map("created_at")
 
   // Relations
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([entityType, entityId])
@@ -454,55 +462,113 @@ model ActivityLog {
 }
 
 // ============================================
+// Polymorphic Sharing System
+// ============================================
+
+model Share {
+  id             String    @id @db.Text
+  shareableType  String    @map("shareable_type") @db.Text // task, project, ticket, etc.
+  shareableId    String    @map("shareable_id") @db.Text
+  sharedWithType String    @map("shared_with_type") @db.Text // users, teams
+  sharedWithId   String    @map("shared_with_id") @db.Text
+  permission     String    @default("view") @db.Text // view, edit, admin
+  sharedById     String    @map("shared_by_id") @db.Text
+  expiresAt      DateTime? @map("expires_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  sharedBy User @relation("ShareSharedBy", fields: [sharedById], references: [id], onDelete: Cascade)
+
+  @@index([shareableType, shareableId])
+  @@index([sharedWithType, sharedWithId])
+  @@index([sharedById])
+  @@map("shares")
+}
+
+model Assignment {
+  id             String    @id @db.Text
+  assignableType String    @map("assignable_type") @db.Text // task, project, ticket, etc.
+  assignableId   String    @map("assignable_id") @db.Text
+  assigneeId     String    @map("assignee_id") @db.Text
+  assignerId     String    @map("assigner_id") @db.Text
+  status         String    @default("pending") @db.Text // pending, accepted, in_progress, completed, blocked, declined
+  priority       String    @default("medium") @db.Text // low, medium, high, critical
+  dueDate        DateTime? @map("due_date")
+  notes          String?   @db.Text
+  assignedAt     DateTime  @default(now()) @map("assigned_at")
+  completedAt    DateTime? @map("completed_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  assignee User @relation("AssignmentAssignee", fields: [assigneeId], references: [id], onDelete: Cascade)
+  assigner User @relation("AssignmentAssigner", fields: [assignerId], references: [id], onDelete: Cascade)
+
+  @@index([assignableType, assignableId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("assignments")
+}
+
+model Mention {
+  id              String   @id @db.Text
+  mentionableType String   @map("mentionable_type") @db.Text // comment, etc.
+  mentionableId   String   @map("mentionable_id") @db.Text
+  mentionedUserId String   @map("mentioned_user_id") @db.Text
+  commentId       String?  @map("comment_id") @db.Text
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  mentionedUser User     @relation(fields: [mentionedUserId], references: [id], onDelete: Cascade)
+  comment       Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@index([mentionableType, mentionableId])
+  @@index([mentionedUserId])
+  @@index([commentId])
+  @@map("mentions")
+}
+
+// ============================================
 // Tag Models
 // ============================================
 
 model Tag {
-  id          String    @id @db.Text
-  workspaceId String    @map("workspace_id") @db.Text
-  tagName     String    @map("tag_name") @db.Text
-  color       String?   @db.Text
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id         String   @id @db.Text
+  tagName    String   @map("tag_name") @db.Text
+  color      String?  @db.Text
+  creatorId  String   @map("creator_id") @db.Text
+  visibility String   @default("public") @db.Text // public, private
+  usageCount Int      @default(0) @map("usage_count")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   // Relations
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  projectTags ProjectTag[]
-  taskTags    TaskTag[]
+  creator  User      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  taggings Tagging[]
 
-  @@unique([workspaceId, tagName])
-  @@index([workspaceId])
+  @@unique([tagName])
+  @@index([creatorId])
+  @@index([visibility])
   @@map("tags")
 }
 
-model ProjectTag {
-  id        String   @id @db.Text
-  projectId String   @map("project_id") @db.Text
-  tagId     String   @map("tag_id") @db.Text
+model Tagging {
+  id           String   @id @db.Text
+  tagId        String   @map("tag_id") @db.Text
+  taggableType String   @map("taggable_type") @db.Text // task, project, ticket, etc.
+  taggableId   String   @map("taggable_id") @db.Text
+  createdById  String   @map("created_by_id") @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
 
   // Relations
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tag       Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  createdBy User @relation(fields: [createdById], references: [id], onDelete: Cascade)
 
-  @@unique([projectId, tagId])
-  @@index([projectId])
+  @@unique([tagId, taggableType, taggableId])
+  @@index([taggableType, taggableId])
   @@index([tagId])
-  @@map("project_tags")
-}
-
-model TaskTag {
-  id        String   @id @db.Text
-  taskId    String   @map("task_id") @db.Text
-  tagId     String   @map("tag_id") @db.Text
-
-  // Relations
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
-
-  @@unique([taskId, tagId])
-  @@index([taskId])
-  @@index([tagId])
-  @@map("task_tags")
+  @@map("taggings")
 }
 
 // ============================================
@@ -510,33 +576,33 @@ model TaskTag {
 // ============================================
 
 model Contact {
-  id              String    @id @db.Text
-  email           String    @unique @db.Text
-  firstName       String?   @map("first_name") @db.Text
-  lastName        String?   @map("last_name") @db.Text
-  phone           String?   @db.Text
-  mobile          String?   @db.Text
-  companyId       String?   @map("company_id") @db.Text
-  lifecycleStage  String?   @map("lifecycle_stage") @db.Text // lead, mql, sql, opportunity, customer, evangelist, other
-  leadStatus      String?   @map("lead_status") @db.Text // new, contacted, qualified, unqualified, lost
-  leadSource      String?   @map("lead_source") @db.Text
-  ownerId         String?   @map("owner_id") @db.Text
-  leadScore       Int       @default(0) @map("lead_score")
-  lastContacted   DateTime? @map("last_contacted")
+  id               String    @id @db.Text
+  email            String    @unique @db.Text
+  firstName        String?   @map("first_name") @db.Text
+  lastName         String?   @map("last_name") @db.Text
+  phone            String?   @db.Text
+  mobile           String?   @db.Text
+  companyId        String?   @map("company_id") @db.Text
+  lifecycleStage   String?   @map("lifecycle_stage") @db.Text // lead, mql, sql, opportunity, customer, evangelist, other
+  leadStatus       String?   @map("lead_status") @db.Text // new, contacted, qualified, unqualified, lost
+  leadSource       String?   @map("lead_source") @db.Text
+  ownerId          String?   @map("owner_id") @db.Text
+  leadScore        Int       @default(0) @map("lead_score")
+  lastContacted    DateTime? @map("last_contacted")
   customProperties Json?     @map("custom_properties")
-  tags            String?   @db.Text
-  isDeleted       Boolean   @default(false) @map("is_deleted")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  tags             String?   @db.Text
+  isDeleted        Boolean   @default(false) @map("is_deleted")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  company         Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
-  owner           User?     @relation("ContactOwner", fields: [ownerId], references: [id], onDelete: SetNull)
-  activities      CrmActivity[]
-  tickets         Ticket[]
-  submissions     Submission[]
-  emailSends      EmailSend[]
-  deals           Deal[]
+  company     Company?      @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  owner       User?         @relation("ContactOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  activities  CrmActivity[]
+  tickets     Ticket[]
+  submissions Submission[]
+  emailSends  EmailSend[]
+  deals       Deal[]
 
   @@index([email])
   @@index([companyId])
@@ -548,30 +614,30 @@ model Contact {
 }
 
 model Company {
-  id              String    @id @db.Text
-  name            String    @db.Text
-  domain          String?   @unique @db.Text
-  industry        String?   @db.Text
-  phone           String?   @db.Text
-  city            String?   @db.Text
-  state           String?   @db.Text
-  country         String?   @db.Text
-  employeeCount   Int?      @map("employee_count")
-  annualRevenue   Decimal?  @map("annual_revenue") @db.Decimal(15, 2)
-  companyType     String?   @map("company_type") @db.Text // prospect, customer, partner, vendor
-  parentCompanyId String?   @map("parent_company_id") @db.Text
-  ownerId         String?   @map("owner_id") @db.Text
-  customProperties Json?     @map("custom_properties")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id               String   @id @db.Text
+  name             String   @db.Text
+  domain           String?  @unique @db.Text
+  industry         String?  @db.Text
+  phone            String?  @db.Text
+  city             String?  @db.Text
+  state            String?  @db.Text
+  country          String?  @db.Text
+  employeeCount    Int?     @map("employee_count")
+  annualRevenue    Decimal? @map("annual_revenue") @db.Decimal(15, 2)
+  companyType      String?  @map("company_type") @db.Text // prospect, customer, partner, vendor
+  parentCompanyId  String?  @map("parent_company_id") @db.Text
+  ownerId          String?  @map("owner_id") @db.Text
+  customProperties Json?    @map("custom_properties")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   // Relations
-  parentCompany   Company?  @relation("CompanyHierarchy", fields: [parentCompanyId], references: [id], onDelete: SetNull)
-  subsidiaries    Company[] @relation("CompanyHierarchy")
-  owner           User?     @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: SetNull)
-  contacts        Contact[]
-  activities      CrmActivity[]
-  deals           Deal[]
+  parentCompany Company?      @relation("CompanyHierarchy", fields: [parentCompanyId], references: [id], onDelete: SetNull)
+  subsidiaries  Company[]     @relation("CompanyHierarchy")
+  owner         User?         @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  contacts      Contact[]
+  activities    CrmActivity[]
+  deals         Deal[]
 
   @@index([name])
   @@index([domain])
@@ -582,17 +648,17 @@ model Company {
 }
 
 model ContactProperty {
-  id            String    @id @db.Text
-  propertyName  String    @unique @map("property_name") @db.Text
-  propertyLabel String    @map("property_label") @db.Text
-  entityType    String    @map("entity_type") @db.Text // contact, company, deal
-  dataType      String    @map("data_type") @db.Text // text, number, date, boolean, select, multi_select
-  options       Json?     // Options for select/multi_select fields
-  isCustom      Boolean   @default(true) @map("is_custom")
-  createdAt     DateTime  @default(now()) @map("created_at")
+  id            String   @id @db.Text
+  propertyName  String   @unique @map("property_name") @db.Text
+  propertyLabel String   @map("property_label") @db.Text
+  entityType    String   @map("entity_type") @db.Text // contact, company, deal
+  dataType      String   @map("data_type") @db.Text // text, number, date, boolean, select, multi_select
+  options       Json? // Options for select/multi_select fields
+  isCustom      Boolean  @default(true) @map("is_custom")
+  createdAt     DateTime @default(now()) @map("created_at")
 
   // Relations
-  formColumns   FormColumn[]
+  formColumns FormColumn[]
 
   @@index([entityType])
   @@index([propertyName])
@@ -600,25 +666,25 @@ model ContactProperty {
 }
 
 model CrmActivity {
-  id              String    @id @db.Text
-  activityType    String    @map("activity_type") @db.Text // email, call, meeting, note, task
-  contactId       String?   @map("contact_id") @db.Text
-  companyId       String?   @map("company_id") @db.Text
-  dealId          String?   @map("deal_id") @db.Text
-  userId          String    @map("user_id") @db.Text
-  subject         String?   @db.Text
-  description     String?   @db.Text
-  direction       String?   @db.Text // inbound, outbound
-  activityDate    DateTime  @map("activity_date")
-  durationMinutes Int?      @map("duration_minutes")
+  id              String   @id @db.Text
+  activityType    String   @map("activity_type") @db.Text // email, call, meeting, note, task
+  contactId       String?  @map("contact_id") @db.Text
+  companyId       String?  @map("company_id") @db.Text
+  dealId          String?  @map("deal_id") @db.Text
+  userId          String   @map("user_id") @db.Text
+  subject         String?  @db.Text
+  description     String?  @db.Text
+  direction       String?  @db.Text // inbound, outbound
+  activityDate    DateTime @map("activity_date")
+  durationMinutes Int?     @map("duration_minutes")
   metadata        Json?
-  createdAt       DateTime  @default(now()) @map("created_at")
+  createdAt       DateTime @default(now()) @map("created_at")
 
   // Relations
-  contact         Contact?  @relation(fields: [contactId], references: [id], onDelete: Cascade)
-  company         Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  deal            Deal?     @relation(fields: [dealId], references: [id], onDelete: Cascade)
-  user            User      @relation("CrmActivityUser", fields: [userId], references: [id], onDelete: Cascade)
+  contact Contact? @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  company Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  deal    Deal?    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  user    User     @relation("CrmActivityUser", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([contactId])
   @@index([companyId])
@@ -634,16 +700,16 @@ model CrmActivity {
 // ============================================
 
 model Pipeline {
-  id          String    @id @db.Text
-  name        String    @db.Text
-  description String?   @db.Text
-  isDefault   Boolean   @default(false) @map("is_default")
-  displayOrder Int     @default(0) @map("display_order")
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id           String   @id @db.Text
+  name         String   @db.Text
+  description  String?  @db.Text
+  isDefault    Boolean  @default(false) @map("is_default")
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
 
   // Relations
-  stages      PipelineStage[]
-  deals       Deal[]
+  stages PipelineStage[]
+  deals  Deal[]
 
   @@index([isDefault])
   @@index([displayOrder])
@@ -651,18 +717,18 @@ model Pipeline {
 }
 
 model PipelineStage {
-  id                String    @id @db.Text
-  pipelineId        String    @map("pipeline_id") @db.Text
-  name              String    @db.Text
-  displayOrder      Int       @map("display_order")
-  defaultProbability Int       @default(0) @map("default_probability")
-  isClosedWon       Boolean   @default(false) @map("is_closed_won")
-  isClosedLost      Boolean   @default(false) @map("is_closed_lost")
-  automationTriggers Json?     @map("automation_triggers")
+  id                 String  @id @db.Text
+  pipelineId         String  @map("pipeline_id") @db.Text
+  name               String  @db.Text
+  displayOrder       Int     @map("display_order")
+  defaultProbability Int     @default(0) @map("default_probability")
+  isClosedWon        Boolean @default(false) @map("is_closed_won")
+  isClosedLost       Boolean @default(false) @map("is_closed_lost")
+  automationTriggers Json?   @map("automation_triggers")
 
   // Relations
-  pipeline          Pipeline  @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
-  deals             Deal[]
+  pipeline Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  deals    Deal[]
 
   @@index([pipelineId])
   @@index([displayOrder])
@@ -670,32 +736,32 @@ model PipelineStage {
 }
 
 model Deal {
-  id              String    @id @db.Text
-  dealName        String    @map("deal_name") @db.Text
-  contactId       String?   @map("contact_id") @db.Text
-  companyId       String?   @map("company_id") @db.Text
-  pipelineId      String    @map("pipeline_id") @db.Text
-  stageId         String    @map("stage_id") @db.Text
-  amount          Decimal?  @db.Decimal(15, 2)
-  currency        String?   @default("USD") @db.Text
-  closeDate       DateTime? @map("close_date")
-  probability     Int       @default(0)
-  status          String    @default("open") @db.Text // open, won, lost, abandoned
-  ownerId         String?   @map("owner_id") @db.Text
+  id               String    @id @db.Text
+  dealName         String    @map("deal_name") @db.Text
+  contactId        String?   @map("contact_id") @db.Text
+  companyId        String?   @map("company_id") @db.Text
+  pipelineId       String    @map("pipeline_id") @db.Text
+  stageId          String    @map("stage_id") @db.Text
+  amount           Decimal?  @db.Decimal(15, 2)
+  currency         String?   @default("USD") @db.Text
+  closeDate        DateTime? @map("close_date")
+  probability      Int       @default(0)
+  status           String    @default("open") @db.Text // open, won, lost, abandoned
+  ownerId          String?   @map("owner_id") @db.Text
   customProperties Json?     @map("custom_properties")
-  notes           String?   @db.Text
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  notes            String?   @db.Text
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  contact         Contact?  @relation(fields: [contactId], references: [id], onDelete: SetNull)
-  company         Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
-  pipeline        Pipeline  @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
-  stage           PipelineStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
-  owner           User?     @relation("DealOwner", fields: [ownerId], references: [id], onDelete: SetNull)
-  activities      CrmActivity[]
-  dealProducts    DealProduct[]
-  submissions     Submission[]
+  contact      Contact?      @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  company      Company?      @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  pipeline     Pipeline      @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  stage        PipelineStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  owner        User?         @relation("DealOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  activities   CrmActivity[]
+  dealProducts DealProduct[]
+  submissions  Submission[]
 
   @@index([contactId])
   @@index([companyId])
@@ -708,17 +774,17 @@ model Deal {
 }
 
 model DealProduct {
-  id          String    @id @db.Text
-  dealId      String    @map("deal_id") @db.Text
-  productId   String    @map("product_id") @db.Text
-  quantity    Int       @default(1)
-  unitPrice   Decimal   @map("unit_price") @db.Decimal(15, 2)
-  discount    Decimal   @default(0) @db.Decimal(15, 2)
-  total       Decimal   @db.Decimal(15, 2)
+  id        String  @id @db.Text
+  dealId    String  @map("deal_id") @db.Text
+  productId String  @map("product_id") @db.Text
+  quantity  Int     @default(1)
+  unitPrice Decimal @map("unit_price") @db.Decimal(15, 2)
+  discount  Decimal @default(0) @db.Decimal(15, 2)
+  total     Decimal @db.Decimal(15, 2)
 
   // Relations
-  deal        Deal      @relation(fields: [dealId], references: [id], onDelete: Cascade)
-  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  deal    Deal    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([dealId])
   @@index([productId])
@@ -726,14 +792,14 @@ model DealProduct {
 }
 
 model Product {
-  id          String    @id @db.Text
-  name        String    @db.Text
-  sku         String?   @unique @db.Text
-  description String?   @db.Text
-  price       Decimal   @db.Decimal(15, 2)
-  currency    String    @default("USD") @db.Text
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id          String   @id @db.Text
+  name        String   @db.Text
+  sku         String?  @unique @db.Text
+  description String?  @db.Text
+  price       Decimal  @db.Decimal(15, 2)
+  currency    String   @default("USD") @db.Text
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   // Relations
   dealProducts DealProduct[]
@@ -748,25 +814,24 @@ model Product {
 // ============================================
 
 model Ticket {
-  id              String    @id @db.Text
-  ticketNumber    String    @unique @map("ticket_number") @db.Text
-  subject         String    @db.Text
-  description     String?   @db.Text
-  contactId       String    @map("contact_id") @db.Text
-  assignedTo      String?   @map("assigned_to") @db.Text
-  status          String    @default("new") @db.Text // new, open, pending, resolved, closed
-  priority        String    @default("normal") @db.Text // low, normal, high, urgent
-  category        String?   @db.Text
+  id               String    @id @db.Text
+  ticketNumber     String    @unique @map("ticket_number") @db.Text
+  subject          String    @db.Text
+  description      String?   @db.Text
+  contactId        String    @map("contact_id") @db.Text
+  assignedTo       String?   @map("assigned_to") @db.Text
+  status           String    @default("new") @db.Text // new, open, pending, resolved, closed
+  priority         String    @default("normal") @db.Text // low, normal, high, urgent
+  category         String?   @db.Text
   customProperties Json?     @map("custom_properties")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  resolvedAt      DateTime? @map("resolved_at")
-  closedAt        DateTime? @map("closed_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  resolvedAt       DateTime? @map("resolved_at")
+  closedAt         DateTime? @map("closed_at")
 
   // Relations
-  contact         Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
-  assignee        User?     @relation("TicketAssignee", fields: [assignedTo], references: [id], onDelete: SetNull)
-  comments        TicketComment[]
-  submissions     Submission[]
+  contact     Contact      @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  assignee    User?        @relation("TicketAssignee", fields: [assignedTo], references: [id], onDelete: SetNull)
+  submissions Submission[]
 
   @@index([ticketNumber])
   @@index([contactId])
@@ -777,47 +842,29 @@ model Ticket {
   @@map("tickets")
 }
 
-model TicketComment {
-  id          String    @id @db.Text
-  ticketId    String    @map("ticket_id") @db.Text
-  userId      String    @map("user_id") @db.Text
-  comment     String    @db.Text
-  isInternal  Boolean   @default(false) @map("is_internal")
-  createdAt   DateTime  @default(now()) @map("created_at")
-
-  // Relations
-  ticket      Ticket    @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user        User      @relation("TicketCommentUser", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([ticketId])
-  @@index([userId])
-  @@index([createdAt])
-  @@map("ticket_comments")
-}
-
 // ============================================
 // CRM Models - Phase 4: Dynamic Form Builder
 // ============================================
 
 model Form {
-  id              String    @id @db.Text
-  name            String    @db.Text
-  description     String?   @db.Text
-  formType        String    @map("form_type") @db.Text // lead_capture, contact_update, survey, ticket, registration, other
-  status          String    @default("draft") @db.Text // draft, published, archived
-  settings        Json?     // Form settings (thank you page, redirects, etc.)
-  publicUrl       String?   @unique @map("public_url") @db.Text
-  createdBy       String    @map("created_by") @db.Text
-  automationRules Json?     @map("automation_rules")
-  submissionCount Int       @default(0) @map("submission_count")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id              String   @id @db.Text
+  name            String   @db.Text
+  description     String?  @db.Text
+  formType        String   @map("form_type") @db.Text // lead_capture, contact_update, survey, ticket, registration, other
+  status          String   @default("draft") @db.Text // draft, published, archived
+  settings        Json? // Form settings (thank you page, redirects, etc.)
+  publicUrl       String?  @unique @map("public_url") @db.Text
+  createdBy       String   @map("created_by") @db.Text
+  automationRules Json?    @map("automation_rules")
+  submissionCount Int      @default(0) @map("submission_count")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   // Relations
-  creator         User      @relation("FormCreator", fields: [createdBy], references: [id], onDelete: Cascade)
-  columns         FormColumn[]
-  submissions     Submission[]
-  workflows       Workflow[]
+  creator     User         @relation("FormCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  columns     FormColumn[]
+  submissions Submission[]
+  workflows   Workflow[]
 
   @@index([formType])
   @@index([status])
@@ -827,25 +874,25 @@ model Form {
 }
 
 model FormColumn {
-  id                String    @id @db.Text
-  formId            String    @map("form_id") @db.Text
-  fieldName         String    @map("field_name") @db.Text
-  fieldLabel        String    @map("field_label") @db.Text
-  dataType          String    @map("data_type") @db.Text // text, textarea, email, phone, number, date, datetime, boolean, single_select, multi_select, file, files, json, array, url
-  mappedPropertyId  String?   @map("mapped_property_id") @db.Text
-  validationRules   Json?     @map("validation_rules")
-  properties        Json?     // Field-specific properties (options, placeholder, etc.)
-  displayOrder      Int       @default(0) @map("display_order")
-  isRequired        Boolean   @default(false) @map("is_required")
-  conditionalLogic  Json?     @map("conditional_logic")
-  helpText          String?   @map("help_text") @db.Text
-  defaultValue      String?   @map("default_value") @db.Text
-  createdAt         DateTime  @default(now()) @map("created_at")
+  id               String   @id @db.Text
+  formId           String   @map("form_id") @db.Text
+  fieldName        String   @map("field_name") @db.Text
+  fieldLabel       String   @map("field_label") @db.Text
+  dataType         String   @map("data_type") @db.Text // text, textarea, email, phone, number, date, datetime, boolean, single_select, multi_select, file, files, json, array, url
+  mappedPropertyId String?  @map("mapped_property_id") @db.Text
+  validationRules  Json?    @map("validation_rules")
+  properties       Json? // Field-specific properties (options, placeholder, etc.)
+  displayOrder     Int      @default(0) @map("display_order")
+  isRequired       Boolean  @default(false) @map("is_required")
+  conditionalLogic Json?    @map("conditional_logic")
+  helpText         String?  @map("help_text") @db.Text
+  defaultValue     String?  @map("default_value") @db.Text
+  createdAt        DateTime @default(now()) @map("created_at")
 
   // Relations
-  form              Form      @relation(fields: [formId], references: [id], onDelete: Cascade)
-  mappedProperty    ContactProperty? @relation(fields: [mappedPropertyId], references: [id], onDelete: SetNull)
-  submissionValues  SubmissionValue[]
+  form             Form              @relation(fields: [formId], references: [id], onDelete: Cascade)
+  mappedProperty   ContactProperty?  @relation(fields: [mappedPropertyId], references: [id], onDelete: SetNull)
+  submissionValues SubmissionValue[]
 
   @@index([formId])
   @@index([displayOrder])
@@ -854,29 +901,29 @@ model FormColumn {
 }
 
 model Submission {
-  id                String    @id @db.Text
-  formId            String    @map("form_id") @db.Text
-  contactId         String?   @map("contact_id") @db.Text
-  submitterEmail    String    @map("submitter_email") @db.Text
-  submittedAt       DateTime  @default(now()) @map("submitted_at")
-  ipAddress         String?   @map("ip_address") @db.Text
-  userAgent         String?   @map("user_agent") @db.Text
-  utmParameters     Json?     @map("utm_parameters")
-  referrerUrl       String?   @map("referrer_url") @db.Text
-  processingStatus  String    @default("pending") @map("processing_status") @db.Text // pending, processed, failed
-  isDuplicate       Boolean   @default(false) @map("is_duplicate")
-  processedAt       DateTime? @map("processed_at")
-  metadata          Json?
+  id               String    @id @db.Text
+  formId           String    @map("form_id") @db.Text
+  contactId        String?   @map("contact_id") @db.Text
+  submitterEmail   String    @map("submitter_email") @db.Text
+  submittedAt      DateTime  @default(now()) @map("submitted_at")
+  ipAddress        String?   @map("ip_address") @db.Text
+  userAgent        String?   @map("user_agent") @db.Text
+  utmParameters    Json?     @map("utm_parameters")
+  referrerUrl      String?   @map("referrer_url") @db.Text
+  processingStatus String    @default("pending") @map("processing_status") @db.Text // pending, processed, failed
+  isDuplicate      Boolean   @default(false) @map("is_duplicate")
+  processedAt      DateTime? @map("processed_at")
+  metadata         Json?
 
   // Relations
-  form              Form      @relation(fields: [formId], references: [id], onDelete: Cascade)
-  contact           Contact?  @relation(fields: [contactId], references: [id], onDelete: SetNull)
-  deal              Deal?     @relation(fields: [dealId], references: [id], onDelete: SetNull)
-  ticket            Ticket?   @relation(fields: [ticketId], references: [id], onDelete: SetNull)
-  values            SubmissionValue[]
+  form    Form              @relation(fields: [formId], references: [id], onDelete: Cascade)
+  contact Contact?          @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  deal    Deal?             @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  ticket  Ticket?           @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+  values  SubmissionValue[]
 
-  dealId            String?   @map("deal_id") @db.Text
-  ticketId          String?   @map("ticket_id") @db.Text
+  dealId   String? @map("deal_id") @db.Text
+  ticketId String? @map("ticket_id") @db.Text
 
   @@index([formId])
   @@index([contactId])
@@ -887,22 +934,22 @@ model Submission {
 }
 
 model SubmissionValue {
-  id            String    @id @db.Text
-  submissionId  String    @map("submission_id") @db.Text
+  id           String    @id @db.Text
+  submissionId String    @map("submission_id") @db.Text
   formColumnId String    @map("form_column_id") @db.Text
-  valueType     String    @map("value_type") @db.Text // text, number, boolean, date, json, array, file, files
-  valueText     String?   @map("value_text") @db.Text
-  valueNumber   Decimal?  @map("value_number") @db.Decimal(15, 2)
-  valueBoolean  Boolean?  @map("value_boolean")
-  valueDate     DateTime? @map("value_date")
-  valueJson     Json?     @map("value_json")
-  valueArray    Json?     @map("value_array")
-  fileMetadata  Json?     @map("file_metadata") // For file uploads: { fileId, fileName, fileSize, mimeType }
-  createdAt     DateTime  @default(now()) @map("created_at")
+  valueType    String    @map("value_type") @db.Text // text, number, boolean, date, json, array, file, files
+  valueText    String?   @map("value_text") @db.Text
+  valueNumber  Decimal?  @map("value_number") @db.Decimal(15, 2)
+  valueBoolean Boolean?  @map("value_boolean")
+  valueDate    DateTime? @map("value_date")
+  valueJson    Json?     @map("value_json")
+  valueArray   Json?     @map("value_array")
+  fileMetadata Json?     @map("file_metadata") // For file uploads: { fileId, fileName, fileSize, mimeType }
+  createdAt    DateTime  @default(now()) @map("created_at")
 
   // Relations
-  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  formColumn    FormColumn @relation(fields: [formColumnId], references: [id], onDelete: Cascade)
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  formColumn FormColumn @relation(fields: [formColumnId], references: [id], onDelete: Cascade)
 
   @@index([submissionId])
   @@index([formColumnId])
@@ -914,31 +961,31 @@ model SubmissionValue {
 // ============================================
 
 model ContactSegment {
-  id            String    @id @db.Text
-  name          String    @db.Text
-  description   String?   @db.Text
-  segmentType   String    @map("segment_type") @db.Text // static, dynamic
-  contactCount  Int       @default(0) @map("contact_count")
-  createdAt     DateTime  @default(now()) @map("created_at")
+  id           String   @id @db.Text
+  name         String   @db.Text
+  description  String?  @db.Text
+  segmentType  String   @map("segment_type") @db.Text // static, dynamic
+  contactCount Int      @default(0) @map("contact_count")
+  createdAt    DateTime @default(now()) @map("created_at")
 
   // Relations
-  criteria      SegmentCriteria[]
-  campaigns     EmailCampaign[]
+  criteria  SegmentCriteria[]
+  campaigns EmailCampaign[]
 
   @@index([segmentType])
   @@map("contact_segments")
 }
 
 model SegmentCriteria {
-  id            String    @id @db.Text
-  segmentId     String    @map("segment_id") @db.Text
-  propertyName  String    @map("property_name") @db.Text
-  operator      String    @db.Text // equals, not_equals, contains, greater_than, less_than, is_empty, is_not_empty
-  value         String?   @db.Text
-  logic         String?   @default("and") @db.Text // and, or
+  id           String  @id @db.Text
+  segmentId    String  @map("segment_id") @db.Text
+  propertyName String  @map("property_name") @db.Text
+  operator     String  @db.Text // equals, not_equals, contains, greater_than, less_than, is_empty, is_not_empty
+  value        String? @db.Text
+  logic        String? @default("and") @db.Text // and, or
 
   // Relations
-  segment       ContactSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  segment ContactSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
 
   @@index([segmentId])
   @@map("segment_criteria")
@@ -948,7 +995,7 @@ model EmailCampaign {
   id                String    @id @db.Text
   name              String    @db.Text
   subject           String    @db.Text
-  emailContent       String    @map("email_content") @db.Text
+  emailContent      String    @map("email_content") @db.Text
   segmentId         String    @map("segment_id") @db.Text
   status            String    @default("draft") @db.Text // draft, scheduled, sending, sent, cancelled
   scheduledSendTime DateTime? @map("scheduled_send_time")
@@ -959,9 +1006,9 @@ model EmailCampaign {
   createdAt         DateTime  @default(now()) @map("created_at")
 
   // Relations
-  segment           ContactSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
-  creator           User      @relation("EmailCampaignCreator", fields: [createdBy], references: [id], onDelete: Cascade)
-  emailSends        EmailSend[]
+  segment    ContactSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  creator    User           @relation("EmailCampaignCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  emailSends EmailSend[]
 
   @@index([segmentId])
   @@index([status])
@@ -980,9 +1027,9 @@ model EmailSend {
   clickedAt   DateTime? @map("clicked_at")
 
   // Relations
-  campaign    EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  contact     Contact       @relation(fields: [contactId], references: [id], onDelete: Cascade)
-  events      EmailEvent[]
+  campaign EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contact  Contact       @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  events   EmailEvent[]
 
   @@index([campaignId])
   @@index([contactId])
@@ -991,14 +1038,14 @@ model EmailSend {
 }
 
 model EmailEvent {
-  id          String    @id @db.Text
-  emailSendId String    @map("email_send_id") @db.Text
-  eventType   String    @map("event_type") @db.Text // sent, delivered, opened, clicked, bounced, unsubscribed, complained
-  eventTime   DateTime  @map("event_time")
-  eventData   Json?     @map("event_data")
+  id          String   @id @db.Text
+  emailSendId String   @map("email_send_id") @db.Text
+  eventType   String   @map("event_type") @db.Text // sent, delivered, opened, clicked, bounced, unsubscribed, complained
+  eventTime   DateTime @map("event_time")
+  eventData   Json?    @map("event_data")
 
   // Relations
-  emailSend   EmailSend @relation(fields: [emailSendId], references: [id], onDelete: Cascade)
+  emailSend EmailSend @relation(fields: [emailSendId], references: [id], onDelete: Cascade)
 
   @@index([emailSendId])
   @@index([eventType])
@@ -1011,22 +1058,22 @@ model EmailEvent {
 // ============================================
 
 model Workflow {
-  id              String    @id @db.Text
-  name            String    @db.Text
-  description     String?   @db.Text
-  triggerType     String    @map("trigger_type") @db.Text // form_submission, field_change, stage_change, date_based, manual
-  triggerConditions Json?   @map("trigger_conditions")
-  isActive        Boolean   @default(true) @map("is_active")
-  createdBy       String    @map("created_by") @db.Text
-  executionCount  Int       @default(0) @map("execution_count")
-  createdAt       DateTime  @default(now()) @map("created_at")
+  id                String   @id @db.Text
+  name              String   @db.Text
+  description       String?  @db.Text
+  triggerType       String   @map("trigger_type") @db.Text // form_submission, field_change, stage_change, date_based, manual
+  triggerConditions Json?    @map("trigger_conditions")
+  isActive          Boolean  @default(true) @map("is_active")
+  createdBy         String   @map("created_by") @db.Text
+  executionCount    Int      @default(0) @map("execution_count")
+  createdAt         DateTime @default(now()) @map("created_at")
 
   // Relations
-  creator         User      @relation("WorkflowCreator", fields: [createdBy], references: [id], onDelete: Cascade)
-  form            Form?     @relation(fields: [formId], references: [id], onDelete: SetNull)
-  actions         WorkflowAction[]
+  creator User             @relation("WorkflowCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  form    Form?            @relation(fields: [formId], references: [id], onDelete: SetNull)
+  actions WorkflowAction[]
 
-  formId          String?   @map("form_id") @db.Text
+  formId String? @map("form_id") @db.Text
 
   @@index([triggerType])
   @@index([isActive])
@@ -1036,15 +1083,15 @@ model Workflow {
 }
 
 model WorkflowAction {
-  id              String    @id @db.Text
-  workflowId      String    @map("workflow_id") @db.Text
-  actionType      String    @map("action_type") @db.Text // create_task, send_email, update_field, create_deal, assign_owner, webhook, delay
-  executionOrder  Int       @map("execution_order")
-  actionConfig    Json      @map("action_config")
-  delayMinutes    Int?      @default(0) @map("delay_minutes")
+  id             String @id @db.Text
+  workflowId     String @map("workflow_id") @db.Text
+  actionType     String @map("action_type") @db.Text // create_task, send_email, update_field, create_deal, assign_owner, webhook, delay
+  executionOrder Int    @map("execution_order")
+  actionConfig   Json   @map("action_config")
+  delayMinutes   Int?   @default(0) @map("delay_minutes")
 
   // Relations
-  workflow        Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
   @@index([workflowId])
   @@index([executionOrder])

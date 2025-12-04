@@ -71,14 +71,21 @@ describe('DealsController', () => {
 
       const result = await controller.create(mockRequest, createDto);
 
-      expect(dealsService.create).toHaveBeenCalledWith(mockRequest.user.id, createDto);
+      expect(dealsService.create).toHaveBeenCalledWith(
+        mockRequest.user.id,
+        createDto,
+      );
       expect(result).toEqual(mockDeal);
     });
 
     it('should throw NotFoundException when pipeline not found', async () => {
-      dealsService.create.mockRejectedValue(new NotFoundException('Pipeline not found'));
+      dealsService.create.mockRejectedValue(
+        new NotFoundException('Pipeline not found'),
+      );
 
-      await expect(controller.create(mockRequest, createDto)).rejects.toThrow(NotFoundException);
+      await expect(controller.create(mockRequest, createDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -165,9 +172,13 @@ describe('DealsController', () => {
     });
 
     it('should throw NotFoundException when deal not found', async () => {
-      dealsService.findOne.mockRejectedValue(new NotFoundException('Deal not found'));
+      dealsService.findOne.mockRejectedValue(
+        new NotFoundException('Deal not found'),
+      );
 
-      await expect(controller.findOne(dealId)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(dealId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -198,16 +209,22 @@ describe('DealsController', () => {
 
       const result = await controller.update(dealId, mockRequest, updateDto);
 
-      expect(dealsService.update).toHaveBeenCalledWith(dealId, mockRequest.user.id, updateDto);
+      expect(dealsService.update).toHaveBeenCalledWith(
+        dealId,
+        mockRequest.user.id,
+        updateDto,
+      );
       expect(result).toEqual(mockDeal);
     });
 
     it('should throw NotFoundException when deal not found', async () => {
-      dealsService.update.mockRejectedValue(new NotFoundException('Deal not found'));
-
-      await expect(controller.update(dealId, mockRequest, updateDto)).rejects.toThrow(
-        NotFoundException,
+      dealsService.update.mockRejectedValue(
+        new NotFoundException('Deal not found'),
       );
+
+      await expect(
+        controller.update(dealId, mockRequest, updateDto),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -227,14 +244,21 @@ describe('DealsController', () => {
 
       const result = await controller.remove(dealId, mockRequest);
 
-      expect(dealsService.remove).toHaveBeenCalledWith(dealId, mockRequest.user.id);
+      expect(dealsService.remove).toHaveBeenCalledWith(
+        dealId,
+        mockRequest.user.id,
+      );
       expect(result).toEqual({ message: 'Deal deleted successfully' });
     });
 
     it('should throw NotFoundException when deal not found', async () => {
-      dealsService.remove.mockRejectedValue(new NotFoundException('Deal not found'));
+      dealsService.remove.mockRejectedValue(
+        new NotFoundException('Deal not found'),
+      );
 
-      await expect(controller.remove(dealId, mockRequest)).rejects.toThrow(NotFoundException);
+      await expect(controller.remove(dealId, mockRequest)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -261,16 +285,22 @@ describe('DealsController', () => {
 
       const result = await controller.moveToStage(dealId, stageId, mockRequest);
 
-      expect(dealsService.moveToStage).toHaveBeenCalledWith(dealId, stageId, mockRequest.user.id);
+      expect(dealsService.moveToStage).toHaveBeenCalledWith(
+        dealId,
+        stageId,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockDeal);
     });
 
     it('should throw NotFoundException when deal not found', async () => {
-      dealsService.moveToStage.mockRejectedValue(new NotFoundException('Deal not found'));
-
-      await expect(controller.moveToStage(dealId, stageId, mockRequest)).rejects.toThrow(
-        NotFoundException,
+      dealsService.moveToStage.mockRejectedValue(
+        new NotFoundException('Deal not found'),
       );
+
+      await expect(
+        controller.moveToStage(dealId, stageId, mockRequest),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw BadRequestException when invalid stage transition', async () => {
@@ -278,10 +308,9 @@ describe('DealsController', () => {
         new BadRequestException('Invalid stage transition'),
       );
 
-      await expect(controller.moveToStage(dealId, stageId, mockRequest)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        controller.moveToStage(dealId, stageId, mockRequest),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });
-

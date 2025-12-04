@@ -1,6 +1,11 @@
-import { GrpcBaseRequest, GrpcPaginationParams, GrpcPaginationResponse } from './grpc-common.types';
+import {
+  GrpcBaseRequest,
+  GrpcPaginationParams,
+  GrpcPaginationResponse,
+} from './grpc-common.types';
 
-export interface ListNotificationsRequest extends GrpcBaseRequest, GrpcPaginationParams {
+export interface ListNotificationsRequest
+  extends GrpcBaseRequest, GrpcPaginationParams {
   unread_only?: boolean;
   sort_order?: 'asc' | 'desc';
 }
@@ -50,4 +55,3 @@ export interface DeleteNotificationRequest extends GrpcBaseRequest {
 export interface DeleteNotificationResponse {
   message: string;
 }
-

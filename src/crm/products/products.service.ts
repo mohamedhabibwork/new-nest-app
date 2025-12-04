@@ -1,7 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { withUlid } from '../../common/utils/prisma-helpers';
-import { buildPaginationResponse, normalizePaginationParams } from '../../common/utils/pagination.util';
+import {
+  buildPaginationResponse,
+  normalizePaginationParams,
+} from '../../common/utils/pagination.util';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Prisma } from '@prisma/client';
@@ -36,7 +43,8 @@ export class ProductsService {
   }
 
   async findAll(page?: number, limit?: number, isActive?: boolean) {
-    const { page: normalizedPage, limit: normalizedLimit } = normalizePaginationParams(page, limit);
+    const { page: normalizedPage, limit: normalizedLimit } =
+      normalizePaginationParams(page, limit);
 
     const where: Prisma.ProductWhereInput = {};
     if (isActive !== undefined) {
@@ -55,7 +63,12 @@ export class ProductsService {
       this.prisma.product.count({ where }),
     ]);
 
-    return buildPaginationResponse(products, total, normalizedPage, normalizedLimit);
+    return buildPaginationResponse(
+      products,
+      total,
+      normalizedPage,
+      normalizedLimit,
+    );
   }
 
   async findOne(id: string) {
@@ -122,4 +135,3 @@ export class ProductsService {
     return { message: 'Product deleted successfully' };
   }
 }
-

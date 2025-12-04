@@ -34,4 +34,3 @@ export class ProductResponseDto {
   @ApiProperty({ description: 'Creation timestamp' })
   createdAt: Date;
 }
-

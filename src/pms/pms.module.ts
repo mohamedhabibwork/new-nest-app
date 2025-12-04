@@ -6,6 +6,9 @@ import { CollaborationModule } from './collaboration/collaboration.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { TeamsModule } from './teams/teams.module';
 import { RbacModule } from './rbac/rbac.module';
+import { SharesModule } from './shares/shares.module';
+import { AssignmentsModule } from './assignments/assignments.module';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
@@ -16,6 +19,9 @@ import { RbacModule } from './rbac/rbac.module';
     CollaborationModule,
     NotificationsModule,
     TeamsModule,
+    SharesModule,
+    AssignmentsModule,
+    TagsModule,
   ],
   exports: [
     RbacModule,
@@ -25,7 +31,9 @@ import { RbacModule } from './rbac/rbac.module';
     CollaborationModule,
     NotificationsModule,
     TeamsModule,
+    SharesModule,
+    AssignmentsModule,
+    TagsModule,
   ],
 })
 export class PmsModule {}
-

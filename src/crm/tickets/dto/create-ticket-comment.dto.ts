@@ -18,4 +18,3 @@ export class CreateTicketCommentDto {
   @IsOptional()
   isInternal?: boolean;
 }
-

@@ -74,7 +74,10 @@ describe('CompaniesController', () => {
 
       const result = await controller.create(mockRequest, createDto);
 
-      expect(companiesService.create).toHaveBeenCalledWith(mockRequest.user.id, createDto);
+      expect(companiesService.create).toHaveBeenCalledWith(
+        mockRequest.user.id,
+        createDto,
+      );
       expect(result).toEqual(mockCompany);
     });
 
@@ -86,7 +89,10 @@ describe('CompaniesController', () => {
       await expect(controller.create(mockRequest, createDto)).rejects.toThrow(
         BadRequestException,
       );
-      expect(companiesService.create).toHaveBeenCalledWith(mockRequest.user.id, createDto);
+      expect(companiesService.create).toHaveBeenCalledWith(
+        mockRequest.user.id,
+        createDto,
+      );
     });
 
     it('should throw NotFoundException when parent company not found', async () => {
@@ -95,11 +101,13 @@ describe('CompaniesController', () => {
         parentCompanyId: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
       };
 
-      companiesService.create.mockRejectedValue(new NotFoundException('Parent company not found'));
-
-      await expect(controller.create(mockRequest, createDtoWithParent)).rejects.toThrow(
-        NotFoundException,
+      companiesService.create.mockRejectedValue(
+        new NotFoundException('Parent company not found'),
       );
+
+      await expect(
+        controller.create(mockRequest, createDtoWithParent),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -239,9 +247,13 @@ describe('CompaniesController', () => {
     });
 
     it('should throw NotFoundException when company not found', async () => {
-      companiesService.findOne.mockRejectedValue(new NotFoundException('Company not found'));
+      companiesService.findOne.mockRejectedValue(
+        new NotFoundException('Company not found'),
+      );
 
-      await expect(controller.findOne(companyId)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(companyId)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(companiesService.findOne).toHaveBeenCalledWith(companyId);
     });
   });
@@ -283,11 +295,13 @@ describe('CompaniesController', () => {
     });
 
     it('should throw NotFoundException when company not found', async () => {
-      companiesService.update.mockRejectedValue(new NotFoundException('Company not found'));
-
-      await expect(controller.update(companyId, mockRequest, updateDto)).rejects.toThrow(
-        NotFoundException,
+      companiesService.update.mockRejectedValue(
+        new NotFoundException('Company not found'),
       );
+
+      await expect(
+        controller.update(companyId, mockRequest, updateDto),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -307,19 +321,28 @@ describe('CompaniesController', () => {
 
       const result = await controller.remove(companyId, mockRequest);
 
-      expect(companiesService.remove).toHaveBeenCalledWith(companyId, mockRequest.user.id);
+      expect(companiesService.remove).toHaveBeenCalledWith(
+        companyId,
+        mockRequest.user.id,
+      );
       expect(result).toEqual({ message: 'Company deleted successfully' });
     });
 
     it('should throw NotFoundException when company not found', async () => {
-      companiesService.remove.mockRejectedValue(new NotFoundException('Company not found'));
+      companiesService.remove.mockRejectedValue(
+        new NotFoundException('Company not found'),
+      );
 
-      await expect(controller.remove(companyId, mockRequest)).rejects.toThrow(NotFoundException);
+      await expect(controller.remove(companyId, mockRequest)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException when company has contacts or subsidiaries', async () => {
       companiesService.remove.mockRejectedValue(
-        new BadRequestException('Cannot delete company with contacts or subsidiaries'),
+        new BadRequestException(
+          'Cannot delete company with contacts or subsidiaries',
+        ),
       );
 
       await expect(controller.remove(companyId, mockRequest)).rejects.toThrow(
@@ -328,4 +351,3 @@ describe('CompaniesController', () => {
     });
   });
 });
-

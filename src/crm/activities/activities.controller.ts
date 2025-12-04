@@ -51,20 +51,89 @@ export class ActivitiesController {
     return this.activitiesService.create(req.user.id, createDto);
   }
 
-  @ApiOperation({ summary: 'Get all activities with pagination, filtering, and sorting' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number', example: 1 })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page', example: 50 })
-  @ApiQuery({ name: 'contactId', required: false, type: String, description: 'Filter by contact ID' })
-  @ApiQuery({ name: 'companyId', required: false, type: String, description: 'Filter by company ID' })
-  @ApiQuery({ name: 'dealId', required: false, type: String, description: 'Filter by deal ID' })
-  @ApiQuery({ name: 'activityType', required: false, enum: ['email', 'call', 'meeting', 'note', 'task'], description: 'Filter by activity type' })
-  @ApiQuery({ name: 'userId', required: false, type: String, description: 'Filter by user ID' })
-  @ApiQuery({ name: 'direction', required: false, enum: ['inbound', 'outbound'], description: 'Filter by direction' })
-  @ApiQuery({ name: 'activityDateFrom', required: false, type: String, description: 'Filter activities from this date' })
-  @ApiQuery({ name: 'activityDateTo', required: false, type: String, description: 'Filter activities until this date' })
-  @ApiQuery({ name: 'search', required: false, type: String, description: 'Search in subject and description' })
-  @ApiQuery({ name: 'sortBy', required: false, enum: ['createdAt', 'activityDate'], description: 'Sort by field' })
-  @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'], description: 'Sort order' })
+  @ApiOperation({
+    summary: 'Get all activities with pagination, filtering, and sorting',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page',
+    example: 50,
+  })
+  @ApiQuery({
+    name: 'contactId',
+    required: false,
+    type: String,
+    description: 'Filter by contact ID',
+  })
+  @ApiQuery({
+    name: 'companyId',
+    required: false,
+    type: String,
+    description: 'Filter by company ID',
+  })
+  @ApiQuery({
+    name: 'dealId',
+    required: false,
+    type: String,
+    description: 'Filter by deal ID',
+  })
+  @ApiQuery({
+    name: 'activityType',
+    required: false,
+    enum: ['email', 'call', 'meeting', 'note', 'task'],
+    description: 'Filter by activity type',
+  })
+  @ApiQuery({
+    name: 'userId',
+    required: false,
+    type: String,
+    description: 'Filter by user ID',
+  })
+  @ApiQuery({
+    name: 'direction',
+    required: false,
+    enum: ['inbound', 'outbound'],
+    description: 'Filter by direction',
+  })
+  @ApiQuery({
+    name: 'activityDateFrom',
+    required: false,
+    type: String,
+    description: 'Filter activities from this date',
+  })
+  @ApiQuery({
+    name: 'activityDateTo',
+    required: false,
+    type: String,
+    description: 'Filter activities until this date',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Search in subject and description',
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    enum: ['createdAt', 'activityDate'],
+    description: 'Sort by field',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['asc', 'desc'],
+    description: 'Sort order',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of activities with pagination',
@@ -77,7 +146,11 @@ export class ActivitiesController {
   }
 
   @ApiOperation({ summary: 'Get an activity by ID' })
-  @ApiParam({ name: 'id', description: 'Activity ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Activity ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Activity details',
@@ -90,7 +163,11 @@ export class ActivitiesController {
   }
 
   @ApiOperation({ summary: 'Update an activity' })
-  @ApiParam({ name: 'id', description: 'Activity ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Activity ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Activity updated successfully',
@@ -108,7 +185,11 @@ export class ActivitiesController {
   }
 
   @ApiOperation({ summary: 'Delete an activity' })
-  @ApiParam({ name: 'id', description: 'Activity ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Activity ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Activity deleted successfully',
@@ -120,4 +201,3 @@ export class ActivitiesController {
     return this.activitiesService.remove(id, req.user.id);
   }
 }
-

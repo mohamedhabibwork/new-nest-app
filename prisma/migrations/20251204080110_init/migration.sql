@@ -174,17 +174,6 @@ CREATE TABLE "tasks" (
 );
 
 -- CreateTable
-CREATE TABLE "task_assignments" (
-    "id" TEXT NOT NULL,
-    "task_id" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
-    "assigned_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "is_primary" BOOLEAN NOT NULL DEFAULT false,
-
-    CONSTRAINT "task_assignments_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "task_dependencies" (
     "id" TEXT NOT NULL,
     "task_id" TEXT NOT NULL,
@@ -211,10 +200,13 @@ CREATE TABLE "checklist_items" (
 -- CreateTable
 CREATE TABLE "comments" (
     "id" TEXT NOT NULL,
-    "task_id" TEXT NOT NULL,
+    "commentable_type" TEXT NOT NULL,
+    "commentable_id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "comment_text" TEXT NOT NULL,
     "parent_comment_id" TEXT,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
+    "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -281,11 +273,59 @@ CREATE TABLE "activity_logs" (
 );
 
 -- CreateTable
+CREATE TABLE "shares" (
+    "id" TEXT NOT NULL,
+    "shareable_type" TEXT NOT NULL,
+    "shareable_id" TEXT NOT NULL,
+    "shared_with_type" TEXT NOT NULL,
+    "shared_with_id" TEXT NOT NULL,
+    "permission" TEXT NOT NULL DEFAULT 'view',
+    "shared_by_id" TEXT NOT NULL,
+    "expires_at" TIMESTAMP(3),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "shares_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "assignments" (
+    "id" TEXT NOT NULL,
+    "assignable_type" TEXT NOT NULL,
+    "assignable_id" TEXT NOT NULL,
+    "assignee_id" TEXT NOT NULL,
+    "assigner_id" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'pending',
+    "priority" TEXT NOT NULL DEFAULT 'medium',
+    "due_date" TIMESTAMP(3),
+    "notes" TEXT,
+    "assigned_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "completed_at" TIMESTAMP(3),
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "assignments_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "mentions" (
+    "id" TEXT NOT NULL,
+    "mentionable_type" TEXT NOT NULL,
+    "mentionable_id" TEXT NOT NULL,
+    "mentioned_user_id" TEXT NOT NULL,
+    "comment_id" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "mentions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "tags" (
     "id" TEXT NOT NULL,
-    "workspace_id" TEXT NOT NULL,
     "tag_name" TEXT NOT NULL,
     "color" TEXT,
+    "creator_id" TEXT NOT NULL,
+    "visibility" TEXT NOT NULL DEFAULT 'public',
+    "usage_count" INTEGER NOT NULL DEFAULT 0,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -293,21 +333,15 @@ CREATE TABLE "tags" (
 );
 
 -- CreateTable
-CREATE TABLE "project_tags" (
+CREATE TABLE "taggings" (
     "id" TEXT NOT NULL,
-    "project_id" TEXT NOT NULL,
     "tag_id" TEXT NOT NULL,
+    "taggable_type" TEXT NOT NULL,
+    "taggable_id" TEXT NOT NULL,
+    "created_by_id" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "project_tags_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "task_tags" (
-    "id" TEXT NOT NULL,
-    "task_id" TEXT NOT NULL,
-    "tag_id" TEXT NOT NULL,
-
-    CONSTRAINT "task_tags_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "taggings_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -481,18 +515,6 @@ CREATE TABLE "tickets" (
     "closed_at" TIMESTAMP(3),
 
     CONSTRAINT "tickets_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "ticket_comments" (
-    "id" TEXT NOT NULL,
-    "ticket_id" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
-    "comment" TEXT NOT NULL,
-    "is_internal" BOOLEAN NOT NULL DEFAULT false,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "ticket_comments_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -770,15 +792,6 @@ CREATE INDEX "tasks_priority_idx" ON "tasks"("priority");
 CREATE INDEX "tasks_created_by_idx" ON "tasks"("created_by");
 
 -- CreateIndex
-CREATE INDEX "task_assignments_task_id_idx" ON "task_assignments"("task_id");
-
--- CreateIndex
-CREATE INDEX "task_assignments_user_id_idx" ON "task_assignments"("user_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "task_assignments_task_id_user_id_key" ON "task_assignments"("task_id", "user_id");
-
--- CreateIndex
 CREATE INDEX "task_dependencies_task_id_idx" ON "task_dependencies"("task_id");
 
 -- CreateIndex
@@ -791,13 +804,16 @@ CREATE UNIQUE INDEX "task_dependencies_task_id_depends_on_task_id_key" ON "task_
 CREATE INDEX "checklist_items_task_id_idx" ON "checklist_items"("task_id");
 
 -- CreateIndex
-CREATE INDEX "comments_task_id_idx" ON "comments"("task_id");
+CREATE INDEX "comments_commentable_type_commentable_id_idx" ON "comments"("commentable_type", "commentable_id");
 
 -- CreateIndex
 CREATE INDEX "comments_user_id_idx" ON "comments"("user_id");
 
 -- CreateIndex
 CREATE INDEX "comments_parent_comment_id_idx" ON "comments"("parent_comment_id");
+
+-- CreateIndex
+CREATE INDEX "comments_is_deleted_idx" ON "comments"("is_deleted");
 
 -- CreateIndex
 CREATE INDEX "time_logs_task_id_idx" ON "time_logs"("task_id");
@@ -836,28 +852,52 @@ CREATE INDEX "activity_logs_entity_type_entity_id_idx" ON "activity_logs"("entit
 CREATE INDEX "activity_logs_created_at_idx" ON "activity_logs"("created_at");
 
 -- CreateIndex
-CREATE INDEX "tags_workspace_id_idx" ON "tags"("workspace_id");
+CREATE INDEX "shares_shareable_type_shareable_id_idx" ON "shares"("shareable_type", "shareable_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "tags_workspace_id_tag_name_key" ON "tags"("workspace_id", "tag_name");
+CREATE INDEX "shares_shared_with_type_shared_with_id_idx" ON "shares"("shared_with_type", "shared_with_id");
 
 -- CreateIndex
-CREATE INDEX "project_tags_project_id_idx" ON "project_tags"("project_id");
+CREATE INDEX "shares_shared_by_id_idx" ON "shares"("shared_by_id");
 
 -- CreateIndex
-CREATE INDEX "project_tags_tag_id_idx" ON "project_tags"("tag_id");
+CREATE INDEX "assignments_assignable_type_assignable_id_idx" ON "assignments"("assignable_type", "assignable_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "project_tags_project_id_tag_id_key" ON "project_tags"("project_id", "tag_id");
+CREATE INDEX "assignments_assignee_id_idx" ON "assignments"("assignee_id");
 
 -- CreateIndex
-CREATE INDEX "task_tags_task_id_idx" ON "task_tags"("task_id");
+CREATE INDEX "assignments_status_idx" ON "assignments"("status");
 
 -- CreateIndex
-CREATE INDEX "task_tags_tag_id_idx" ON "task_tags"("tag_id");
+CREATE INDEX "assignments_due_date_idx" ON "assignments"("due_date");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "task_tags_task_id_tag_id_key" ON "task_tags"("task_id", "tag_id");
+CREATE INDEX "mentions_mentionable_type_mentionable_id_idx" ON "mentions"("mentionable_type", "mentionable_id");
+
+-- CreateIndex
+CREATE INDEX "mentions_mentioned_user_id_idx" ON "mentions"("mentioned_user_id");
+
+-- CreateIndex
+CREATE INDEX "mentions_comment_id_idx" ON "mentions"("comment_id");
+
+-- CreateIndex
+CREATE INDEX "tags_creator_id_idx" ON "tags"("creator_id");
+
+-- CreateIndex
+CREATE INDEX "tags_visibility_idx" ON "tags"("visibility");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "tags_tag_name_key" ON "tags"("tag_name");
+
+-- CreateIndex
+CREATE INDEX "taggings_taggable_type_taggable_id_idx" ON "taggings"("taggable_type", "taggable_id");
+
+-- CreateIndex
+CREATE INDEX "taggings_tag_id_idx" ON "taggings"("tag_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "taggings_tag_id_taggable_type_taggable_id_key" ON "taggings"("tag_id", "taggable_type", "taggable_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "contacts_email_key" ON "contacts"("email");
@@ -993,15 +1033,6 @@ CREATE INDEX "tickets_priority_idx" ON "tickets"("priority");
 
 -- CreateIndex
 CREATE INDEX "tickets_created_at_idx" ON "tickets"("created_at");
-
--- CreateIndex
-CREATE INDEX "ticket_comments_ticket_id_idx" ON "ticket_comments"("ticket_id");
-
--- CreateIndex
-CREATE INDEX "ticket_comments_user_id_idx" ON "ticket_comments"("user_id");
-
--- CreateIndex
-CREATE INDEX "ticket_comments_created_at_idx" ON "ticket_comments"("created_at");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "forms_public_url_key" ON "forms"("public_url");
@@ -1148,12 +1179,6 @@ ALTER TABLE "tasks" ADD CONSTRAINT "tasks_parent_task_id_fkey" FOREIGN KEY ("par
 ALTER TABLE "tasks" ADD CONSTRAINT "tasks_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "task_assignments" ADD CONSTRAINT "task_assignments_task_id_fkey" FOREIGN KEY ("task_id") REFERENCES "tasks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "task_assignments" ADD CONSTRAINT "task_assignments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "task_dependencies" ADD CONSTRAINT "task_dependencies_task_id_fkey" FOREIGN KEY ("task_id") REFERENCES "tasks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -1161,9 +1186,6 @@ ALTER TABLE "task_dependencies" ADD CONSTRAINT "task_dependencies_depends_on_tas
 
 -- AddForeignKey
 ALTER TABLE "checklist_items" ADD CONSTRAINT "checklist_items_task_id_fkey" FOREIGN KEY ("task_id") REFERENCES "tasks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "comments" ADD CONSTRAINT "comments_task_id_fkey" FOREIGN KEY ("task_id") REFERENCES "tasks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "comments" ADD CONSTRAINT "comments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -1187,19 +1209,28 @@ ALTER TABLE "notifications" ADD CONSTRAINT "notifications_user_id_fkey" FOREIGN 
 ALTER TABLE "activity_logs" ADD CONSTRAINT "activity_logs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "tags" ADD CONSTRAINT "tags_workspace_id_fkey" FOREIGN KEY ("workspace_id") REFERENCES "workspaces"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "shares" ADD CONSTRAINT "shares_shared_by_id_fkey" FOREIGN KEY ("shared_by_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "project_tags" ADD CONSTRAINT "project_tags_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "assignments" ADD CONSTRAINT "assignments_assignee_id_fkey" FOREIGN KEY ("assignee_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "project_tags" ADD CONSTRAINT "project_tags_tag_id_fkey" FOREIGN KEY ("tag_id") REFERENCES "tags"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "assignments" ADD CONSTRAINT "assignments_assigner_id_fkey" FOREIGN KEY ("assigner_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "task_tags" ADD CONSTRAINT "task_tags_task_id_fkey" FOREIGN KEY ("task_id") REFERENCES "tasks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "mentions" ADD CONSTRAINT "mentions_mentioned_user_id_fkey" FOREIGN KEY ("mentioned_user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "task_tags" ADD CONSTRAINT "task_tags_tag_id_fkey" FOREIGN KEY ("tag_id") REFERENCES "tags"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "mentions" ADD CONSTRAINT "mentions_comment_id_fkey" FOREIGN KEY ("comment_id") REFERENCES "comments"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "tags" ADD CONSTRAINT "tags_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "taggings" ADD CONSTRAINT "taggings_tag_id_fkey" FOREIGN KEY ("tag_id") REFERENCES "tags"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "taggings" ADD CONSTRAINT "taggings_created_by_id_fkey" FOREIGN KEY ("created_by_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "contacts" ADD CONSTRAINT "contacts_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "companies"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -1254,12 +1285,6 @@ ALTER TABLE "tickets" ADD CONSTRAINT "tickets_contact_id_fkey" FOREIGN KEY ("con
 
 -- AddForeignKey
 ALTER TABLE "tickets" ADD CONSTRAINT "tickets_assigned_to_fkey" FOREIGN KEY ("assigned_to") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ticket_comments" ADD CONSTRAINT "ticket_comments_ticket_id_fkey" FOREIGN KEY ("ticket_id") REFERENCES "tickets"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ticket_comments" ADD CONSTRAINT "ticket_comments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "forms" ADD CONSTRAINT "forms_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

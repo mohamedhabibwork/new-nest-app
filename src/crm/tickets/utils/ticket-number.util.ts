@@ -1,9 +1,11 @@
+import { PrismaService } from '../../../prisma/prisma.service';
+
 /**
  * Generate a sequential ticket number
  * Format: TKT-000001, TKT-000002, etc.
  */
 export async function generateTicketNumber(
-  prisma: any,
+  prisma: PrismaService,
 ): Promise<string> {
   // Get the highest ticket number
   const lastTicket = await prisma.ticket.findFirst({
@@ -24,4 +26,3 @@ export async function generateTicketNumber(
   const paddedNumber = nextNumber.toString().padStart(6, '0');
   return `TKT-${paddedNumber}`;
 }
-

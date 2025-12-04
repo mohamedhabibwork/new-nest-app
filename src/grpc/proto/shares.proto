@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+package shares;
+
+service ShareService {
+  rpc ListShares (ListSharesRequest) returns (ListSharesResponse);
+  rpc GetShare (GetShareRequest) returns (GetShareResponse);
+  rpc CreateShare (CreateShareRequest) returns (CreateShareResponse);
+  rpc UpdateShare (UpdateShareRequest) returns (UpdateShareResponse);
+  rpc DeleteShare (DeleteShareRequest) returns (DeleteShareResponse);
+  rpc GetSharedContent (GetSharedContentRequest) returns (GetSharedContentResponse);
+}
+
+message ListSharesRequest {
+  string user_id = 1;
+  string shareable_type = 2;
+  string shareable_id = 3;
+  string shared_with_type = 4;
+  string shared_with_id = 5;
+  string permission = 6;
+  int32 page = 7;
+  int32 limit = 8;
+}
+
+message ListSharesResponse {
+  repeated Share shares = 1;
+  Pagination pagination = 2;
+}
+
+message GetShareRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message GetShareResponse {
+  Share share = 1;
+}
+
+message CreateShareRequest {
+  string user_id = 1;
+  string shareable_type = 2;
+  string shareable_id = 3;
+  string shared_with_type = 4;
+  string shared_with_id = 5;
+  string permission = 6;
+  string expires_at = 7;
+}
+
+message CreateShareResponse {
+  Share share = 1;
+}
+
+message UpdateShareRequest {
+  string id = 1;
+  string user_id = 2;
+  string permission = 3;
+  string expires_at = 4;
+}
+
+message UpdateShareResponse {
+  Share share = 1;
+}
+
+message DeleteShareRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message DeleteShareResponse {
+  string message = 1;
+}
+
+message GetSharedContentRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message GetSharedContentResponse {
+  repeated Share shares = 1;
+  Pagination pagination = 2;
+}
+
+message Share {
+  string id = 1;
+  string shareable_type = 2;
+  string shareable_id = 3;
+  string shared_with_type = 4;
+  string shared_with_id = 5;
+  string permission = 6;
+  string shared_by_id = 7;
+  string expires_at = 8;
+  string created_at = 9;
+  string updated_at = 10;
+  User shared_by = 11;
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+}
+
+message Pagination {
+  int32 page = 1;
+  int32 limit = 2;
+  int32 total = 3;
+  int32 total_pages = 4;
+  bool has_next = 5;
+  bool has_previous = 6;
+}
+

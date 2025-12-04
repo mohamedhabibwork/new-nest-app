@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IStorageService, FileUploadResult } from './storage.interface';
-import { createWriteStream, createReadStream, existsSync, unlinkSync } from 'fs';
+import {
+  createWriteStream,
+  createReadStream,
+  existsSync,
+  unlinkSync,
+} from 'fs';
 import { join } from 'path';
 import { mkdir } from 'fs/promises';
 import { generateUlid } from '../../common/utils/ulid.util';
@@ -76,4 +81,3 @@ export class LocalStorageService implements IStorageService {
     return createReadStream(fullPath);
   }
 }
-

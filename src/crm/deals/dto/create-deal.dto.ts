@@ -59,7 +59,7 @@ export class CreateDealDto {
 
   @ApiPropertyOptional({
     description: 'Deal amount',
-    example: 50000.00,
+    example: 50000.0,
   })
   @Type(() => Number)
   @IsNumber()
@@ -127,4 +127,3 @@ export class CreateDealDto {
   @IsOptional()
   notes?: string;
 }
-

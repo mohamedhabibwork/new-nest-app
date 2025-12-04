@@ -6,6 +6,9 @@ import { TasksGrpcController } from './tasks-grpc.controller';
 import { CollaborationGrpcController } from './collaboration-grpc.controller';
 import { NotificationsGrpcController } from './notifications-grpc.controller';
 import { FilesGrpcController } from './files-grpc.controller';
+import { SharesGrpcController } from './shares-grpc.controller';
+import { AssignmentsGrpcController } from './assignments-grpc.controller';
+import { TagsGrpcController } from './tags-grpc.controller';
 import { GrpcDocumentationController } from './grpc-documentation.controller';
 import { AuthModule } from '../auth/auth.module';
 import { WorkspacesModule } from '../pms/workspaces/workspaces.module';
@@ -14,6 +17,9 @@ import { TasksModule } from '../pms/tasks/tasks.module';
 import { CollaborationModule } from '../pms/collaboration/collaboration.module';
 import { NotificationsModule } from '../pms/notifications/notifications.module';
 import { FilesModule } from '../files/files.module';
+import { SharesModule } from '../pms/shares/shares.module';
+import { AssignmentsModule } from '../pms/assignments/assignments.module';
+import { TagsModule } from '../pms/tags/tags.module';
 
 @Module({
   imports: [
@@ -24,6 +30,9 @@ import { FilesModule } from '../files/files.module';
     CollaborationModule,
     NotificationsModule,
     FilesModule,
+    SharesModule,
+    AssignmentsModule,
+    TagsModule,
   ],
   controllers: [
     AuthGrpcController,
@@ -33,6 +42,9 @@ import { FilesModule } from '../files/files.module';
     CollaborationGrpcController,
     NotificationsGrpcController,
     FilesGrpcController,
+    SharesGrpcController,
+    AssignmentsGrpcController,
+    TagsGrpcController,
     GrpcDocumentationController,
   ],
 })

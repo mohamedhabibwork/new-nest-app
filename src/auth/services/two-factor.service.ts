@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import * as speakeasy from 'speakeasy';
@@ -70,7 +74,10 @@ export class TwoFactorService {
   /**
    * Verify backup code
    */
-  async verifyBackupCode(hashedCodes: string[], code: string): Promise<boolean> {
+  async verifyBackupCode(
+    hashedCodes: string[],
+    code: string,
+  ): Promise<boolean> {
     for (const hashedCode of hashedCodes) {
       const isValid = await bcrypt.compare(code, hashedCode);
       if (isValid) {
@@ -225,7 +232,8 @@ export class TwoFactorService {
         await this.prisma.user.update({
           where: { id: userId },
           data: {
-            twoFactorBackupCodes: remainingCodes.length > 0 ? remainingCodes : null as any,
+            twoFactorBackupCodes:
+              remainingCodes.length > 0 ? remainingCodes : (null as any),
           },
         });
         return true;
@@ -331,4 +339,3 @@ export class TwoFactorService {
     };
   }
 }
-

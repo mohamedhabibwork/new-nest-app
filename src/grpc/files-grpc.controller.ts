@@ -52,7 +52,9 @@ export class FilesGrpcController {
   async uploadFile(): Promise<{ message: string }> {
     // Note: gRPC file upload would need special handling for binary data
     // This is a simplified version - in production, you'd use streaming
-    throw new Error('File upload via gRPC not fully implemented - use REST API');
+    throw new Error(
+      'File upload via gRPC not fully implemented - use REST API',
+    );
   }
 
   @GrpcMethod('FileService', 'DeleteFile')
@@ -72,4 +74,3 @@ export class FilesGrpcController {
     return { file: mapFileToGrpc(file) };
   }
 }
-

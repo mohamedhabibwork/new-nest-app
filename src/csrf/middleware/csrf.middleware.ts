@@ -13,7 +13,7 @@ export class CsrfMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     // Check if CSRF is enabled
     const csrfEnabled = this.configService.get('CSRF_ENABLED') !== 'false';
-    
+
     if (!csrfEnabled) {
       return next();
     }
@@ -50,7 +50,7 @@ export class CsrfMiddleware implements NestMiddleware {
     const token = req.headers['x-csrf-token'] as string;
 
     if (!token) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         statusCode: 403,
         message: 'CSRF token is missing',
         error: 'Forbidden',
@@ -58,7 +58,7 @@ export class CsrfMiddleware implements NestMiddleware {
     }
 
     if (!this.csrfService.verifyToken(secret, token)) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         statusCode: 403,
         message: 'Invalid CSRF token',
         error: 'Forbidden',
@@ -68,4 +68,3 @@ export class CsrfMiddleware implements NestMiddleware {
     next();
   }
 }
-

@@ -3,7 +3,10 @@ import { Expose } from 'class-transformer';
 
 export class ActivityResponseDto {
   @Expose()
-  @ApiProperty({ description: 'Activity ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Activity ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
@@ -60,4 +63,3 @@ export class ActivityResponseDto {
   @ApiProperty({ description: 'Creation timestamp' })
   createdAt: Date;
 }
-

@@ -36,4 +36,3 @@ export interface IStorageService {
    */
   getFileStream(filePath: string): Promise<NodeJS.ReadableStream>;
 }
-

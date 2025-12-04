@@ -1,19 +1,29 @@
-import { GrpcBaseRequest, GrpcPaginationParams, GrpcPaginationResponse } from './grpc-common.types';
+import {
+  GrpcBaseRequest,
+  GrpcPaginationParams,
+  GrpcPaginationResponse,
+} from './grpc-common.types';
 import { Comment } from '@prisma/client';
 import { TimeLog } from '@prisma/client';
 
-export interface ListCommentsRequest extends GrpcBaseRequest, GrpcPaginationParams {
-  task_id: string;
+export interface ListCommentsRequest
+  extends GrpcBaseRequest, GrpcPaginationParams {
+  commentable_type?: string; // task, project, ticket
+  commentable_id?: string;
   sort_by?: string;
   sort_order?: 'asc' | 'desc';
+  include_deleted?: boolean;
 }
 
 export interface CommentResponse {
   id: string;
-  task_id: string;
+  commentable_type: string;
+  commentable_id: string;
   user_id: string;
   comment_text: string;
   parent_comment_id?: string | null;
+  is_deleted: boolean;
+  deleted_at?: Date | null;
   created_at: Date;
   updated_at: Date;
   user?: {
@@ -22,6 +32,19 @@ export interface CommentResponse {
     first_name: string | null;
     last_name: string | null;
   };
+  mentions?: MentionResponse[];
+}
+
+export interface MentionResponse {
+  id: string;
+  mentioned_user_id: string;
+  mentioned_user?: {
+    id: string;
+    email: string;
+    first_name: string | null;
+    last_name: string | null;
+  };
+  created_at: Date;
 }
 
 export interface ListCommentsResponse {
@@ -31,7 +54,6 @@ export interface ListCommentsResponse {
 
 export interface GetCommentRequest extends GrpcBaseRequest {
   id: string;
-  task_id: string;
 }
 
 export interface GetCommentResponse {
@@ -39,7 +61,8 @@ export interface GetCommentResponse {
 }
 
 export interface CreateCommentRequest extends GrpcBaseRequest {
-  task_id: string;
+  commentable_type: string; // task, project, ticket
+  commentable_id: string;
   comment_text: string;
   parent_comment_id?: string;
 }
@@ -116,4 +139,3 @@ export interface CreateTimeLogRequest extends GrpcBaseRequest {
 export interface CreateTimeLogResponse {
   time_log: TimeLogResponse;
 }
-

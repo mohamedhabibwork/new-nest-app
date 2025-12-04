@@ -44,7 +44,9 @@ export class PmsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = client.data.user;
     const room = `workspace:${payload.workspaceId}`;
     client.join(room);
-    this.logger.log(`User ${user.sub} subscribed to workspace ${payload.workspaceId}`);
+    this.logger.log(
+      `User ${user.sub} subscribed to workspace ${payload.workspaceId}`,
+    );
     return { event: 'subscribed', workspaceId: payload.workspaceId };
   }
 
@@ -54,7 +56,9 @@ export class PmsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = client.data.user;
     const room = `workspace:${payload.workspaceId}`;
     client.leave(room);
-    this.logger.log(`User ${user.sub} unsubscribed from workspace ${payload.workspaceId}`);
+    this.logger.log(
+      `User ${user.sub} unsubscribed from workspace ${payload.workspaceId}`,
+    );
     return { event: 'unsubscribed', workspaceId: payload.workspaceId };
   }
 
@@ -64,7 +68,9 @@ export class PmsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = client.data.user;
     const room = `project:${payload.projectId}`;
     client.join(room);
-    this.logger.log(`User ${user.sub} subscribed to project ${payload.projectId}`);
+    this.logger.log(
+      `User ${user.sub} subscribed to project ${payload.projectId}`,
+    );
     return { event: 'subscribed', projectId: payload.projectId };
   }
 
@@ -74,7 +80,9 @@ export class PmsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = client.data.user;
     const room = `project:${payload.projectId}`;
     client.leave(room);
-    this.logger.log(`User ${user.sub} unsubscribed from project ${payload.projectId}`);
+    this.logger.log(
+      `User ${user.sub} unsubscribed from project ${payload.projectId}`,
+    );
     return { event: 'unsubscribed', projectId: payload.projectId };
   }
 
@@ -94,7 +102,9 @@ export class PmsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = client.data.user;
     const room = `task:${payload.taskId}`;
     client.leave(room);
-    this.logger.log(`User ${user.sub} unsubscribed from task ${payload.taskId}`);
+    this.logger.log(
+      `User ${user.sub} unsubscribed from task ${payload.taskId}`,
+    );
     return { event: 'unsubscribed', taskId: payload.taskId };
   }
 
@@ -118,4 +128,3 @@ export class PmsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return { event: 'unsubscribed', userId: user.sub };
   }
 }
-

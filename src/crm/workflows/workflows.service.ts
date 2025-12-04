@@ -1,8 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { withUlid, withUlidArray } from '../../common/utils/prisma-helpers';
-import { CreateWorkflowDto, WorkflowActionDto } from './dto/create-workflow.dto';
+import {
+  CreateWorkflowDto,
+  WorkflowActionDto,
+} from './dto/create-workflow.dto';
 import { Prisma } from '@prisma/client';
+import {
+  WorkflowWithActions,
+  WorkflowAction,
+  ActionResult,
+  WorkflowContext,
+} from '../../common/types/workflow.types';
 
 @Injectable()
 export class WorkflowsService {
@@ -24,7 +33,7 @@ export class WorkflowsService {
         name: data.name,
         description: data.description,
         triggerType: data.triggerType,
-        triggerConditions: data.triggerConditions,
+        triggerConditions: data.triggerConditions as Prisma.InputJsonValue,
         formId: data.formId,
         isActive: data.isActive !== undefined ? data.isActive : true,
         createdBy: userId,
@@ -41,7 +50,7 @@ export class WorkflowsService {
               workflowId: workflow.id,
               actionType: action.actionType,
               executionOrder: action.executionOrder,
-              actionConfig: action.actionConfig,
+              actionConfig: action.actionConfig as Prisma.InputJsonValue,
               delayMinutes: action.delayMinutes || 0,
             }),
           }),
@@ -119,7 +128,7 @@ export class WorkflowsService {
         name: data.name,
         description: data.description,
         triggerType: data.triggerType,
-        triggerConditions: data.triggerConditions,
+        triggerConditions: data.triggerConditions as Prisma.InputJsonValue,
         formId: data.formId,
         isActive: data.isActive,
       },
@@ -141,7 +150,7 @@ export class WorkflowsService {
                 workflowId: id,
                 actionType: action.actionType,
                 executionOrder: action.executionOrder,
-                actionConfig: action.actionConfig,
+                actionConfig: action.actionConfig as Prisma.InputJsonValue,
                 delayMinutes: action.delayMinutes || 0,
               }),
             }),
@@ -163,7 +172,7 @@ export class WorkflowsService {
     return { message: 'Workflow deleted successfully' };
   }
 
-  async execute(workflowId: string, context: Record<string, unknown>) {
+  async execute(workflowId: string, context: WorkflowContext) {
     const workflow = await this.findOne(workflowId);
 
     if (!workflow.isActive) {
@@ -171,15 +180,33 @@ export class WorkflowsService {
     }
 
     // Check trigger conditions
-    if (!this.checkTriggerConditions(workflow, context)) {
+    const workflowWithActions: WorkflowWithActions = {
+      id: workflow.id,
+      workflowName: workflow.name,
+      triggerType: workflow.triggerType as any,
+      triggerConditions: workflow.triggerConditions as Record<
+        string,
+        unknown
+      > | null,
+      status: workflow.isActive ? 'active' : 'inactive',
+      actions: workflow.actions.map((action) => ({
+        id: action.id,
+        actionType: action.actionType as any,
+        actionConfig: action.actionConfig as Record<string, unknown>,
+        order: action.executionOrder,
+        delayMinutes: action.delayMinutes || undefined,
+      })),
+      executionCount: workflow.executionCount,
+    };
+    if (!this.checkTriggerConditions(workflowWithActions, context)) {
       return { message: 'Trigger conditions not met' };
     }
 
     // Execute actions in order
-    const results = [];
-    for (const action of workflow.actions) {
+    const results: ActionResult[] = [];
+    for (const action of workflowWithActions.actions) {
       // Handle delay
-      if (action.delayMinutes > 0) {
+      if (action.delayMinutes && action.delayMinutes > 0) {
         // In a real implementation, this would be handled by a queue/job system
         // For now, we'll just log it
         results.push({
@@ -219,8 +246,8 @@ export class WorkflowsService {
   }
 
   private checkTriggerConditions(
-    workflow: any,
-    context: Record<string, unknown>,
+    workflow: WorkflowWithActions,
+    context: WorkflowContext,
   ): boolean {
     if (!workflow.triggerConditions) {
       return true;
@@ -232,9 +259,9 @@ export class WorkflowsService {
   }
 
   private async executeAction(
-    action: any,
-    context: Record<string, unknown>,
-  ): Promise<any> {
+    action: WorkflowAction,
+    context: WorkflowContext,
+  ): Promise<Record<string, unknown>> {
     // Simplified action execution - full implementation would handle each action type
     // This is a placeholder for the actual action execution logic
     switch (action.actionType) {
@@ -261,4 +288,3 @@ export class WorkflowsService {
     }
   }
 }
-

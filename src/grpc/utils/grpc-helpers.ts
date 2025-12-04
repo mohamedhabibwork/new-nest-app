@@ -2,7 +2,10 @@
  * Utility functions for gRPC controllers
  */
 
-import { GrpcPaginationResponse, GrpcPaginationParams } from '../types/grpc-common.types';
+import {
+  GrpcPaginationResponse,
+  GrpcPaginationParams,
+} from '../types/grpc-common.types';
 import { PaginationMetaDto } from '../../common/dto/pagination-response.dto';
 
 /**
@@ -24,9 +27,10 @@ export function toGrpcPaginationResponse(
 /**
  * Normalize pagination parameters from gRPC request
  */
-export function normalizeGrpcPagination(
-  params?: GrpcPaginationParams,
-): { page: number; limit: number } {
+export function normalizeGrpcPagination(params?: GrpcPaginationParams): {
+  page: number;
+  limit: number;
+} {
   return {
     page: Math.max(1, params?.page || 1),
     limit: Math.min(Math.max(1, params?.limit || 50), 100),
@@ -60,4 +64,3 @@ export function toCamelCase(str: string): string {
 export function toSnakeCase(str: string): string {
   return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
 }
-

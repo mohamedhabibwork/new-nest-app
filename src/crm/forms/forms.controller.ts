@@ -117,4 +117,3 @@ export class FormsController {
     return this.formsService.removeColumn(id);
   }
 }
-

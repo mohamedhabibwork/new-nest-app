@@ -41,7 +41,10 @@ export class ContactsController {
     description: 'Contact created successfully',
     type: ContactResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Bad request - Email already exists' })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - Email already exists',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -52,20 +55,105 @@ export class ContactsController {
     return this.contactsService.create(req.user.id, createDto);
   }
 
-  @ApiOperation({ summary: 'Get all contacts with pagination, filtering, and sorting' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number', example: 1 })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page', example: 50 })
-  @ApiQuery({ name: 'companyId', required: false, type: String, description: 'Filter by company ID' })
-  @ApiQuery({ name: 'lifecycleStage', required: false, enum: ['lead', 'mql', 'sql', 'opportunity', 'customer', 'evangelist', 'other'], description: 'Filter by lifecycle stage' })
-  @ApiQuery({ name: 'leadStatus', required: false, enum: ['new', 'contacted', 'qualified', 'unqualified', 'lost'], description: 'Filter by lead status' })
-  @ApiQuery({ name: 'ownerId', required: false, type: String, description: 'Filter by owner ID' })
-  @ApiQuery({ name: 'leadSource', required: false, type: String, description: 'Filter by lead source' })
-  @ApiQuery({ name: 'search', required: false, type: String, description: 'Search in name, email, phone' })
-  @ApiQuery({ name: 'minLeadScore', required: false, type: Number, description: 'Filter by minimum lead score' })
-  @ApiQuery({ name: 'maxLeadScore', required: false, type: Number, description: 'Filter by maximum lead score' })
-  @ApiQuery({ name: 'sortBy', required: false, enum: ['createdAt', 'updatedAt', 'lastContacted', 'leadScore', 'email', 'firstName', 'lastName'], description: 'Sort by field' })
-  @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'], description: 'Sort order' })
-  @ApiQuery({ name: 'includeDeleted', required: false, type: Boolean, description: 'Include deleted contacts' })
+  @ApiOperation({
+    summary: 'Get all contacts with pagination, filtering, and sorting',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page',
+    example: 50,
+  })
+  @ApiQuery({
+    name: 'companyId',
+    required: false,
+    type: String,
+    description: 'Filter by company ID',
+  })
+  @ApiQuery({
+    name: 'lifecycleStage',
+    required: false,
+    enum: [
+      'lead',
+      'mql',
+      'sql',
+      'opportunity',
+      'customer',
+      'evangelist',
+      'other',
+    ],
+    description: 'Filter by lifecycle stage',
+  })
+  @ApiQuery({
+    name: 'leadStatus',
+    required: false,
+    enum: ['new', 'contacted', 'qualified', 'unqualified', 'lost'],
+    description: 'Filter by lead status',
+  })
+  @ApiQuery({
+    name: 'ownerId',
+    required: false,
+    type: String,
+    description: 'Filter by owner ID',
+  })
+  @ApiQuery({
+    name: 'leadSource',
+    required: false,
+    type: String,
+    description: 'Filter by lead source',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Search in name, email, phone',
+  })
+  @ApiQuery({
+    name: 'minLeadScore',
+    required: false,
+    type: Number,
+    description: 'Filter by minimum lead score',
+  })
+  @ApiQuery({
+    name: 'maxLeadScore',
+    required: false,
+    type: Number,
+    description: 'Filter by maximum lead score',
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    enum: [
+      'createdAt',
+      'updatedAt',
+      'lastContacted',
+      'leadScore',
+      'email',
+      'firstName',
+      'lastName',
+    ],
+    description: 'Sort by field',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['asc', 'desc'],
+    description: 'Sort order',
+  })
+  @ApiQuery({
+    name: 'includeDeleted',
+    required: false,
+    type: Boolean,
+    description: 'Include deleted contacts',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of contacts with pagination',
@@ -78,7 +166,11 @@ export class ContactsController {
   }
 
   @ApiOperation({ summary: 'Get a contact by ID' })
-  @ApiParam({ name: 'id', description: 'Contact ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Contact ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Contact details',
@@ -91,7 +183,11 @@ export class ContactsController {
   }
 
   @ApiOperation({ summary: 'Update a contact' })
-  @ApiParam({ name: 'id', description: 'Contact ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Contact ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Contact updated successfully',
@@ -109,7 +205,11 @@ export class ContactsController {
   }
 
   @ApiOperation({ summary: 'Delete a contact (soft delete)' })
-  @ApiParam({ name: 'id', description: 'Contact ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Contact ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Contact deleted successfully',
@@ -122,8 +222,17 @@ export class ContactsController {
   }
 
   @ApiOperation({ summary: 'Update contact lead score' })
-  @ApiParam({ name: 'id', description: 'Contact ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
-  @ApiQuery({ name: 'score', required: true, type: Number, description: 'Lead score (0-100)' })
+  @ApiParam({
+    name: 'id',
+    description: 'Contact ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
+  @ApiQuery({
+    name: 'score',
+    required: true,
+    type: Number,
+    description: 'Lead score (0-100)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Lead score updated successfully',
@@ -139,4 +248,3 @@ export class ContactsController {
     return this.contactsService.updateLeadScore(id, score);
   }
 }
-

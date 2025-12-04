@@ -60,4 +60,3 @@ export class TicketResponseDto {
   @ApiPropertyOptional({ description: 'Closed timestamp' })
   closedAt?: Date;
 }
-

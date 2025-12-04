@@ -49,7 +49,11 @@ export class TeamsController {
     @Body() addMemberDto: AddTeamMemberDto,
     @Request() req: AuthenticatedRequest,
   ) {
-    return this.teamsService.addUserToTeam(teamId, addMemberDto.userId, req.user.id);
+    return this.teamsService.addUserToTeam(
+      teamId,
+      addMemberDto.userId,
+      req.user.id,
+    );
   }
 
   @Delete(':id/members/:userId')
@@ -57,7 +61,10 @@ export class TeamsController {
   @ApiOperation({ summary: 'Remove user from team' })
   @ApiParam({ name: 'id', description: 'Team ID' })
   @ApiParam({ name: 'userId', description: 'User ID' })
-  @ApiResponse({ status: 204, description: 'User removed from team successfully' })
+  @ApiResponse({
+    status: 204,
+    description: 'User removed from team successfully',
+  })
   @ApiResponse({ status: 404, description: 'Team or user not found' })
   @ApiResponse({ status: 403, description: 'Permission denied' })
   async removeMember(
@@ -82,8 +89,16 @@ export class TeamsController {
 
   @Get()
   @ApiOperation({ summary: 'List teams' })
-  @ApiQuery({ name: 'workspaceId', required: false, description: 'Filter by workspace ID' })
-  @ApiQuery({ name: 'userId', required: false, description: 'Filter teams user belongs to' })
+  @ApiQuery({
+    name: 'workspaceId',
+    required: false,
+    description: 'Filter by workspace ID',
+  })
+  @ApiQuery({
+    name: 'userId',
+    required: false,
+    description: 'Filter teams user belongs to',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of teams',
@@ -96,4 +111,3 @@ export class TeamsController {
     return this.teamsService.getTeams(workspaceId, userId);
   }
 }
-

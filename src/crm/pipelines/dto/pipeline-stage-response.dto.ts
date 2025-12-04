@@ -3,7 +3,10 @@ import { Expose } from 'class-transformer';
 
 export class PipelineStageResponseDto {
   @Expose()
-  @ApiProperty({ description: 'Stage ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Stage ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
@@ -34,4 +37,3 @@ export class PipelineStageResponseDto {
   @ApiPropertyOptional({ description: 'Automation triggers' })
   automationTriggers?: Record<string, unknown>;
 }
-

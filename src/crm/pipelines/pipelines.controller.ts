@@ -57,7 +57,11 @@ export class PipelinesController {
   }
 
   @ApiOperation({ summary: 'Get a pipeline by ID' })
-  @ApiParam({ name: 'id', description: 'Pipeline ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Pipeline ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Pipeline details',
@@ -70,7 +74,11 @@ export class PipelinesController {
   }
 
   @ApiOperation({ summary: 'Update a pipeline' })
-  @ApiParam({ name: 'id', description: 'Pipeline ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Pipeline ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Pipeline updated successfully',
@@ -82,12 +90,19 @@ export class PipelinesController {
   }
 
   @ApiOperation({ summary: 'Delete a pipeline' })
-  @ApiParam({ name: 'id', description: 'Pipeline ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Pipeline ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Pipeline deleted successfully',
   })
-  @ApiResponse({ status: 400, description: 'Cannot delete pipeline with deals' })
+  @ApiResponse({
+    status: 400,
+    description: 'Cannot delete pipeline with deals',
+  })
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   remove(@Param('id') id: string) {
@@ -108,7 +123,11 @@ export class PipelinesController {
   }
 
   @ApiOperation({ summary: 'Get all stages for a pipeline' })
-  @ApiParam({ name: 'id', description: 'Pipeline ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Pipeline ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of pipeline stages',
@@ -120,7 +139,11 @@ export class PipelinesController {
   }
 
   @ApiOperation({ summary: 'Get a pipeline stage by ID' })
-  @ApiParam({ name: 'id', description: 'Stage ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Stage ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Pipeline stage details',
@@ -132,19 +155,30 @@ export class PipelinesController {
   }
 
   @ApiOperation({ summary: 'Update a pipeline stage' })
-  @ApiParam({ name: 'id', description: 'Stage ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Stage ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Pipeline stage updated successfully',
     type: PipelineStageResponseDto,
   })
   @Patch('stages/:id')
-  updateStage(@Param('id') id: string, @Body() updateDto: UpdatePipelineStageDto) {
+  updateStage(
+    @Param('id') id: string,
+    @Body() updateDto: UpdatePipelineStageDto,
+  ) {
     return this.pipelinesService.updateStage(id, updateDto);
   }
 
   @ApiOperation({ summary: 'Delete a pipeline stage' })
-  @ApiParam({ name: 'id', description: 'Stage ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Stage ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Pipeline stage deleted successfully',
@@ -156,4 +190,3 @@ export class PipelinesController {
     return this.pipelinesService.removeStage(id);
   }
 }
-

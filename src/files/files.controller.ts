@@ -91,7 +91,11 @@ export class FilesController {
   }
 
   @ApiOperation({ summary: 'Get file information' })
-  @ApiParam({ name: 'id', description: 'File ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'File ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'File information',
@@ -107,7 +111,11 @@ export class FilesController {
   }
 
   @ApiOperation({ summary: 'Download a file' })
-  @ApiParam({ name: 'id', description: 'File ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'File ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'File download',
@@ -128,15 +136,19 @@ export class FilesController {
     @Request() req: { user: { id: string } },
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { stream, fileName, fileType } = await this.filesService.getFileStream(
-      id,
-      req.user.id,
-    );
+    const { stream, fileName, fileType } =
+      await this.filesService.getFileStream(id, req.user.id);
 
     // Set proper headers for file download
     res.setHeader('Content-Type', fileType);
-    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
-    res.setHeader('Content-Length', (await this.filesService.getFileSize(id, req.user.id)).toString());
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${encodeURIComponent(fileName)}"`,
+    );
+    res.setHeader(
+      'Content-Length',
+      (await this.filesService.getFileSize(id, req.user.id)).toString(),
+    );
 
     // Return StreamableFile for proper NestJS streaming
     // StreamableFile handles the streaming automatically
@@ -145,10 +157,30 @@ export class FilesController {
   }
 
   @ApiOperation({ summary: 'List files for an entity' })
-  @ApiQuery({ name: 'entityType', description: 'Entity type', example: 'task', required: true })
-  @ApiQuery({ name: 'entityId', description: 'Entity ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV', required: true })
-  @ApiQuery({ name: 'page', description: 'Page number', required: false, type: Number })
-  @ApiQuery({ name: 'limit', description: 'Items per page', required: false, type: Number })
+  @ApiQuery({
+    name: 'entityType',
+    description: 'Entity type',
+    example: 'task',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'entityId',
+    description: 'Entity ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    required: false,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Items per page',
+    required: false,
+    type: Number,
+  })
   @ApiResponse({
     status: 200,
     description: 'List of files with pagination',
@@ -171,7 +203,11 @@ export class FilesController {
   }
 
   @ApiOperation({ summary: 'Delete a file' })
-  @ApiParam({ name: 'id', description: 'File ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'File ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'File deleted successfully',
@@ -188,7 +224,11 @@ export class FilesController {
   }
 
   @ApiOperation({ summary: 'Move file to different entity' })
-  @ApiParam({ name: 'id', description: 'File ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'File ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'File moved successfully',
@@ -210,4 +250,3 @@ export class FilesController {
     );
   }
 }
-

@@ -6,11 +6,17 @@ import { ChecklistItemResponseDto } from './checklist-item-response.dto';
 
 export class TaskResponseDto {
   @Expose()
-  @ApiProperty({ description: 'Task ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Task ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
-  @ApiProperty({ description: 'Project ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Project ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   projectId: string;
 
   @Expose()
@@ -77,4 +83,3 @@ export class TaskResponseDto {
   @Type(() => ChecklistItemResponseDto)
   checklistItems?: ChecklistItemResponseDto[];
 }
-

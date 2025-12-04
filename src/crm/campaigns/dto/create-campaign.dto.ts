@@ -64,4 +64,3 @@ export class CreateEmailCampaignDto {
   @IsOptional()
   scheduledSendTime?: Date;
 }
-

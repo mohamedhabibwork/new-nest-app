@@ -19,4 +19,3 @@ export class AssignTaskDto {
   @IsOptional()
   isPrimary?: boolean;
 }
-

@@ -1,4 +1,10 @@
-import { IsString, IsOptional, IsDateString, IsNumber, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsDateString,
+  IsNumber,
+  MaxLength,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateTaskDto {
@@ -56,4 +62,3 @@ export class UpdateTaskDto {
   @IsOptional()
   estimatedHours?: number;
 }
-

@@ -81,7 +81,10 @@ describe('ContactsController', () => {
 
       const result = await controller.create(mockRequest, createDto);
 
-      expect(contactsService.create).toHaveBeenCalledWith(mockRequest.user.id, createDto);
+      expect(contactsService.create).toHaveBeenCalledWith(
+        mockRequest.user.id,
+        createDto,
+      );
       expect(result).toEqual(mockContact);
     });
 
@@ -93,7 +96,10 @@ describe('ContactsController', () => {
       await expect(controller.create(mockRequest, createDto)).rejects.toThrow(
         BadRequestException,
       );
-      expect(contactsService.create).toHaveBeenCalledWith(mockRequest.user.id, createDto);
+      expect(contactsService.create).toHaveBeenCalledWith(
+        mockRequest.user.id,
+        createDto,
+      );
     });
 
     it('should throw NotFoundException when company not found', async () => {
@@ -102,11 +108,13 @@ describe('ContactsController', () => {
         companyId: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
       };
 
-      contactsService.create.mockRejectedValue(new NotFoundException('Company not found'));
-
-      await expect(controller.create(mockRequest, createDtoWithCompany)).rejects.toThrow(
-        NotFoundException,
+      contactsService.create.mockRejectedValue(
+        new NotFoundException('Company not found'),
       );
+
+      await expect(
+        controller.create(mockRequest, createDtoWithCompany),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -250,9 +258,13 @@ describe('ContactsController', () => {
     });
 
     it('should throw NotFoundException when contact not found', async () => {
-      contactsService.findOne.mockRejectedValue(new NotFoundException('Contact not found'));
+      contactsService.findOne.mockRejectedValue(
+        new NotFoundException('Contact not found'),
+      );
 
-      await expect(controller.findOne(contactId)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(contactId)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(contactsService.findOne).toHaveBeenCalledWith(contactId);
     });
   });
@@ -297,11 +309,13 @@ describe('ContactsController', () => {
     });
 
     it('should throw NotFoundException when contact not found', async () => {
-      contactsService.update.mockRejectedValue(new NotFoundException('Contact not found'));
-
-      await expect(controller.update(contactId, mockRequest, updateDto)).rejects.toThrow(
-        NotFoundException,
+      contactsService.update.mockRejectedValue(
+        new NotFoundException('Contact not found'),
       );
+
+      await expect(
+        controller.update(contactId, mockRequest, updateDto),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -321,14 +335,21 @@ describe('ContactsController', () => {
 
       const result = await controller.remove(contactId, mockRequest);
 
-      expect(contactsService.remove).toHaveBeenCalledWith(contactId, mockRequest.user.id);
+      expect(contactsService.remove).toHaveBeenCalledWith(
+        contactId,
+        mockRequest.user.id,
+      );
       expect(result).toEqual({ message: 'Contact deleted successfully' });
     });
 
     it('should throw NotFoundException when contact not found', async () => {
-      contactsService.remove.mockRejectedValue(new NotFoundException('Contact not found'));
+      contactsService.remove.mockRejectedValue(
+        new NotFoundException('Contact not found'),
+      );
 
-      await expect(controller.remove(contactId, mockRequest)).rejects.toThrow(NotFoundException);
+      await expect(controller.remove(contactId, mockRequest)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -351,7 +372,10 @@ describe('ContactsController', () => {
 
       const result = await controller.updateLeadScore(contactId, score);
 
-      expect(contactsService.updateLeadScore).toHaveBeenCalledWith(contactId, score);
+      expect(contactsService.updateLeadScore).toHaveBeenCalledWith(
+        contactId,
+        score,
+      );
       expect(result).toEqual(mockContact);
     });
 
@@ -360,9 +384,9 @@ describe('ContactsController', () => {
         new NotFoundException('Contact not found'),
       );
 
-      await expect(controller.updateLeadScore(contactId, score)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        controller.updateLeadScore(contactId, score),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw BadRequestException when score is invalid', async () => {
@@ -370,10 +394,9 @@ describe('ContactsController', () => {
         new BadRequestException('Invalid score range'),
       );
 
-      await expect(controller.updateLeadScore(contactId, score)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        controller.updateLeadScore(contactId, score),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });
-

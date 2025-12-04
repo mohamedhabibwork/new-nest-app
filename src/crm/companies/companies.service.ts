@@ -1,7 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { withUlid } from '../../common/utils/prisma-helpers';
-import { buildPaginationResponse, normalizePaginationParams } from '../../common/utils/pagination.util';
+import {
+  buildPaginationResponse,
+  normalizePaginationParams,
+} from '../../common/utils/pagination.util';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { CompanyQueryDto } from './dto/company-query.dto';
@@ -18,7 +25,9 @@ export class CompaniesService {
         where: { domain: data.domain },
       });
       if (existingCompany) {
-        throw new BadRequestException('Company with this domain already exists');
+        throw new BadRequestException(
+          'Company with this domain already exists',
+        );
       }
     }
 
@@ -30,10 +39,7 @@ export class CompaniesService {
       if (!parentCompany) {
         throw new NotFoundException('Parent company not found');
       }
-      // Prevent self-reference
-      if (data.parentCompanyId === data.id) {
-        throw new BadRequestException('Company cannot be its own parent');
-      }
+      // Prevent self-reference - this check is not needed during creation as data.id doesn't exist yet
     }
 
     // If ownerId is provided, verify it exists
@@ -60,7 +66,7 @@ export class CompaniesService {
         companyType: data.companyType,
         parentCompanyId: data.parentCompanyId,
         ownerId: data.ownerId || userId,
-        customProperties: data.customProperties,
+        customProperties: data.customProperties as Prisma.InputJsonValue,
       }),
       include: {
         parentCompany: {
@@ -92,7 +98,10 @@ export class CompaniesService {
   }
 
   async findAll(queryDto: CompanyQueryDto) {
-    const { page, limit } = normalizePaginationParams(queryDto.page, queryDto.limit);
+    const { page, limit } = normalizePaginationParams(
+      queryDto.page,
+      queryDto.limit,
+    );
 
     // Build where clause
     const where: Prisma.CompanyWhereInput = {};
@@ -246,7 +255,9 @@ export class CompaniesService {
         where: { domain: data.domain },
       });
       if (existingCompany && existingCompany.id !== id) {
-        throw new BadRequestException('Company with this domain already exists');
+        throw new BadRequestException(
+          'Company with this domain already exists',
+        );
       }
     }
 
@@ -263,9 +274,14 @@ export class CompaniesService {
           throw new NotFoundException('Parent company not found');
         }
         // Check for circular reference: ensure parent is not a descendant
-        const wouldCreateCycle = await this.checkCircularReference(id, data.parentCompanyId);
+        const wouldCreateCycle = await this.checkCircularReference(
+          id,
+          data.parentCompanyId,
+        );
         if (wouldCreateCycle) {
-          throw new BadRequestException('This would create a circular reference in the company hierarchy');
+          throw new BadRequestException(
+            'This would create a circular reference in the company hierarchy',
+          );
         }
       }
     }
@@ -297,7 +313,7 @@ export class CompaniesService {
         companyType: data.companyType,
         parentCompanyId: data.parentCompanyId,
         ownerId: data.ownerId,
-        customProperties: data.customProperties,
+        customProperties: data.customProperties as Prisma.InputJsonValue,
       },
       include: {
         parentCompany: {
@@ -335,7 +351,9 @@ export class CompaniesService {
     });
 
     if (contactCount > 0) {
-      throw new BadRequestException('Cannot delete company with associated contacts');
+      throw new BadRequestException(
+        'Cannot delete company with associated contacts',
+      );
     }
 
     // Check for subsidiaries
@@ -344,7 +362,9 @@ export class CompaniesService {
     });
 
     if (subsidiaryCount > 0) {
-      throw new BadRequestException('Cannot delete company with subsidiaries. Please reassign or delete subsidiaries first.');
+      throw new BadRequestException(
+        'Cannot delete company with subsidiaries. Please reassign or delete subsidiaries first.',
+      );
     }
 
     await this.prisma.company.delete({
@@ -354,7 +374,10 @@ export class CompaniesService {
     return { message: 'Company deleted successfully' };
   }
 
-  private async checkCircularReference(companyId: string, potentialParentId: string): Promise<boolean> {
+  private async checkCircularReference(
+    companyId: string,
+    potentialParentId: string,
+  ): Promise<boolean> {
     // Check if potentialParentId is a descendant of companyId
     const visited = new Set<string>();
     const queue = [potentialParentId];
@@ -385,4 +408,3 @@ export class CompaniesService {
     return false;
   }
 }
-

@@ -1,4 +1,14 @@
-import { IsString, IsNotEmpty, IsOptional, IsBoolean, IsInt, Min, Max, IsObject, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsBoolean,
+  IsInt,
+  Min,
+  Max,
+  IsObject,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreatePipelineStageDto {
@@ -64,4 +74,3 @@ export class CreatePipelineStageDto {
   @IsOptional()
   automationTriggers?: Record<string, unknown>;
 }
-

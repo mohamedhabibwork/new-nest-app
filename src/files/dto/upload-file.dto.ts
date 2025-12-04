@@ -1,8 +1,16 @@
-import { IsString, IsNotEmpty, IsOptional, IsObject, ValidateIf } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsObject,
+  ValidateIf,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UploadFileDto {
-  @ApiProperty({ description: 'Entity type (workspace, project, task, comment, etc.)' })
+  @ApiProperty({
+    description: 'Entity type (workspace, project, task, comment, etc.)',
+  })
   @IsString()
   @IsNotEmpty()
   entityType: string;
@@ -12,7 +20,7 @@ export class UploadFileDto {
   @IsNotEmpty()
   entityId: string;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Additional metadata (can be null or empty object)',
     nullable: true,
     example: '{"description": "This is a test description"}',

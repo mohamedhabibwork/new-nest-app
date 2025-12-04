@@ -4,11 +4,17 @@ import { TeamMemberResponseDto } from './team-member-response.dto';
 
 export class TeamResponseDto {
   @Expose()
-  @ApiProperty({ description: 'Team ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Team ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
-  @ApiProperty({ description: 'Workspace ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Workspace ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   workspaceId: string;
 
   @Expose()
@@ -28,11 +34,10 @@ export class TeamResponseDto {
   updatedAt: Date;
 
   @Expose()
-  @ApiPropertyOptional({ 
-    description: 'Team members', 
-    type: [TeamMemberResponseDto], 
-    required: false 
+  @ApiPropertyOptional({
+    description: 'Team members',
+    type: [TeamMemberResponseDto],
+    required: false,
   })
   teamMembers?: TeamMemberResponseDto[];
 }
-

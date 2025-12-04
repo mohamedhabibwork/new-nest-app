@@ -109,7 +109,6 @@ async function bootstrap() {
     console.log('⚠️  CSRF protection disabled (CSRF_ENABLED=false)');
   }
 
-
   // Swagger Configuration
   const config = new DocumentBuilder()
     .setTitle('PMS API')
@@ -162,7 +161,8 @@ async function bootstrap() {
       await app.startAllMicroservices();
       console.log(`gRPC server is running on: 0.0.0.0:${grpcPort}`);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       console.warn(`gRPC server failed to start: ${errorMessage}`);
     }
   }

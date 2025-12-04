@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+package tags;
+
+service TagService {
+  // Tag Management
+  rpc ListTags (ListTagsRequest) returns (ListTagsResponse);
+  rpc GetTag (GetTagRequest) returns (GetTagResponse);
+  rpc CreateTag (CreateTagRequest) returns (CreateTagResponse);
+  rpc UpdateTag (UpdateTagRequest) returns (UpdateTagResponse);
+  rpc DeleteTag (DeleteTagRequest) returns (DeleteTagResponse);
+  
+  // Tagging Management
+  rpc AddTagging (AddTaggingRequest) returns (AddTaggingResponse);
+  rpc RemoveTagging (RemoveTaggingRequest) returns (RemoveTaggingResponse);
+  rpc GetTaggings (GetTaggingsRequest) returns (GetTaggingsResponse);
+}
+
+message ListTagsRequest {
+  string user_id = 1;
+  string search = 2;
+  string visibility = 3;
+  string creator_id = 4;
+  int32 page = 5;
+  int32 limit = 6;
+}
+
+message ListTagsResponse {
+  repeated Tag tags = 1;
+  Pagination pagination = 2;
+}
+
+message GetTagRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message GetTagResponse {
+  Tag tag = 1;
+}
+
+message CreateTagRequest {
+  string user_id = 1;
+  string tag_name = 2;
+  string color = 3;
+  string visibility = 4;
+}
+
+message CreateTagResponse {
+  Tag tag = 1;
+}
+
+message UpdateTagRequest {
+  string id = 1;
+  string user_id = 2;
+  string tag_name = 3;
+  string color = 4;
+  string visibility = 5;
+}
+
+message UpdateTagResponse {
+  Tag tag = 1;
+}
+
+message DeleteTagRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message DeleteTagResponse {
+  string message = 1;
+}
+
+message AddTaggingRequest {
+  string user_id = 1;
+  string tag_id = 2;
+  string taggable_type = 3;
+  string taggable_id = 4;
+}
+
+message AddTaggingResponse {
+  Tagging tagging = 1;
+}
+
+message RemoveTaggingRequest {
+  string user_id = 1;
+  string tag_id = 2;
+  string taggable_type = 3;
+  string taggable_id = 4;
+}
+
+message RemoveTaggingResponse {
+  string message = 1;
+}
+
+message GetTaggingsRequest {
+  string user_id = 1;
+  string taggable_type = 2;
+  string taggable_id = 3;
+}
+
+message GetTaggingsResponse {
+  repeated Tagging taggings = 1;
+}
+
+message Tag {
+  string id = 1;
+  string tag_name = 2;
+  string color = 3;
+  string creator_id = 4;
+  string visibility = 5;
+  int32 usage_count = 6;
+  string created_at = 7;
+  string updated_at = 8;
+  User creator = 9;
+}
+
+message Tagging {
+  string id = 1;
+  string tag_id = 2;
+  string taggable_type = 3;
+  string taggable_id = 4;
+  string created_by_id = 5;
+  string created_at = 6;
+  Tag tag = 7;
+  User created_by = 8;
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+}
+
+message Pagination {
+  int32 page = 1;
+  int32 limit = 2;
+  int32 total = 3;
+  int32 total_pages = 4;
+  bool has_next = 5;
+  bool has_previous = 6;
+}
+

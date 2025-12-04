@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HealthCheckService, MemoryHealthIndicator, DiskHealthIndicator } from '@nestjs/terminus';
+import {
+  HealthCheckService,
+  MemoryHealthIndicator,
+  DiskHealthIndicator,
+} from '@nestjs/terminus';
 import { HealthController } from './health.controller';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -111,7 +115,9 @@ describe('HealthController', () => {
         },
       };
 
-      mockPrismaService.$queryRaw.mockRejectedValue(new Error('Connection failed'));
+      mockPrismaService.$queryRaw.mockRejectedValue(
+        new Error('Connection failed'),
+      );
       mockMemoryHealthIndicator.checkHeap.mockReturnValue({
         memory_heap: { status: 'up' },
       });

@@ -3,11 +3,17 @@ import { Expose, Type } from 'class-transformer';
 
 export class ContactResponseDto {
   @Expose()
-  @ApiProperty({ description: 'Contact ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Contact ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
-  @ApiProperty({ description: 'Email address', example: 'john.doe@example.com' })
+  @ApiProperty({
+    description: 'Email address',
+    example: 'john.doe@example.com',
+  })
   email: string;
 
   @Expose()
@@ -33,7 +39,15 @@ export class ContactResponseDto {
   @Expose()
   @ApiPropertyOptional({
     description: 'Lifecycle stage',
-    enum: ['lead', 'mql', 'sql', 'opportunity', 'customer', 'evangelist', 'other'],
+    enum: [
+      'lead',
+      'mql',
+      'sql',
+      'opportunity',
+      'customer',
+      'evangelist',
+      'other',
+    ],
   })
   lifecycleStage?: string;
 
@@ -80,4 +94,3 @@ export class ContactResponseDto {
   @ApiProperty({ description: 'Last update timestamp' })
   updatedAt: Date;
 }
-

@@ -39,7 +39,11 @@ export class CsrfGuard implements CanActivate {
     let secret: string = (request.cookies?.['csrf-secret'] as string) || '';
     if (!secret) {
       secret = this.csrfService.generateSecret();
-      response.cookie('csrf-secret', secret, this.csrfService.getCookieOptions());
+      response.cookie(
+        'csrf-secret',
+        secret,
+        this.csrfService.getCookieOptions(),
+      );
     }
 
     // Get token from header
@@ -56,4 +60,3 @@ export class CsrfGuard implements CanActivate {
     return true;
   }
 }
-

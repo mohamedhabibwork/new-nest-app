@@ -13,6 +13,7 @@ import { LocalStorageService } from './storage/local-storage.service';
 import { S3StorageService } from './storage/s3-storage.service';
 import { withUlid } from '../common/utils/prisma-helpers';
 import { Prisma } from '@prisma/client';
+import { TaskWithProject } from '../common/types/polymorphic.types';
 
 @Injectable()
 export class FilesService {
@@ -75,9 +76,12 @@ export class FilesService {
 
     // Save to database
     // Allow null or empty object metadata - convert empty object to null for consistency
-    const metadataValue: Prisma.InputJsonValue | null = metadata === null || metadata === undefined || Object.keys(metadata).length === 0 
-      ? null 
-      : (metadata as Prisma.InputJsonValue);
+    const metadataValue: Prisma.InputJsonValue | null =
+      metadata === null ||
+      metadata === undefined ||
+      Object.keys(metadata).length === 0
+        ? null
+        : (metadata as Prisma.InputJsonValue);
 
     const fileRecord = await this.prisma.file.create({
       data: withUlid({
@@ -111,7 +115,6 @@ export class FilesService {
       const task = await this.prisma.task.findUnique({
         where: { id: entityId },
         include: {
-          taskAssignments: { select: { userId: true } },
           project: {
             include: {
               projectMembers: { select: { userId: true } },
@@ -120,8 +123,18 @@ export class FilesService {
         },
       });
       if (task) {
-        const assigneeIds = task.taskAssignments.map((ta) => ta.userId);
-        const projectMemberIds = task.project.projectMembers.map((pm) => pm.userId);
+        // Get assignees from polymorphic assignments
+        const assignments = await this.prisma.assignment.findMany({
+          where: {
+            assignableType: 'task',
+            assignableId: entityId,
+          },
+          select: { assigneeId: true },
+        });
+        const assigneeIds = assignments.map((a) => a.assigneeId);
+        const projectMemberIds = task.project.projectMembers.map(
+          (pm) => pm.userId,
+        );
         notifyUserIds = [...new Set([...assigneeIds, ...projectMemberIds])];
       }
     } else if (entityType === 'project') {
@@ -274,7 +287,9 @@ export class FilesService {
 
     // Check if user is the uploader or has admin access
     if (file.uploadedBy !== userId) {
-      throw new ForbiddenException('You do not have permission to delete this file');
+      throw new ForbiddenException(
+        'You do not have permission to delete this file',
+      );
     }
 
     // Delete from storage
@@ -329,4 +344,3 @@ export class FilesService {
     });
   }
 }
-

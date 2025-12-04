@@ -25,4 +25,3 @@ export class ParseULIDPipe implements PipeTransform<string, string> {
     return value;
   }
 }
-

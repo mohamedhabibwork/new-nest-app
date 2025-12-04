@@ -1,7 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { withUlid } from '../../common/utils/prisma-helpers';
-import { buildPaginationResponse, normalizePaginationParams } from '../../common/utils/pagination.util';
+import {
+  buildPaginationResponse,
+  normalizePaginationParams,
+} from '../../common/utils/pagination.util';
 import { CreateFormDto } from './dto/create-form.dto';
 import { CreateFormColumnDto } from './dto/create-form-column.dto';
 import { Prisma } from '@prisma/client';
@@ -12,10 +19,8 @@ export class FormsService {
   constructor(private prisma: PrismaService) {}
 
   async create(userId: string, data: CreateFormDto) {
-    // Generate public URL if form is published
-    const publicUrl = data.status === 'published' 
-      ? `form-${generateUlid()}` 
-      : null;
+    // Generate public URL if form is published (status defaults to 'draft' for new forms)
+    const publicUrl = null;
 
     const form = await this.prisma.form.create({
       data: withUlid({
@@ -23,8 +28,8 @@ export class FormsService {
         description: data.description,
         formType: data.formType,
         status: 'draft',
-        settings: data.settings,
-        automationRules: data.automationRules,
+        settings: data.settings as Prisma.InputJsonValue,
+        automationRules: data.automationRules as Prisma.InputJsonValue,
         publicUrl,
         createdBy: userId,
         submissionCount: 0,
@@ -39,8 +44,14 @@ export class FormsService {
     return form;
   }
 
-  async findAll(page?: number, limit?: number, formType?: string, status?: string) {
-    const { page: normalizedPage, limit: normalizedLimit } = normalizePaginationParams(page, limit);
+  async findAll(
+    page?: number,
+    limit?: number,
+    formType?: string,
+    status?: string,
+  ) {
+    const { page: normalizedPage, limit: normalizedLimit } =
+      normalizePaginationParams(page, limit);
 
     const where: Prisma.FormWhereInput = {};
     if (formType) {
@@ -72,7 +83,12 @@ export class FormsService {
       this.prisma.form.count({ where }),
     ]);
 
-    return buildPaginationResponse(forms, total, normalizedPage, normalizedLimit);
+    return buildPaginationResponse(
+      forms,
+      total,
+      normalizedPage,
+      normalizedLimit,
+    );
   }
 
   async findOne(id: string) {
@@ -104,16 +120,14 @@ export class FormsService {
     await this.findOne(id);
 
     const updateData: any = { ...data };
-    
-    // Generate public URL if status is being changed to published
-    if (data.status === 'published') {
-      const form = await this.prisma.form.findUnique({
-        where: { id },
-        select: { publicUrl: true },
-      });
-      if (!form?.publicUrl) {
-        updateData.publicUrl = `form-${generateUlid()}`;
-      }
+
+    // Cast JSON fields
+    if (data.settings !== undefined) {
+      updateData.settings = data.settings as Prisma.InputJsonValue;
+    }
+    if (data.automationRules !== undefined) {
+      updateData.automationRules =
+        data.automationRules as Prisma.InputJsonValue;
     }
 
     return this.prisma.form.update({
@@ -167,11 +181,11 @@ export class FormsService {
         fieldLabel: data.fieldLabel,
         dataType: data.dataType,
         mappedPropertyId: data.mappedPropertyId,
-        validationRules: data.validationRules,
-        properties: data.properties,
+        validationRules: data.validationRules as Prisma.InputJsonValue,
+        properties: data.properties as Prisma.InputJsonValue,
         displayOrder: data.displayOrder || 0,
         isRequired: data.isRequired || false,
-        conditionalLogic: data.conditionalLogic,
+        conditionalLogic: data.conditionalLogic as Prisma.InputJsonValue,
         helpText: data.helpText,
         defaultValue: data.defaultValue,
       }),
@@ -192,9 +206,26 @@ export class FormsService {
       throw new NotFoundException('Form column not found');
     }
 
+    const updateData: any = { ...data };
+    // Remove formId from update data as it shouldn't be changed
+    delete updateData.formId;
+
+    // Cast JSON fields
+    if (data.validationRules !== undefined) {
+      updateData.validationRules =
+        data.validationRules as Prisma.InputJsonValue;
+    }
+    if (data.properties !== undefined) {
+      updateData.properties = data.properties as Prisma.InputJsonValue;
+    }
+    if (data.conditionalLogic !== undefined) {
+      updateData.conditionalLogic =
+        data.conditionalLogic as Prisma.InputJsonValue;
+    }
+
     return this.prisma.formColumn.update({
       where: { id },
-      data,
+      data: updateData,
       include: {
         mappedProperty: true,
       },
@@ -217,4 +248,3 @@ export class FormsService {
     return { message: 'Form column deleted successfully' };
   }
 }
-

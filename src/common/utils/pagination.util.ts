@@ -26,7 +26,9 @@ export function buildPaginationResponse<T>(
 /**
  * Build Prisma where clause from filters
  */
-export function buildPrismaWhere(filters: Record<string, any>): Prisma.JsonObject {
+export function buildPrismaWhere(
+  filters: Record<string, any>,
+): Prisma.JsonObject {
   const where: Prisma.JsonObject = {};
 
   for (const [key, value] of Object.entries(filters)) {
@@ -77,4 +79,3 @@ export function normalizePaginationParams(
     limit: normalizedLimit,
   };
 }
-

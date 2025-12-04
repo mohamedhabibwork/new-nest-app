@@ -67,7 +67,10 @@ describe('CampaignsController', () => {
 
       const result = await controller.create(mockRequest, createDto);
 
-      expect(campaignsService.create).toHaveBeenCalledWith(mockRequest.user.id, createDto);
+      expect(campaignsService.create).toHaveBeenCalledWith(
+        mockRequest.user.id,
+        createDto,
+      );
       expect(result).toEqual(mockCampaign);
     });
   });
@@ -122,9 +125,13 @@ describe('CampaignsController', () => {
     });
 
     it('should throw NotFoundException when campaign not found', async () => {
-      campaignsService.findOne.mockRejectedValue(new NotFoundException('Campaign not found'));
+      campaignsService.findOne.mockRejectedValue(
+        new NotFoundException('Campaign not found'),
+      );
 
-      await expect(controller.findOne(campaignId)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(campaignId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -150,7 +157,11 @@ describe('CampaignsController', () => {
 
       campaignsService.update.mockResolvedValue(mockCampaign);
 
-      const result = await controller.update(campaignId, mockRequest, updateDto);
+      const result = await controller.update(
+        campaignId,
+        mockRequest,
+        updateDto,
+      );
 
       expect(campaignsService.update).toHaveBeenCalledWith(
         campaignId,
@@ -208,7 +219,9 @@ describe('CampaignsController', () => {
         new NotFoundException('EmailSend not found'),
       );
 
-      await expect(controller.recordEvent(emailSendId, body)).rejects.toThrow(NotFoundException);
+      await expect(controller.recordEvent(emailSendId, body)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException when invalid event type', async () => {
@@ -216,8 +229,9 @@ describe('CampaignsController', () => {
         new BadRequestException('Invalid event type'),
       );
 
-      await expect(controller.recordEvent(emailSendId, body)).rejects.toThrow(BadRequestException);
+      await expect(controller.recordEvent(emailSendId, body)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });
-

@@ -65,7 +65,10 @@ describe('WorkflowsController', () => {
 
       const result = await controller.create(mockRequest, createDto);
 
-      expect(workflowsService.create).toHaveBeenCalledWith(mockRequest.user.id, createDto);
+      expect(workflowsService.create).toHaveBeenCalledWith(
+        mockRequest.user.id,
+        createDto,
+      );
       expect(result).toEqual(mockWorkflow);
     });
 
@@ -74,7 +77,9 @@ describe('WorkflowsController', () => {
         new BadRequestException('Invalid trigger type'),
       );
 
-      await expect(controller.create(mockRequest, createDto)).rejects.toThrow(BadRequestException);
+      await expect(controller.create(mockRequest, createDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -121,9 +126,13 @@ describe('WorkflowsController', () => {
     });
 
     it('should throw NotFoundException when workflow not found', async () => {
-      workflowsService.findOne.mockRejectedValue(new NotFoundException('Workflow not found'));
+      workflowsService.findOne.mockRejectedValue(
+        new NotFoundException('Workflow not found'),
+      );
 
-      await expect(controller.findOne(workflowId)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(workflowId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -150,7 +159,11 @@ describe('WorkflowsController', () => {
 
       workflowsService.update.mockResolvedValue(mockWorkflow);
 
-      const result = await controller.update(workflowId, mockRequest, updateDto);
+      const result = await controller.update(
+        workflowId,
+        mockRequest,
+        updateDto,
+      );
 
       expect(workflowsService.update).toHaveBeenCalledWith(
         workflowId,
@@ -194,14 +207,21 @@ describe('WorkflowsController', () => {
 
       const result = await controller.execute(workflowId, context);
 
-      expect(workflowsService.execute).toHaveBeenCalledWith(workflowId, context);
+      expect(workflowsService.execute).toHaveBeenCalledWith(
+        workflowId,
+        context,
+      );
       expect(result).toEqual(mockResult);
     });
 
     it('should throw NotFoundException when workflow not found', async () => {
-      workflowsService.execute.mockRejectedValue(new NotFoundException('Workflow not found'));
+      workflowsService.execute.mockRejectedValue(
+        new NotFoundException('Workflow not found'),
+      );
 
-      await expect(controller.execute(workflowId, context)).rejects.toThrow(NotFoundException);
+      await expect(controller.execute(workflowId, context)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException when workflow execution fails', async () => {
@@ -209,8 +229,9 @@ describe('WorkflowsController', () => {
         new BadRequestException('Workflow execution failed'),
       );
 
-      await expect(controller.execute(workflowId, context)).rejects.toThrow(BadRequestException);
+      await expect(controller.execute(workflowId, context)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });
-

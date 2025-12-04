@@ -10,7 +10,6 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
-  Version,
 } from '@nestjs/common';
 import type { AuthenticatedRequest } from '../common/types/request.types';
 import {
@@ -85,7 +84,10 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Request() req: AuthenticatedRequest, @Body() loginDto: LoginDto) {
+  async login(
+    @Request() req: AuthenticatedRequest,
+    @Body() loginDto: LoginDto,
+  ) {
     return this.authService.login(loginDto);
   }
 
@@ -205,7 +207,9 @@ export class AuthController {
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @Post('sessions/revoke-all')
-  async revokeAllSessions(@Request() req: { user: { id: string; jti?: string } }) {
+  async revokeAllSessions(
+    @Request() req: { user: { id: string; jti?: string } },
+  ) {
     return this.authService.revokeAllSessions(req.user.id, req.user.jti);
   }
 

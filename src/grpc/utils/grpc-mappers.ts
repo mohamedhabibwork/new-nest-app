@@ -2,7 +2,16 @@
  * Mappers to convert Prisma models to gRPC response types
  */
 
-import { Comment, TimeLog, Notification, Project, Workspace, Task, File, User } from '@prisma/client';
+import {
+  Comment,
+  TimeLog,
+  Notification,
+  Project,
+  Workspace,
+  Task,
+  File,
+  User,
+} from '@prisma/client';
 import type {
   CommentResponse,
   TimeLogResponse,
@@ -17,28 +26,75 @@ import type {
 /**
  * Map Prisma Comment to gRPC CommentResponse
  */
-export function mapCommentToGrpc(comment: Comment & { user?: { id: string; email: string; firstName: string | null; lastName: string | null } }): CommentResponse {
+export function mapCommentToGrpc(
+  comment: Comment & {
+    user?: {
+      id: string;
+      email: string;
+      firstName: string | null;
+      lastName: string | null;
+    };
+    mentions?: Array<{
+      id: string;
+      mentionedUserId: string;
+      mentionedUser?: {
+        id: string;
+        email: string;
+        firstName: string | null;
+        lastName: string | null;
+      };
+      createdAt: Date;
+    }>;
+  },
+): CommentResponse {
   return {
     id: comment.id,
-    task_id: comment.taskId,
+    commentable_type: (comment as any).commentableType,
+    commentable_id: (comment as any).commentableId,
     user_id: comment.userId,
     comment_text: comment.commentText,
     parent_comment_id: comment.parentCommentId,
+    is_deleted: (comment as any).isDeleted || false,
+    deleted_at: (comment as any).deletedAt || null,
     created_at: comment.createdAt,
     updated_at: comment.updatedAt,
-    user: comment.user ? {
-      id: comment.user.id,
-      email: comment.user.email,
-      first_name: comment.user.firstName,
-      last_name: comment.user.lastName,
-    } : undefined,
+    user: comment.user
+      ? {
+          id: comment.user.id,
+          email: comment.user.email,
+          first_name: comment.user.firstName,
+          last_name: comment.user.lastName,
+        }
+      : undefined,
+    mentions: comment.mentions?.map((m) => ({
+      id: m.id,
+      mentioned_user_id: m.mentionedUserId,
+      mentioned_user: m.mentionedUser
+        ? {
+            id: m.mentionedUser.id,
+            email: m.mentionedUser.email,
+            first_name: m.mentionedUser.firstName,
+            last_name: m.mentionedUser.lastName,
+          }
+        : undefined,
+      created_at: m.createdAt,
+    })),
   };
 }
 
 /**
  * Map Prisma TimeLog to gRPC TimeLogResponse
  */
-export function mapTimeLogToGrpc(timeLog: TimeLog & { user?: { id: string; email: string; firstName: string | null; lastName: string | null } }): TimeLogResponse {
+export function mapTimeLogToGrpc(
+  timeLog: TimeLog & {
+    user?: {
+      id: string;
+      email: string;
+      firstName: string | null;
+      lastName: string | null;
+    };
+  },
+): TimeLogResponse {
   return {
     id: timeLog.id,
     task_id: timeLog.taskId,
@@ -48,19 +104,23 @@ export function mapTimeLogToGrpc(timeLog: TimeLog & { user?: { id: string; email
     description: timeLog.description,
     is_billable: timeLog.isBillable,
     created_at: timeLog.createdAt,
-    user: timeLog.user ? {
-      id: timeLog.user.id,
-      email: timeLog.user.email,
-      first_name: timeLog.user.firstName,
-      last_name: timeLog.user.lastName,
-    } : undefined,
+    user: timeLog.user
+      ? {
+          id: timeLog.user.id,
+          email: timeLog.user.email,
+          first_name: timeLog.user.firstName,
+          last_name: timeLog.user.lastName,
+        }
+      : undefined,
   };
 }
 
 /**
  * Map Prisma Notification to gRPC NotificationResponse
  */
-export function mapNotificationToGrpc(notification: Notification): NotificationResponse {
+export function mapNotificationToGrpc(
+  notification: Notification,
+): NotificationResponse {
   return {
     id: notification.id,
     user_id: notification.userId,
@@ -129,7 +189,16 @@ export function mapTaskToGrpc(task: Task): TaskResponse {
 /**
  * Map Prisma Attachment to gRPC FileResponse
  */
-export function mapFileToGrpc(file: File & { uploader?: { id: string; email: string; firstName: string | null; lastName: string | null } }): FileResponse {
+export function mapFileToGrpc(
+  file: File & {
+    uploader?: {
+      id: string;
+      email: string;
+      firstName: string | null;
+      lastName: string | null;
+    };
+  },
+): FileResponse {
   return {
     id: file.id,
     entity_type: file.entityType,
@@ -143,12 +212,14 @@ export function mapFileToGrpc(file: File & { uploader?: { id: string; email: str
     metadata: file.metadata as Record<string, unknown> | null,
     uploaded_by: file.uploadedBy,
     uploaded_at: file.uploadedAt,
-    uploader: file.uploader ? {
-      id: file.uploader.id,
-      email: file.uploader.email,
-      first_name: file.uploader.firstName,
-      last_name: file.uploader.lastName,
-    } : undefined,
+    uploader: file.uploader
+      ? {
+          id: file.uploader.id,
+          email: file.uploader.email,
+          first_name: file.uploader.firstName,
+          last_name: file.uploader.lastName,
+        }
+      : undefined,
   };
 }
 
@@ -156,7 +227,9 @@ export function mapFileToGrpc(file: File & { uploader?: { id: string; email: str
  * Map Prisma User to gRPC UserResponse
  * Accepts User or UserWithoutPassword (Omit<User, 'password'>)
  */
-export function mapUserToGrpc(user: User | Omit<User, 'password'>): UserResponse {
+export function mapUserToGrpc(
+  user: User | Omit<User, 'password'>,
+): UserResponse {
   return {
     id: user.id,
     email: user.email,
@@ -168,4 +241,3 @@ export function mapUserToGrpc(user: User | Omit<User, 'password'>): UserResponse
     updated_at: user.updatedAt,
   };
 }
-

@@ -10,7 +10,11 @@ export class CompanyQueryDto {
   @IsOptional()
   page?: number;
 
-  @ApiPropertyOptional({ description: 'Items per page', example: 50, minimum: 1 })
+  @ApiPropertyOptional({
+    description: 'Items per page',
+    example: 50,
+    minimum: 1,
+  })
   @Type(() => Number)
   @IsInt()
   @Min(1)
@@ -61,4 +65,3 @@ export class CompanyQueryDto {
   @IsOptional()
   sortOrder?: 'asc' | 'desc';
 }
-

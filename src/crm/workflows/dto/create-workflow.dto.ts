@@ -16,10 +16,26 @@ import { Type } from 'class-transformer';
 export class WorkflowActionDto {
   @ApiProperty({
     description: 'Action type',
-    enum: ['create_task', 'send_email', 'update_field', 'create_deal', 'assign_owner', 'webhook', 'delay'],
+    enum: [
+      'create_task',
+      'send_email',
+      'update_field',
+      'create_deal',
+      'assign_owner',
+      'webhook',
+      'delay',
+    ],
     example: 'send_email',
   })
-  @IsEnum(['create_task', 'send_email', 'update_field', 'create_deal', 'assign_owner', 'webhook', 'delay'])
+  @IsEnum([
+    'create_task',
+    'send_email',
+    'update_field',
+    'create_deal',
+    'assign_owner',
+    'webhook',
+    'delay',
+  ])
   @IsNotEmpty()
   actionType: string;
 
@@ -68,10 +84,22 @@ export class CreateWorkflowDto {
 
   @ApiProperty({
     description: 'Trigger type',
-    enum: ['form_submission', 'field_change', 'stage_change', 'date_based', 'manual'],
+    enum: [
+      'form_submission',
+      'field_change',
+      'stage_change',
+      'date_based',
+      'manual',
+    ],
     example: 'form_submission',
   })
-  @IsEnum(['form_submission', 'field_change', 'stage_change', 'date_based', 'manual'])
+  @IsEnum([
+    'form_submission',
+    'field_change',
+    'stage_change',
+    'date_based',
+    'manual',
+  ])
   @IsNotEmpty()
   triggerType: string;
 
@@ -106,4 +134,3 @@ export class CreateWorkflowDto {
   @Type(() => WorkflowActionDto)
   actions: WorkflowActionDto[];
 }
-

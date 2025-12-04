@@ -1,4 +1,12 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber, Min, IsBoolean, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsNumber,
+  Min,
+  IsBoolean,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -55,4 +63,3 @@ export class CreateProductDto {
   @IsOptional()
   isActive?: boolean;
 }
-

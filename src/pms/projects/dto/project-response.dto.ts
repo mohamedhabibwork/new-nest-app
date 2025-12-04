@@ -3,11 +3,17 @@ import { Expose } from 'class-transformer';
 
 export class ProjectResponseDto {
   @Expose()
-  @ApiProperty({ description: 'Project ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Project ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
-  @ApiProperty({ description: 'Workspace ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Workspace ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   workspaceId: string;
 
   @Expose()
@@ -19,7 +25,10 @@ export class ProjectResponseDto {
   description?: string;
 
   @Expose()
-  @ApiPropertyOptional({ description: 'Project status', example: 'in_progress' })
+  @ApiPropertyOptional({
+    description: 'Project status',
+    example: 'in_progress',
+  })
   status?: string;
 
   @Expose()
@@ -42,4 +51,3 @@ export class ProjectResponseDto {
   @ApiProperty({ description: 'Last update timestamp' })
   updatedAt: Date;
 }
-

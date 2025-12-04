@@ -3,15 +3,24 @@ import { Expose } from 'class-transformer';
 
 export class SessionResponseDto {
   @Expose()
-  @ApiProperty({ description: 'Session ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Session ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
-  @ApiProperty({ description: 'User ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'User ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   userId: string;
 
   @Expose()
-  @ApiProperty({ description: 'JWT ID (JTI)', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'JWT ID (JTI)',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   jti: string;
 
   @Expose()
@@ -38,4 +47,3 @@ export class SessionResponseDto {
   @ApiProperty({ description: 'Last used timestamp' })
   lastUsedAt: Date;
 }
-

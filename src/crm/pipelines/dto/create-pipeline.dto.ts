@@ -1,4 +1,12 @@
-import { IsString, IsNotEmpty, IsOptional, IsBoolean, IsInt, Min, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsBoolean,
+  IsInt,
+  Min,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreatePipelineDto {
@@ -37,4 +45,3 @@ export class CreatePipelineDto {
   @IsOptional()
   displayOrder?: number;
 }
-

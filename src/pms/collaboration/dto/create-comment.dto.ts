@@ -1,14 +1,30 @@
-import { IsString, IsNotEmpty, IsOptional, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  MaxLength,
+  IsEnum,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateCommentDto {
   @ApiProperty({
-    description: 'Task ID to comment on',
+    description: 'Type of commentable entity (task, project, ticket, etc.)',
+    example: 'task',
+    enum: ['task', 'project', 'ticket'],
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsEnum(['task', 'project', 'ticket'])
+  commentableType: string;
+
+  @ApiProperty({
+    description: 'ID of the commentable entity',
     example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
   })
   @IsString()
   @IsNotEmpty()
-  taskId: string;
+  commentableId: string;
 
   @ApiProperty({
     description: 'Comment text',
@@ -28,4 +44,3 @@ export class CreateCommentDto {
   @IsOptional()
   parentCommentId?: string;
 }
-

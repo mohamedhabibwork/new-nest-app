@@ -13,10 +13,12 @@ export class ExceptionResponseDto {
   @ApiProperty({ description: 'Error details', required: false })
   details?: any;
 
-  @ApiProperty({ description: 'Timestamp', example: '2024-01-01T00:00:00.000Z' })
+  @ApiProperty({
+    description: 'Timestamp',
+    example: '2024-01-01T00:00:00.000Z',
+  })
   timestamp: string;
 
   @ApiProperty({ description: 'Request path', example: '/api/v1/tasks' })
   path: string;
 }
-

@@ -3,7 +3,10 @@ import { Expose } from 'class-transformer';
 
 export class FileResponseDto {
   @Expose()
-  @ApiProperty({ description: 'File ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'File ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
@@ -11,7 +14,10 @@ export class FileResponseDto {
   entityType: string;
 
   @Expose()
-  @ApiProperty({ description: 'Entity ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Entity ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   entityId: string;
 
   @Expose()
@@ -50,4 +56,3 @@ export class FileResponseDto {
   @ApiProperty({ description: 'Upload timestamp' })
   uploadedAt: Date;
 }
-

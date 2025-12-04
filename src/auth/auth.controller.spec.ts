@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -67,7 +71,8 @@ describe('AuthController', () => {
       };
 
       authService.register.mockResolvedValue({
-        message: 'Registration successful. Please check your email to verify your account.',
+        message:
+          'Registration successful. Please check your email to verify your account.',
         user: mockUser,
       });
 
@@ -75,7 +80,8 @@ describe('AuthController', () => {
 
       expect(authService.register).toHaveBeenCalledWith(registerDto);
       expect(result).toEqual({
-        message: 'Registration successful. Please check your email to verify your account.',
+        message:
+          'Registration successful. Please check your email to verify your account.',
         user: mockUser,
       });
     });
@@ -96,7 +102,8 @@ describe('AuthController', () => {
       };
 
       authService.register.mockResolvedValue({
-        message: 'Registration successful. Please check your email to verify your account.',
+        message:
+          'Registration successful. Please check your email to verify your account.',
         user: mockUser,
         workspaceId: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
         role: 'team_member',
@@ -105,7 +112,9 @@ describe('AuthController', () => {
 
       const result = await controller.register(registerDtoWithInvitation);
 
-      expect(authService.register).toHaveBeenCalledWith(registerDtoWithInvitation);
+      expect(authService.register).toHaveBeenCalledWith(
+        registerDtoWithInvitation,
+      );
       expect(result.invitationAccepted).toBe(true);
     });
 
@@ -114,7 +123,9 @@ describe('AuthController', () => {
         new ConflictException('User with this email already exists'),
       );
 
-      await expect(controller.register(registerDto)).rejects.toThrow(ConflictException);
+      await expect(controller.register(registerDto)).rejects.toThrow(
+        ConflictException,
+      );
       expect(authService.register).toHaveBeenCalledWith(registerDto);
     });
   });
@@ -206,7 +217,9 @@ describe('AuthController', () => {
     });
 
     it('should throw BadRequestException when token is missing', async () => {
-      await expect(controller.verifyEmail('')).rejects.toThrow(BadRequestException);
+      await expect(controller.verifyEmail('')).rejects.toThrow(
+        BadRequestException,
+      );
       expect(authService.verifyEmail).not.toHaveBeenCalled();
     });
 
@@ -217,7 +230,9 @@ describe('AuthController', () => {
         new BadRequestException('Invalid or expired token'),
       );
 
-      await expect(controller.verifyEmail(token)).rejects.toThrow(BadRequestException);
+      await expect(controller.verifyEmail(token)).rejects.toThrow(
+        BadRequestException,
+      );
       expect(authService.verifyEmail).toHaveBeenCalledWith(token);
     });
   });
@@ -234,7 +249,9 @@ describe('AuthController', () => {
 
       const result = await controller.forgotPassword(forgotPasswordDto);
 
-      expect(authService.forgotPassword).toHaveBeenCalledWith(forgotPasswordDto.email);
+      expect(authService.forgotPassword).toHaveBeenCalledWith(
+        forgotPasswordDto.email,
+      );
       expect(result).toEqual({
         message: 'If the email exists, a password reset link has been sent.',
       });
@@ -355,7 +372,9 @@ describe('AuthController', () => {
 
       const result = await controller.getSessions(mockRequest);
 
-      expect(authService.getUserSessions).toHaveBeenCalledWith(mockRequest.user.id);
+      expect(authService.getUserSessions).toHaveBeenCalledWith(
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockSessions);
     });
   });
@@ -376,7 +395,10 @@ describe('AuthController', () => {
 
       const result = await controller.revokeSession(jti, mockRequest);
 
-      expect(authService.revokeSession).toHaveBeenCalledWith(jti, mockRequest.user.id);
+      expect(authService.revokeSession).toHaveBeenCalledWith(
+        jti,
+        mockRequest.user.id,
+      );
       expect(result).toEqual({ message: 'Session revoked successfully' });
     });
   });
@@ -400,7 +422,9 @@ describe('AuthController', () => {
         mockRequest.user.id,
         mockRequest.user.jti,
       );
-      expect(result).toEqual({ message: 'All other sessions revoked successfully' });
+      expect(result).toEqual({
+        message: 'All other sessions revoked successfully',
+      });
     });
   });
 
@@ -444,7 +468,10 @@ describe('AuthController', () => {
 
       const result = await controller.verify2FASetup(mockRequest, dto);
 
-      expect(authService.verify2FASetup).toHaveBeenCalledWith(mockRequest.user.id, dto.token);
+      expect(authService.verify2FASetup).toHaveBeenCalledWith(
+        mockRequest.user.id,
+        dto.token,
+      );
       expect(result.message).toBe('2FA enabled successfully');
     });
 
@@ -511,7 +538,9 @@ describe('AuthController', () => {
 
       const result = await controller.sendEmailCode(mockRequest);
 
-      expect(authService.sendEmailCode).toHaveBeenCalledWith(mockRequest.user.id);
+      expect(authService.sendEmailCode).toHaveBeenCalledWith(
+        mockRequest.user.id,
+      );
       expect(result.message).toBe('2FA code sent to your email');
     });
   });
@@ -531,7 +560,9 @@ describe('AuthController', () => {
 
       const result = await controller.regenerateBackupCodes(mockRequest);
 
-      expect(authService.regenerateBackupCodes).toHaveBeenCalledWith(mockRequest.user.id);
+      expect(authService.regenerateBackupCodes).toHaveBeenCalledWith(
+        mockRequest.user.id,
+      );
       expect(result.backupCodes).toBeDefined();
     });
   });

@@ -1,8 +1,15 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RbacService } from '../rbac/rbac.service';
 import { withUlid } from '../../common/utils/prisma-helpers';
-import { buildPaginationResponse, normalizePaginationParams } from '../../common/utils/pagination.util';
+import {
+  buildPaginationResponse,
+  normalizePaginationParams,
+} from '../../common/utils/pagination.util';
 import { WorkspaceQueryDto } from './dto/workspace-query.dto';
 import { Prisma } from '@prisma/client';
 
@@ -13,7 +20,10 @@ export class WorkspacesService {
     private rbacService: RbacService,
   ) {}
 
-  async create(userId: string, data: { workspaceName: string; description?: string }) {
+  async create(
+    userId: string,
+    data: { workspaceName: string; description?: string },
+  ) {
     return this.prisma.workspace.create({
       data: withUlid({
         workspaceName: data.workspaceName,
@@ -24,7 +34,10 @@ export class WorkspacesService {
   }
 
   async findAll(queryDto: WorkspaceQueryDto, userId: string) {
-    const { page, limit } = normalizePaginationParams(queryDto.page, queryDto.limit);
+    const { page, limit } = normalizePaginationParams(
+      queryDto.page,
+      queryDto.limit,
+    );
 
     // Build where clause
     const where: Prisma.WorkspaceWhereInput = {
@@ -99,7 +112,11 @@ export class WorkspacesService {
     return workspace;
   }
 
-  async update(id: string, userId: string, data: { workspaceName?: string; description?: string }) {
+  async update(
+    id: string,
+    userId: string,
+    data: { workspaceName?: string; description?: string },
+  ) {
     const workspace = await this.findOne(id, userId);
 
     return this.prisma.workspace.update({
@@ -116,4 +133,3 @@ export class WorkspacesService {
     });
   }
 }
-

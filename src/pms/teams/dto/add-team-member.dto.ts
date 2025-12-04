@@ -10,4 +10,3 @@ export class AddTeamMemberDto {
   @IsNotEmpty()
   userId: string;
 }
-

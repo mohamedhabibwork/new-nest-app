@@ -1,4 +1,11 @@
-import { IsOptional, IsBoolean, IsNumber, IsEnum, Min, Max } from 'class-validator';
+import {
+  IsOptional,
+  IsBoolean,
+  IsNumber,
+  IsEnum,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -58,4 +65,3 @@ export class NotificationQueryDto {
   @IsEnum(['asc', 'desc'])
   sortOrder?: 'asc' | 'desc' = 'desc';
 }
-

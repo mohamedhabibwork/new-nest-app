@@ -1,4 +1,11 @@
-import { IsOptional, IsString, IsEnum, IsInt, Min, IsDateString } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEnum,
+  IsInt,
+  Min,
+  IsDateString,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -10,7 +17,11 @@ export class ContactQueryDto {
   @IsOptional()
   page?: number;
 
-  @ApiPropertyOptional({ description: 'Items per page', example: 50, minimum: 1 })
+  @ApiPropertyOptional({
+    description: 'Items per page',
+    example: 50,
+    minimum: 1,
+  })
   @Type(() => Number)
   @IsInt()
   @Min(1)
@@ -24,9 +35,25 @@ export class ContactQueryDto {
 
   @ApiPropertyOptional({
     description: 'Filter by lifecycle stage',
-    enum: ['lead', 'mql', 'sql', 'opportunity', 'customer', 'evangelist', 'other'],
+    enum: [
+      'lead',
+      'mql',
+      'sql',
+      'opportunity',
+      'customer',
+      'evangelist',
+      'other',
+    ],
   })
-  @IsEnum(['lead', 'mql', 'sql', 'opportunity', 'customer', 'evangelist', 'other'])
+  @IsEnum([
+    'lead',
+    'mql',
+    'sql',
+    'opportunity',
+    'customer',
+    'evangelist',
+    'other',
+  ])
   @IsOptional()
   lifecycleStage?: string;
 
@@ -69,9 +96,25 @@ export class ContactQueryDto {
 
   @ApiPropertyOptional({
     description: 'Sort by field',
-    enum: ['createdAt', 'updatedAt', 'lastContacted', 'leadScore', 'email', 'firstName', 'lastName'],
+    enum: [
+      'createdAt',
+      'updatedAt',
+      'lastContacted',
+      'leadScore',
+      'email',
+      'firstName',
+      'lastName',
+    ],
   })
-  @IsEnum(['createdAt', 'updatedAt', 'lastContacted', 'leadScore', 'email', 'firstName', 'lastName'])
+  @IsEnum([
+    'createdAt',
+    'updatedAt',
+    'lastContacted',
+    'leadScore',
+    'email',
+    'firstName',
+    'lastName',
+  ])
   @IsOptional()
   sortBy?: string;
 
@@ -87,4 +130,3 @@ export class ContactQueryDto {
   @IsOptional()
   includeDeleted?: boolean;
 }
-

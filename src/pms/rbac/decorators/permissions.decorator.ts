@@ -9,4 +9,3 @@ export interface RequiredPermission {
 
 export const Permissions = (...permissions: RequiredPermission[]) =>
   SetMetadata(PERMISSIONS_KEY, permissions);
-

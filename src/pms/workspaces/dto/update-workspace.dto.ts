@@ -22,4 +22,3 @@ export class UpdateWorkspaceDto {
   @MaxLength(1000)
   description?: string;
 }
-

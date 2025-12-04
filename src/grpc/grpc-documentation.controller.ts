@@ -1,9 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 /**
  * Controller to document gRPC endpoints in Swagger
@@ -135,7 +131,8 @@ export class GrpcDocumentationController {
           methods: [
             {
               name: 'ListProjects',
-              description: 'List all projects (with pagination, filtering, sorting)',
+              description:
+                'List all projects (with pagination, filtering, sorting)',
               requestType: 'ListProjectsRequest',
               responseType: 'ListProjectsResponse',
             },
@@ -170,7 +167,8 @@ export class GrpcDocumentationController {
           methods: [
             {
               name: 'ListTasks',
-              description: 'List all tasks (with pagination, filtering, sorting)',
+              description:
+                'List all tasks (with pagination, filtering, sorting)',
               requestType: 'ListTasksRequest',
               responseType: 'ListTasksResponse',
             },
@@ -205,7 +203,8 @@ export class GrpcDocumentationController {
           methods: [
             {
               name: 'ListComments',
-              description: 'List comments for a task (with pagination, sorting)',
+              description:
+                'List comments for a task (with pagination, sorting)',
               requestType: 'ListCommentsRequest',
               responseType: 'ListCommentsResponse',
             },
@@ -235,7 +234,8 @@ export class GrpcDocumentationController {
             },
             {
               name: 'ListTimeLogs',
-              description: 'List time logs for a task (with pagination, filtering, sorting)',
+              description:
+                'List time logs for a task (with pagination, filtering, sorting)',
               requestType: 'ListTimeLogsRequest',
               responseType: 'ListTimeLogsResponse',
             },
@@ -258,7 +258,8 @@ export class GrpcDocumentationController {
           methods: [
             {
               name: 'ListNotifications',
-              description: 'List notifications for a user (with pagination, filtering)',
+              description:
+                'List notifications for a user (with pagination, filtering)',
               requestType: 'ListNotificationsRequest',
               responseType: 'ListNotificationsResponse',
             },
@@ -324,4 +325,3 @@ export class GrpcDocumentationController {
     };
   }
 }
-

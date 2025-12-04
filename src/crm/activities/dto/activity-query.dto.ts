@@ -1,4 +1,11 @@
-import { IsOptional, IsString, IsEnum, IsInt, Min, IsDateString } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEnum,
+  IsInt,
+  Min,
+  IsDateString,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -10,7 +17,11 @@ export class ActivityQueryDto {
   @IsOptional()
   page?: number;
 
-  @ApiPropertyOptional({ description: 'Items per page', example: 50, minimum: 1 })
+  @ApiPropertyOptional({
+    description: 'Items per page',
+    example: 50,
+    minimum: 1,
+  })
   @Type(() => Number)
   @IsInt()
   @Min(1)
@@ -84,4 +95,3 @@ export class ActivityQueryDto {
   @IsOptional()
   sortOrder?: 'asc' | 'desc';
 }
-

@@ -10,4 +10,3 @@ export class AcceptInvitationDto {
   @IsNotEmpty()
   invitationToken: string;
 }
-

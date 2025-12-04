@@ -85,4 +85,3 @@ export class SegmentsController {
     return this.segmentsService.getContacts(id, page, limit);
   }
 }
-

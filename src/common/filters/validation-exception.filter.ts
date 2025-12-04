@@ -72,4 +72,3 @@ export class ValidationExceptionFilter implements ExceptionFilter {
     return formatted;
   }
 }
-

@@ -1,5 +1,10 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import { withUlid } from '../../common/utils/prisma-helpers';
 import { CreatePipelineDto } from './dto/create-pipeline.dto';
 import { UpdatePipelineDto } from './dto/update-pipeline.dto';
@@ -48,10 +53,7 @@ export class PipelinesService {
           },
         },
       },
-      orderBy: [
-        { isDefault: 'desc' },
-        { displayOrder: 'asc' },
-      ],
+      orderBy: [{ isDefault: 'desc' }, { displayOrder: 'asc' }],
     });
   }
 
@@ -116,7 +118,9 @@ export class PipelinesService {
     });
 
     if (dealCount > 0) {
-      throw new BadRequestException('Cannot delete pipeline with associated deals');
+      throw new BadRequestException(
+        'Cannot delete pipeline with associated deals',
+      );
     }
 
     await this.prisma.pipeline.delete({
@@ -146,7 +150,9 @@ export class PipelinesService {
         },
       });
       if (existingClosedWon) {
-        throw new BadRequestException('Pipeline already has a closed won stage');
+        throw new BadRequestException(
+          'Pipeline already has a closed won stage',
+        );
       }
     }
 
@@ -158,7 +164,9 @@ export class PipelinesService {
         },
       });
       if (existingClosedLost) {
-        throw new BadRequestException('Pipeline already has a closed lost stage');
+        throw new BadRequestException(
+          'Pipeline already has a closed lost stage',
+        );
       }
     }
 
@@ -170,7 +178,7 @@ export class PipelinesService {
         defaultProbability: data.defaultProbability || 0,
         isClosedWon: data.isClosedWon || false,
         isClosedLost: data.isClosedLost || false,
-        automationTriggers: data.automationTriggers,
+        automationTriggers: data.automationTriggers as Prisma.InputJsonValue,
       }),
     });
 
@@ -228,7 +236,9 @@ export class PipelinesService {
           },
         });
         if (existingClosedWon) {
-          throw new BadRequestException('Pipeline already has a closed won stage');
+          throw new BadRequestException(
+            'Pipeline already has a closed won stage',
+          );
         }
       }
     }
@@ -243,7 +253,9 @@ export class PipelinesService {
           },
         });
         if (existingClosedLost) {
-          throw new BadRequestException('Pipeline already has a closed lost stage');
+          throw new BadRequestException(
+            'Pipeline already has a closed lost stage',
+          );
         }
       }
     }
@@ -256,7 +268,7 @@ export class PipelinesService {
         defaultProbability: data.defaultProbability,
         isClosedWon: data.isClosedWon,
         isClosedLost: data.isClosedLost,
-        automationTriggers: data.automationTriggers,
+        automationTriggers: data.automationTriggers as Prisma.InputJsonValue,
       },
     });
   }
@@ -270,7 +282,9 @@ export class PipelinesService {
     });
 
     if (dealCount > 0) {
-      throw new BadRequestException('Cannot delete stage with associated deals');
+      throw new BadRequestException(
+        'Cannot delete stage with associated deals',
+      );
     }
 
     await this.prisma.pipelineStage.delete({
@@ -280,4 +294,3 @@ export class PipelinesService {
     return { message: 'Pipeline stage deleted successfully' };
   }
 }
-

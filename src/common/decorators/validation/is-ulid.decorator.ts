@@ -27,4 +27,3 @@ export function IsULID(validationOptions?: ValidationOptions) {
     });
   };
 }
-

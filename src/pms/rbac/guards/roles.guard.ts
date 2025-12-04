@@ -32,10 +32,7 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('User not authenticated');
     }
 
-    const hasRole = await this.rbacService.hasAnyRole(
-      user.id,
-      requiredRoles,
-    );
+    const hasRole = await this.rbacService.hasAnyRole(user.id, requiredRoles);
 
     if (!hasRole) {
       throw new ForbiddenException(
@@ -46,4 +43,3 @@ export class RolesGuard implements CanActivate {
     return true;
   }
 }
-

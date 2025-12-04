@@ -69,4 +69,3 @@ export interface GetProfileRequest extends GrpcBaseRequest {}
 export interface GetProfileResponse {
   user: UserResponse;
 }
-

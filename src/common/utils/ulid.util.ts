@@ -21,4 +21,3 @@ export function isValidUlid(id: string): boolean {
   const ulidRegex = /^[0-9A-HJKMNP-TV-Z]{26}$/;
   return ulidRegex.test(id);
 }
-

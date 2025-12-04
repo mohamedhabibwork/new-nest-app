@@ -37,14 +37,14 @@ import { TimeLogQueryDto } from './dto/time-log-query.dto';
 export class CollaborationController {
   constructor(private readonly collaborationService: CollaborationService) {}
 
-  @ApiOperation({ summary: 'Create a comment on a task' })
+  @ApiOperation({ summary: 'Create a comment on any commentable entity' })
   @ApiResponse({
     status: 201,
     description: 'Comment created successfully',
     type: CommentResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Task not found' })
+  @ApiResponse({ status: 404, description: 'Entity not found' })
   @Post('comments')
   @HttpCode(HttpStatus.CREATED)
   createComment(
@@ -54,35 +54,81 @@ export class CollaborationController {
     return this.collaborationService.createComment(req.user.id, createDto);
   }
 
-  @ApiOperation({ summary: 'Get all comments for a task with pagination and sorting' })
-  @ApiParam({ name: 'taskId', description: 'Task ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number', example: 1 })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page', example: 50 })
-  @ApiQuery({ name: 'sortBy', required: false, enum: ['createdAt', 'updatedAt'], description: 'Sort by field' })
-  @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'], description: 'Sort order' })
+  @ApiOperation({ summary: 'Get all comments with pagination and filtering' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page',
+    example: 50,
+  })
+  @ApiQuery({
+    name: 'commentableType',
+    required: false,
+    enum: ['task', 'project', 'ticket'],
+    description: 'Filter by commentable type',
+  })
+  @ApiQuery({
+    name: 'commentableId',
+    required: false,
+    type: String,
+    description: 'Filter by commentable ID',
+  })
+  @ApiQuery({
+    name: 'includeDeleted',
+    required: false,
+    type: Boolean,
+    description: 'Include deleted comments',
+    default: false,
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    enum: ['createdAt', 'updatedAt'],
+    description: 'Sort by field',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['asc', 'desc'],
+    description: 'Sort order',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of comments with pagination',
     type: CommentResponseDto,
   })
-  @Get('tasks/:taskId/comments')
-  getTaskComments(
-    @Param('taskId') taskId: string,
+  @Get('comments')
+  getComments(
     @Query() queryDto: CommentQueryDto,
     @Request() req: { user: { id: string } },
   ) {
-    return this.collaborationService.getTaskComments(queryDto, taskId, req.user.id);
+    return this.collaborationService.getComments(queryDto, req.user.id);
   }
 
   @ApiOperation({ summary: 'Update a comment' })
-  @ApiParam({ name: 'id', description: 'Comment ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Comment ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Comment updated successfully',
     type: CommentResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Comment not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Not the comment owner' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Not the comment owner',
+  })
   @Patch('comments/:id')
   updateComment(
     @Param('id') id: string,
@@ -93,16 +139,26 @@ export class CollaborationController {
   }
 
   @ApiOperation({ summary: 'Delete a comment' })
-  @ApiParam({ name: 'id', description: 'Comment ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Comment ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Comment deleted successfully',
   })
   @ApiResponse({ status: 404, description: 'Comment not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Not the comment owner' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Not the comment owner',
+  })
   @Delete('comments/:id')
   @HttpCode(HttpStatus.OK)
-  deleteComment(@Param('id') id: string, @Request() req: { user: { id: string } }) {
+  deleteComment(
+    @Param('id') id: string,
+    @Request() req: { user: { id: string } },
+  ) {
     return this.collaborationService.deleteComment(id, req.user.id);
   }
 
@@ -123,15 +179,59 @@ export class CollaborationController {
     return this.collaborationService.createTimeLog(req.user.id, createDto);
   }
 
-  @ApiOperation({ summary: 'Get all time logs for a task with pagination, filtering, and sorting' })
-  @ApiParam({ name: 'taskId', description: 'Task ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number', example: 1 })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page', example: 50 })
-  @ApiQuery({ name: 'userId', required: false, type: String, description: 'Filter by user ID' })
-  @ApiQuery({ name: 'logDateFrom', required: false, type: String, description: 'Filter time logs from this date' })
-  @ApiQuery({ name: 'logDateTo', required: false, type: String, description: 'Filter time logs until this date' })
-  @ApiQuery({ name: 'sortBy', required: false, enum: ['createdAt', 'logDate', 'hoursLogged'], description: 'Sort by field' })
-  @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'], description: 'Sort order' })
+  @ApiOperation({
+    summary:
+      'Get all time logs for a task with pagination, filtering, and sorting',
+  })
+  @ApiParam({
+    name: 'taskId',
+    description: 'Task ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page',
+    example: 50,
+  })
+  @ApiQuery({
+    name: 'userId',
+    required: false,
+    type: String,
+    description: 'Filter by user ID',
+  })
+  @ApiQuery({
+    name: 'logDateFrom',
+    required: false,
+    type: String,
+    description: 'Filter time logs from this date',
+  })
+  @ApiQuery({
+    name: 'logDateTo',
+    required: false,
+    type: String,
+    description: 'Filter time logs until this date',
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    enum: ['createdAt', 'logDate', 'hoursLogged'],
+    description: 'Sort by field',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['asc', 'desc'],
+    description: 'Sort order',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of time logs with pagination',
@@ -143,17 +243,30 @@ export class CollaborationController {
     @Query() queryDto: TimeLogQueryDto,
     @Request() req: { user: { id: string } },
   ) {
-    return this.collaborationService.getTaskTimeLogs(queryDto, taskId, req.user.id);
+    return this.collaborationService.getTaskTimeLogs(
+      queryDto,
+      taskId,
+      req.user.id,
+    );
   }
 
-  @ApiOperation({ summary: 'Get all attachments for a task (using unified file system)' })
-  @ApiParam({ name: 'taskId', description: 'Task ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiOperation({
+    summary: 'Get all attachments for a task (using unified file system)',
+  })
+  @ApiParam({
+    name: 'taskId',
+    description: 'Task ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of task attachments',
   })
   @Get('tasks/:taskId/attachments')
-  getTaskAttachments(@Param('taskId') taskId: string, @Request() req: { user: { id: string } }) {
+  getTaskAttachments(
+    @Param('taskId') taskId: string,
+    @Request() req: { user: { id: string } },
+  ) {
     return this.collaborationService.getTaskAttachments(taskId, req.user.id);
   }
 }

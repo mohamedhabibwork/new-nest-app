@@ -1,10 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { AssignTaskDto } from './dto/assign-task.dto';
 import { CreateTaskDependencyDto } from './dto/create-task-dependency.dto';
 import { CreateChecklistItemDto } from './dto/create-checklist-item.dto';
 import { UpdateChecklistItemDto } from './dto/update-checklist-item.dto';
@@ -22,10 +25,7 @@ describe('TasksController', () => {
     update: jest.fn(),
     remove: jest.fn(),
     getTaskAttachments: jest.fn(),
-    assignUserToTask: jest.fn(),
-    unassignUserFromTask: jest.fn(),
     getTaskAssignments: jest.fn(),
-    updateAssignment: jest.fn(),
     addTaskDependency: jest.fn(),
     removeTaskDependency: jest.fn(),
     getTaskDependencies: jest.fn(),
@@ -86,12 +86,17 @@ describe('TasksController', () => {
 
       const result = await controller.create(mockRequest, createDto);
 
-      expect(tasksService.create).toHaveBeenCalledWith(mockRequest.user.id, createDto);
+      expect(tasksService.create).toHaveBeenCalledWith(
+        mockRequest.user.id,
+        createDto,
+      );
       expect(result).toEqual(mockTask);
     });
 
     it('should throw NotFoundException when project not found', async () => {
-      tasksService.create.mockRejectedValue(new NotFoundException('Project not found'));
+      tasksService.create.mockRejectedValue(
+        new NotFoundException('Project not found'),
+      );
 
       await expect(controller.create(mockRequest, createDto)).rejects.toThrow(
         NotFoundException,
@@ -149,7 +154,10 @@ describe('TasksController', () => {
 
       const result = await controller.findAll(queryDto, mockRequest);
 
-      expect(tasksService.findAll).toHaveBeenCalledWith(queryDto, mockRequest.user.id);
+      expect(tasksService.findAll).toHaveBeenCalledWith(
+        queryDto,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -176,7 +184,10 @@ describe('TasksController', () => {
 
       const result = await controller.findAll(queryDto, mockRequest);
 
-      expect(tasksService.findAll).toHaveBeenCalledWith(queryDto, mockRequest.user.id);
+      expect(tasksService.findAll).toHaveBeenCalledWith(
+        queryDto,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -203,7 +214,10 @@ describe('TasksController', () => {
 
       const result = await controller.findAll(queryDto, mockRequest);
 
-      expect(tasksService.findAll).toHaveBeenCalledWith(queryDto, mockRequest.user.id);
+      expect(tasksService.findAll).toHaveBeenCalledWith(
+        queryDto,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -230,7 +244,10 @@ describe('TasksController', () => {
 
       const result = await controller.findAll(queryDto, mockRequest);
 
-      expect(tasksService.findAll).toHaveBeenCalledWith(queryDto, mockRequest.user.id);
+      expect(tasksService.findAll).toHaveBeenCalledWith(
+        queryDto,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -258,7 +275,10 @@ describe('TasksController', () => {
 
       const result = await controller.findAll(queryDto, mockRequest);
 
-      expect(tasksService.findAll).toHaveBeenCalledWith(queryDto, mockRequest.user.id);
+      expect(tasksService.findAll).toHaveBeenCalledWith(
+        queryDto,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -285,7 +305,10 @@ describe('TasksController', () => {
 
       const result = await controller.findAll(queryDto, mockRequest);
 
-      expect(tasksService.findAll).toHaveBeenCalledWith(queryDto, mockRequest.user.id);
+      expect(tasksService.findAll).toHaveBeenCalledWith(
+        queryDto,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -313,7 +336,10 @@ describe('TasksController', () => {
 
       const result = await controller.findAll(queryDto, mockRequest);
 
-      expect(tasksService.findAll).toHaveBeenCalledWith(queryDto, mockRequest.user.id);
+      expect(tasksService.findAll).toHaveBeenCalledWith(
+        queryDto,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockResponse);
     });
   });
@@ -343,15 +369,25 @@ describe('TasksController', () => {
 
       const result = await controller.findOne(taskId, mockRequest);
 
-      expect(tasksService.findOne).toHaveBeenCalledWith(taskId, mockRequest.user.id);
+      expect(tasksService.findOne).toHaveBeenCalledWith(
+        taskId,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockTask);
     });
 
     it('should throw NotFoundException when task not found', async () => {
-      tasksService.findOne.mockRejectedValue(new NotFoundException('Task not found'));
+      tasksService.findOne.mockRejectedValue(
+        new NotFoundException('Task not found'),
+      );
 
-      await expect(controller.findOne(taskId, mockRequest)).rejects.toThrow(NotFoundException);
-      expect(tasksService.findOne).toHaveBeenCalledWith(taskId, mockRequest.user.id);
+      await expect(controller.findOne(taskId, mockRequest)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(tasksService.findOne).toHaveBeenCalledWith(
+        taskId,
+        mockRequest.user.id,
+      );
     });
 
     it('should throw ForbiddenException when user has no access', async () => {
@@ -403,11 +439,13 @@ describe('TasksController', () => {
     });
 
     it('should throw NotFoundException when task not found', async () => {
-      tasksService.update.mockRejectedValue(new NotFoundException('Task not found'));
-
-      await expect(controller.update(taskId, mockRequest, updateDto)).rejects.toThrow(
-        NotFoundException,
+      tasksService.update.mockRejectedValue(
+        new NotFoundException('Task not found'),
       );
+
+      await expect(
+        controller.update(taskId, mockRequest, updateDto),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException when user has no access', async () => {
@@ -415,9 +453,9 @@ describe('TasksController', () => {
         new ForbiddenException('No access to task'),
       );
 
-      await expect(controller.update(taskId, mockRequest, updateDto)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        controller.update(taskId, mockRequest, updateDto),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -437,14 +475,21 @@ describe('TasksController', () => {
 
       const result = await controller.remove(taskId, mockRequest);
 
-      expect(tasksService.remove).toHaveBeenCalledWith(taskId, mockRequest.user.id);
+      expect(tasksService.remove).toHaveBeenCalledWith(
+        taskId,
+        mockRequest.user.id,
+      );
       expect(result).toEqual({ message: 'Task deleted successfully' });
     });
 
     it('should throw NotFoundException when task not found', async () => {
-      tasksService.remove.mockRejectedValue(new NotFoundException('Task not found'));
+      tasksService.remove.mockRejectedValue(
+        new NotFoundException('Task not found'),
+      );
 
-      await expect(controller.remove(taskId, mockRequest)).rejects.toThrow(NotFoundException);
+      await expect(controller.remove(taskId, mockRequest)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException when user has no access', async () => {
@@ -492,7 +537,12 @@ describe('TasksController', () => {
 
       tasksService.getTaskAttachments.mockResolvedValue(mockResponse);
 
-      const result = await controller.getTaskAttachments(taskId, mockRequest, 1, 50);
+      const result = await controller.getTaskAttachments(
+        taskId,
+        mockRequest,
+        1,
+        50,
+      );
 
       expect(tasksService.getTaskAttachments).toHaveBeenCalledWith(
         taskId,
@@ -504,124 +554,7 @@ describe('TasksController', () => {
     });
   });
 
-  describe('assignUserToTask', () => {
-    const mockRequest = {
-      user: {
-        id: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-      },
-    };
-
-    const taskId = '01ARZ3NDEKTSV4RRFFQ69G5FAV';
-    const assignDto: AssignTaskDto = {
-      userId: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-      isPrimary: false,
-    };
-
-    it('should assign user to task successfully', async () => {
-      const mockAssignment = {
-        id: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-        taskId,
-        userId: assignDto.userId,
-        isPrimary: false,
-        assignedAt: new Date(),
-      };
-
-      tasksService.assignUserToTask.mockResolvedValue(mockAssignment);
-
-      const result = await controller.assignUserToTask(taskId, mockRequest, assignDto);
-
-      expect(tasksService.assignUserToTask).toHaveBeenCalledWith(
-        taskId,
-        assignDto.userId,
-        mockRequest.user.id,
-        assignDto.isPrimary || false,
-      );
-      expect(result).toEqual(mockAssignment);
-    });
-
-    it('should assign user as primary', async () => {
-      const assignDtoPrimary: AssignTaskDto = {
-        userId: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-        isPrimary: true,
-      };
-
-      const mockAssignment = {
-        id: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-        taskId,
-        userId: assignDtoPrimary.userId,
-        isPrimary: true,
-        assignedAt: new Date(),
-      };
-
-      tasksService.assignUserToTask.mockResolvedValue(mockAssignment);
-
-      const result = await controller.assignUserToTask(taskId, mockRequest, assignDtoPrimary);
-
-      expect(tasksService.assignUserToTask).toHaveBeenCalledWith(
-        taskId,
-        assignDtoPrimary.userId,
-        mockRequest.user.id,
-        true,
-      );
-      expect(result.isPrimary).toBe(true);
-    });
-
-    it('should throw NotFoundException when task not found', async () => {
-      tasksService.assignUserToTask.mockRejectedValue(
-        new NotFoundException('Task not found'),
-      );
-
-      await expect(
-        controller.assignUserToTask(taskId, mockRequest, assignDto),
-      ).rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw BadRequestException when user already assigned', async () => {
-      tasksService.assignUserToTask.mockRejectedValue(
-        new BadRequestException('User already assigned to this task'),
-      );
-
-      await expect(
-        controller.assignUserToTask(taskId, mockRequest, assignDto),
-      ).rejects.toThrow(BadRequestException);
-    });
-  });
-
-  describe('unassignUserFromTask', () => {
-    const mockRequest = {
-      user: {
-        id: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-      },
-    };
-
-    const taskId = '01ARZ3NDEKTSV4RRFFQ69G5FAV';
-    const userId = '01ARZ3NDEKTSV4RRFFQ69G5FAV';
-
-    it('should unassign user from task successfully', async () => {
-      tasksService.unassignUserFromTask.mockResolvedValue({
-        message: 'User unassigned from task successfully',
-      });
-
-      const result = await controller.unassignUserFromTask(taskId, userId, mockRequest);
-
-      expect(tasksService.unassignUserFromTask).toHaveBeenCalledWith(
-        taskId,
-        userId,
-        mockRequest.user.id,
-      );
-      expect(result).toEqual({ message: 'User unassigned from task successfully' });
-    });
-
-    it('should throw NotFoundException when assignment not found', async () => {
-      tasksService.unassignUserFromTask.mockRejectedValue(
-        new NotFoundException('Assignment not found'),
-      );
-
-      await expect(
-        controller.unassignUserFromTask(taskId, userId, mockRequest),
-      ).rejects.toThrow(NotFoundException);
-    });
-  });
+  // Assignment methods removed - use AssignmentsModule instead
 
   describe('getTaskAssignments', () => {
     const mockRequest = {
@@ -636,10 +569,14 @@ describe('TasksController', () => {
       const mockAssignments = [
         {
           id: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-          taskId,
-          userId: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-          isPrimary: true,
+          assignableType: 'task',
+          assignableId: taskId,
+          assigneeId: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+          assignerId: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+          status: 'pending',
+          priority: 'medium',
           assignedAt: new Date(),
+          updatedAt: new Date(),
         },
       ];
 
@@ -657,7 +594,12 @@ describe('TasksController', () => {
 
       tasksService.getTaskAssignments.mockResolvedValue(mockResponse);
 
-      const result = await controller.getTaskAssignments(taskId, mockRequest, 1, 50);
+      const result = await controller.getTaskAssignments(
+        taskId,
+        mockRequest,
+        1,
+        50,
+      );
 
       expect(tasksService.getTaskAssignments).toHaveBeenCalledWith(
         taskId,
@@ -669,53 +611,7 @@ describe('TasksController', () => {
     });
   });
 
-  describe('updateAssignment', () => {
-    const mockRequest = {
-      user: {
-        id: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-      },
-    };
-
-    const taskId = '01ARZ3NDEKTSV4RRFFQ69G5FAV';
-    const assignmentId = '01ARZ3NDEKTSV4RRFFQ69G5FAV';
-
-    it('should update assignment successfully', async () => {
-      const mockAssignment = {
-        id: assignmentId,
-        taskId,
-        userId: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-        isPrimary: true,
-        assignedAt: new Date(),
-      };
-
-      tasksService.updateAssignment.mockResolvedValue(mockAssignment);
-
-      const result = await controller.updateAssignment(
-        taskId,
-        assignmentId,
-        mockRequest,
-        { isPrimary: true },
-      );
-
-      expect(tasksService.updateAssignment).toHaveBeenCalledWith(
-        taskId,
-        assignmentId,
-        mockRequest.user.id,
-        true,
-      );
-      expect(result).toEqual(mockAssignment);
-    });
-
-    it('should throw NotFoundException when assignment not found', async () => {
-      tasksService.updateAssignment.mockRejectedValue(
-        new NotFoundException('Assignment not found'),
-      );
-
-      await expect(
-        controller.updateAssignment(taskId, assignmentId, mockRequest, { isPrimary: true }),
-      ).rejects.toThrow(NotFoundException);
-    });
-  });
+  // updateAssignment method removed - use AssignmentsModule instead
 
   describe('addTaskDependency', () => {
     const mockRequest = {
@@ -741,7 +637,11 @@ describe('TasksController', () => {
 
       tasksService.addTaskDependency.mockResolvedValue(mockDependency);
 
-      const result = await controller.addTaskDependency(taskId, mockRequest, createDto);
+      const result = await controller.addTaskDependency(
+        taskId,
+        mockRequest,
+        createDto,
+      );
 
       expect(tasksService.addTaskDependency).toHaveBeenCalledWith(
         taskId,
@@ -847,7 +747,12 @@ describe('TasksController', () => {
 
       tasksService.getTaskDependencies.mockResolvedValue(mockResponse);
 
-      const result = await controller.getTaskDependencies(taskId, mockRequest, 1, 50);
+      const result = await controller.getTaskDependencies(
+        taskId,
+        mockRequest,
+        1,
+        50,
+      );
 
       expect(tasksService.getTaskDependencies).toHaveBeenCalledWith(
         taskId,
@@ -885,7 +790,11 @@ describe('TasksController', () => {
 
       tasksService.addChecklistItem.mockResolvedValue(mockItem);
 
-      const result = await controller.addChecklistItem(taskId, mockRequest, createDto);
+      const result = await controller.addChecklistItem(
+        taskId,
+        mockRequest,
+        createDto,
+      );
 
       expect(tasksService.addChecklistItem).toHaveBeenCalledWith(
         taskId,
@@ -976,14 +885,20 @@ describe('TasksController', () => {
         message: 'Checklist item deleted successfully',
       });
 
-      const result = await controller.deleteChecklistItem(taskId, itemId, mockRequest);
+      const result = await controller.deleteChecklistItem(
+        taskId,
+        itemId,
+        mockRequest,
+      );
 
       expect(tasksService.deleteChecklistItem).toHaveBeenCalledWith(
         taskId,
         itemId,
         mockRequest.user.id,
       );
-      expect(result).toEqual({ message: 'Checklist item deleted successfully' });
+      expect(result).toEqual({
+        message: 'Checklist item deleted successfully',
+      });
     });
 
     it('should throw NotFoundException when checklist item not found', async () => {
@@ -1032,7 +947,12 @@ describe('TasksController', () => {
 
       tasksService.getChecklistItems.mockResolvedValue(mockResponse);
 
-      const result = await controller.getChecklistItems(taskId, mockRequest, 1, 50);
+      const result = await controller.getChecklistItems(
+        taskId,
+        mockRequest,
+        1,
+        50,
+      );
 
       expect(tasksService.getChecklistItems).toHaveBeenCalledWith(
         taskId,
@@ -1061,14 +981,20 @@ describe('TasksController', () => {
         message: 'Checklist items reordered successfully',
       });
 
-      const result = await controller.reorderChecklistItems(taskId, mockRequest, reorderDto);
+      const result = await controller.reorderChecklistItems(
+        taskId,
+        mockRequest,
+        reorderDto,
+      );
 
       expect(tasksService.reorderChecklistItems).toHaveBeenCalledWith(
         taskId,
         mockRequest.user.id,
         reorderDto.itemIds,
       );
-      expect(result).toEqual({ message: 'Checklist items reordered successfully' });
+      expect(result).toEqual({
+        message: 'Checklist items reordered successfully',
+      });
     });
 
     it('should throw ForbiddenException when items do not belong to task', async () => {
@@ -1082,4 +1008,3 @@ describe('TasksController', () => {
     });
   });
 });
-

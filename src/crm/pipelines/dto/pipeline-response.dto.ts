@@ -4,7 +4,10 @@ import { PipelineStageResponseDto } from './pipeline-stage-response.dto';
 
 export class PipelineResponseDto {
   @Expose()
-  @ApiProperty({ description: 'Pipeline ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Pipeline ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
@@ -35,4 +38,3 @@ export class PipelineResponseDto {
   @Type(() => PipelineStageResponseDto)
   stages?: PipelineStageResponseDto[];
 }
-

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { withUlid } from '../../../common/utils/prisma-helpers';
 import { generateUlid } from '../../../common/utils/ulid.util';
@@ -62,7 +66,9 @@ export class WorkspaceInvitationService {
 
       const isMember = projects.some((p) => p.projectMembers.length > 0);
       if (isMember) {
-        throw new BadRequestException('User is already a member of this workspace');
+        throw new BadRequestException(
+          'User is already a member of this workspace',
+        );
       }
     }
 
@@ -298,4 +304,3 @@ export class WorkspaceInvitationService {
     });
   }
 }
-

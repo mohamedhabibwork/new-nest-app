@@ -33,7 +33,10 @@ import { NotificationQueryDto } from './dto/notification-query.dto';
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
-  @ApiOperation({ summary: 'Get all notifications for the current user with pagination, filtering, and sorting' })
+  @ApiOperation({
+    summary:
+      'Get all notifications for the current user with pagination, filtering, and sorting',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of notifications with pagination',
@@ -45,11 +48,18 @@ export class NotificationsController {
     @Query() queryDto: NotificationQueryDto,
     @Request() req: { user: { id: string } },
   ) {
-    return this.notificationsService.getUserNotifications(queryDto, req.user.id);
+    return this.notificationsService.getUserNotifications(
+      queryDto,
+      req.user.id,
+    );
   }
 
   @ApiOperation({ summary: 'Mark a notification as read' })
-  @ApiParam({ name: 'id', description: 'Notification ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Notification ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Notification marked as read',
@@ -57,7 +67,10 @@ export class NotificationsController {
   @ApiResponse({ status: 404, description: 'Notification not found' })
   @Patch(':id/read')
   @HttpCode(HttpStatus.OK)
-  markAsRead(@Param('id') id: string, @Request() req: { user: { id: string } }) {
+  markAsRead(
+    @Param('id') id: string,
+    @Request() req: { user: { id: string } },
+  ) {
     return this.notificationsService.markAsRead(id, req.user.id);
   }
 
@@ -73,7 +86,11 @@ export class NotificationsController {
   }
 
   @ApiOperation({ summary: 'Delete a notification' })
-  @ApiParam({ name: 'id', description: 'Notification ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Notification ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Notification deleted successfully',
@@ -85,4 +102,3 @@ export class NotificationsController {
     return this.notificationsService.delete(id, req.user.id);
   }
 }
-

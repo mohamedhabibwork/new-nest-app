@@ -1,6 +1,11 @@
-import { GrpcBaseRequest, GrpcPaginationParams, GrpcPaginationResponse } from './grpc-common.types';
+import {
+  GrpcBaseRequest,
+  GrpcPaginationParams,
+  GrpcPaginationResponse,
+} from './grpc-common.types';
 
-export interface ListWorkspacesRequest extends GrpcBaseRequest, GrpcPaginationParams {
+export interface ListWorkspacesRequest
+  extends GrpcBaseRequest, GrpcPaginationParams {
   search?: string;
   sort_by?: string;
   sort_order?: 'asc' | 'desc';
@@ -54,4 +59,3 @@ export interface DeleteWorkspaceRequest extends GrpcBaseRequest {
 export interface DeleteWorkspaceResponse {
   message: string;
 }
-

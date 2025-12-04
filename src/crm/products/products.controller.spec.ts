@@ -68,7 +68,9 @@ describe('ProductsController', () => {
         new BadRequestException('Product with this SKU already exists'),
       );
 
-      await expect(controller.create(createDto)).rejects.toThrow(BadRequestException);
+      await expect(controller.create(createDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -146,9 +148,13 @@ describe('ProductsController', () => {
     });
 
     it('should throw NotFoundException when product not found', async () => {
-      productsService.findOne.mockRejectedValue(new NotFoundException('Product not found'));
+      productsService.findOne.mockRejectedValue(
+        new NotFoundException('Product not found'),
+      );
 
-      await expect(controller.findOne(productId)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(productId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -179,9 +185,13 @@ describe('ProductsController', () => {
     });
 
     it('should throw NotFoundException when product not found', async () => {
-      productsService.update.mockRejectedValue(new NotFoundException('Product not found'));
+      productsService.update.mockRejectedValue(
+        new NotFoundException('Product not found'),
+      );
 
-      await expect(controller.update(productId, updateDto)).rejects.toThrow(NotFoundException);
+      await expect(controller.update(productId, updateDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -200,10 +210,13 @@ describe('ProductsController', () => {
     });
 
     it('should throw NotFoundException when product not found', async () => {
-      productsService.remove.mockRejectedValue(new NotFoundException('Product not found'));
+      productsService.remove.mockRejectedValue(
+        new NotFoundException('Product not found'),
+      );
 
-      await expect(controller.remove(productId)).rejects.toThrow(NotFoundException);
+      await expect(controller.remove(productId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });
-

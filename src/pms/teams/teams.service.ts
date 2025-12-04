@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { withUlid } from '../../common/utils/prisma-helpers';
 
@@ -31,7 +36,9 @@ export class TeamsService {
     );
 
     if (!hasPermission) {
-      throw new ForbiddenException('You do not have permission to manage team members');
+      throw new ForbiddenException(
+        'You do not have permission to manage team members',
+      );
     }
 
     // Check if user exists
@@ -100,7 +107,9 @@ export class TeamsService {
     );
 
     if (!hasPermission) {
-      throw new ForbiddenException('You do not have permission to manage team members');
+      throw new ForbiddenException(
+        'You do not have permission to manage team members',
+      );
     }
 
     // Remove user from team
@@ -198,4 +207,3 @@ export class TeamsService {
     return projects.length > 0;
   }
 }
-

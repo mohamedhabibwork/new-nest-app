@@ -10,4 +10,3 @@ export * from './notifications-grpc.types';
 export * from './projects-grpc.types';
 export * from './tasks-grpc.types';
 export * from './workspaces-grpc.types';
-

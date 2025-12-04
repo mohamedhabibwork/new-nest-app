@@ -13,7 +13,7 @@ describe('CollaborationController', () => {
 
   const mockCollaborationService = {
     createComment: jest.fn(),
-    getTaskComments: jest.fn(),
+    getComments: jest.fn(),
     updateComment: jest.fn(),
     deleteComment: jest.fn(),
     createTimeLog: jest.fn(),
@@ -48,16 +48,19 @@ describe('CollaborationController', () => {
     };
 
     const createDto: CreateCommentDto = {
-      taskId: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+      commentableType: 'task',
+      commentableId: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
       commentText: 'This is a test comment',
     };
 
     it('should create a comment successfully', async () => {
       const mockComment = {
         id: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-        taskId: createDto.taskId,
+        commentableType: 'task',
+        commentableId: createDto.commentableId,
         userId: mockRequest.user.id,
         commentText: 'This is a test comment',
+        isDeleted: false,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -75,7 +78,8 @@ describe('CollaborationController', () => {
 
     it('should create a nested comment with parentCommentId', async () => {
       const createDtoWithParent: CreateCommentDto = {
-        taskId: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+        commentableType: 'task',
+        commentableId: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
         commentText: 'This is a reply',
         parentCommentId: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
       };
@@ -92,7 +96,10 @@ describe('CollaborationController', () => {
 
       collaborationService.createComment.mockResolvedValue(mockComment);
 
-      const result = await controller.createComment(mockRequest, createDtoWithParent);
+      const result = await controller.createComment(
+        mockRequest,
+        createDtoWithParent,
+      );
 
       expect(collaborationService.createComment).toHaveBeenCalledWith(
         mockRequest.user.id,
@@ -106,9 +113,9 @@ describe('CollaborationController', () => {
         new NotFoundException('Task not found'),
       );
 
-      await expect(controller.createComment(mockRequest, createDto)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        controller.createComment(mockRequest, createDto),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException when user has no access to task', async () => {
@@ -116,9 +123,9 @@ describe('CollaborationController', () => {
         new ForbiddenException('No access to task'),
       );
 
-      await expect(controller.createComment(mockRequest, createDto)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        controller.createComment(mockRequest, createDto),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -140,9 +147,11 @@ describe('CollaborationController', () => {
       const mockComments = [
         {
           id: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-          taskId,
+          commentableType: 'task',
+          commentableId: queryDto.commentableId,
           userId: mockRequest.user.id,
           commentText: 'Test comment',
+          isDeleted: false,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -160,13 +169,12 @@ describe('CollaborationController', () => {
         },
       };
 
-      collaborationService.getTaskComments.mockResolvedValue(mockResponse);
+      collaborationService.getComments.mockResolvedValue(mockResponse);
 
-      const result = await controller.getTaskComments(taskId, queryDto, mockRequest);
+      const result = await controller.getComments(queryDto, mockRequest);
 
-      expect(collaborationService.getTaskComments).toHaveBeenCalledWith(
+      expect(collaborationService.getComments).toHaveBeenCalledWith(
         queryDto,
-        taskId,
         mockRequest.user.id,
       );
       expect(result).toEqual(mockResponse);
@@ -192,13 +200,12 @@ describe('CollaborationController', () => {
         },
       };
 
-      collaborationService.getTaskComments.mockResolvedValue(mockResponse);
+      collaborationService.getComments.mockResolvedValue(mockResponse);
 
-      const result = await controller.getTaskComments(taskId, queryDto, mockRequest);
+      const result = await controller.getComments(queryDto, mockRequest);
 
-      expect(collaborationService.getTaskComments).toHaveBeenCalledWith(
+      expect(collaborationService.getComments).toHaveBeenCalledWith(
         queryDto,
-        taskId,
         mockRequest.user.id,
       );
       expect(result).toEqual(mockResponse);
@@ -229,7 +236,11 @@ describe('CollaborationController', () => {
 
       collaborationService.updateComment.mockResolvedValue(mockComment);
 
-      const result = await controller.updateComment(commentId, mockRequest, updateDto);
+      const result = await controller.updateComment(
+        commentId,
+        mockRequest,
+        updateDto,
+      );
 
       expect(collaborationService.updateComment).toHaveBeenCalledWith(
         commentId,
@@ -288,9 +299,9 @@ describe('CollaborationController', () => {
         new NotFoundException('Comment not found'),
       );
 
-      await expect(controller.deleteComment(commentId, mockRequest)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        controller.deleteComment(commentId, mockRequest),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -338,9 +349,9 @@ describe('CollaborationController', () => {
         new NotFoundException('Task not found'),
       );
 
-      await expect(controller.createTimeLog(mockRequest, createDto)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        controller.createTimeLog(mockRequest, createDto),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException when user has no access to task', async () => {
@@ -348,9 +359,9 @@ describe('CollaborationController', () => {
         new ForbiddenException('No access to task'),
       );
 
-      await expect(controller.createTimeLog(mockRequest, createDto)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        controller.createTimeLog(mockRequest, createDto),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -394,7 +405,11 @@ describe('CollaborationController', () => {
 
       collaborationService.getTaskTimeLogs.mockResolvedValue(mockResponse);
 
-      const result = await controller.getTaskTimeLogs(taskId, queryDto, mockRequest);
+      const result = await controller.getTaskTimeLogs(
+        taskId,
+        queryDto,
+        mockRequest,
+      );
 
       expect(collaborationService.getTaskTimeLogs).toHaveBeenCalledWith(
         queryDto,
@@ -425,7 +440,11 @@ describe('CollaborationController', () => {
 
       collaborationService.getTaskTimeLogs.mockResolvedValue(mockResponse);
 
-      const result = await controller.getTaskTimeLogs(taskId, queryDto, mockRequest);
+      const result = await controller.getTaskTimeLogs(
+        taskId,
+        queryDto,
+        mockRequest,
+      );
 
       expect(collaborationService.getTaskTimeLogs).toHaveBeenCalledWith(
         queryDto,
@@ -457,7 +476,11 @@ describe('CollaborationController', () => {
 
       collaborationService.getTaskTimeLogs.mockResolvedValue(mockResponse);
 
-      const result = await controller.getTaskTimeLogs(taskId, queryDto, mockRequest);
+      const result = await controller.getTaskTimeLogs(
+        taskId,
+        queryDto,
+        mockRequest,
+      );
 
       expect(collaborationService.getTaskTimeLogs).toHaveBeenCalledWith(
         queryDto,
@@ -489,7 +512,11 @@ describe('CollaborationController', () => {
 
       collaborationService.getTaskTimeLogs.mockResolvedValue(mockResponse);
 
-      const result = await controller.getTaskTimeLogs(taskId, queryDto, mockRequest);
+      const result = await controller.getTaskTimeLogs(
+        taskId,
+        queryDto,
+        mockRequest,
+      );
 
       expect(collaborationService.getTaskTimeLogs).toHaveBeenCalledWith(
         queryDto,
@@ -499,6 +526,4 @@ describe('CollaborationController', () => {
       expect(result).toEqual(mockResponse);
     });
   });
-
 });
-

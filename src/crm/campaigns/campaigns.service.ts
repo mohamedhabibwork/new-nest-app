@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { withUlid } from '../../common/utils/prisma-helpers';
-import { buildPaginationResponse, normalizePaginationParams } from '../../common/utils/pagination.util';
+import {
+  buildPaginationResponse,
+  normalizePaginationParams,
+} from '../../common/utils/pagination.util';
 import { CreateEmailCampaignDto } from './dto/create-campaign.dto';
 import { Prisma } from '@prisma/client';
 
@@ -49,7 +52,8 @@ export class CampaignsService {
   }
 
   async findAll(page?: number, limit?: number, status?: string) {
-    const { page: normalizedPage, limit: normalizedLimit } = normalizePaginationParams(page, limit);
+    const { page: normalizedPage, limit: normalizedLimit } =
+      normalizePaginationParams(page, limit);
 
     const where: Prisma.EmailCampaignWhereInput = {};
     if (status) {
@@ -90,7 +94,12 @@ export class CampaignsService {
       this.prisma.emailCampaign.count({ where }),
     ]);
 
-    return buildPaginationResponse(campaigns, total, normalizedPage, normalizedLimit);
+    return buildPaginationResponse(
+      campaigns,
+      total,
+      normalizedPage,
+      normalizedLimit,
+    );
   }
 
   async findOne(id: string) {
@@ -135,7 +144,11 @@ export class CampaignsService {
     return campaign;
   }
 
-  async update(id: string, userId: string, data: Partial<CreateEmailCampaignDto>) {
+  async update(
+    id: string,
+    userId: string,
+    data: Partial<CreateEmailCampaignDto>,
+  ) {
     await this.findOne(id);
 
     return this.prisma.emailCampaign.update({
@@ -194,12 +207,18 @@ export class CampaignsService {
         emailSendId,
         eventType,
         eventTime: new Date(),
-        eventData,
+        eventData: eventData as Prisma.InputJsonValue,
       }),
     });
 
     // Update email send status and timestamps
-    const updateData: any = {};
+    const updateData: {
+      sentAt?: Date;
+      deliveredAt?: Date;
+      openedAt?: Date;
+      clickedAt?: Date;
+      status?: string;
+    } = {};
     if (eventType === 'sent' && !emailSend.sentAt) {
       updateData.sentAt = new Date();
       updateData.status = 'sent';
@@ -223,7 +242,11 @@ export class CampaignsService {
     }
 
     // Update campaign metrics
-    const campaignUpdate: any = {};
+    const campaignUpdate: {
+      totalSent?: { increment: number };
+      totalOpened?: { increment: number };
+      totalClicked?: { increment: number };
+    } = {};
     if (eventType === 'sent') {
       campaignUpdate.totalSent = { increment: 1 };
     }
@@ -244,4 +267,3 @@ export class CampaignsService {
     return { message: 'Email event recorded successfully' };
   }
 }
-

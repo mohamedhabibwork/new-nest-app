@@ -83,9 +83,14 @@ export class WorkflowsController {
   @HttpCode(HttpStatus.OK)
   execute(
     @Param('id') workflowId: string,
-    @Body() context: Record<string, unknown>,
+    @Body()
+    context: {
+      entityType: string;
+      entityId: string;
+      userId?: string;
+      [key: string]: unknown;
+    },
   ) {
-    return this.workflowsService.execute(workflowId, context);
+    return this.workflowsService.execute(workflowId, context as any);
   }
 }
-

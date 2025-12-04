@@ -29,4 +29,3 @@ export interface GrpcErrorResponse {
   message: string;
   code?: number;
 }
-

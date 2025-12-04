@@ -20,7 +20,9 @@ export class NotificationsGrpcController {
   constructor(private notificationsService: NotificationsService) {}
 
   @GrpcMethod('NotificationService', 'ListNotifications')
-  async listNotifications(data: ListNotificationsRequest): Promise<ListNotificationsResponse> {
+  async listNotifications(
+    data: ListNotificationsRequest,
+  ): Promise<ListNotificationsResponse> {
     const result = await this.notificationsService.getUserNotifications(
       {
         page: data.page || 1,
@@ -38,7 +40,9 @@ export class NotificationsGrpcController {
   }
 
   @GrpcMethod('NotificationService', 'GetNotification')
-  async getNotification(data: GetNotificationRequest): Promise<GetNotificationResponse> {
+  async getNotification(
+    data: GetNotificationRequest,
+  ): Promise<GetNotificationResponse> {
     const result = await this.notificationsService.getUserNotifications(
       {
         page: 1,
@@ -50,7 +54,11 @@ export class NotificationsGrpcController {
       data.user_id,
     );
     const notification = result.data.find((n) => n.id === data.id);
-    return { notification: notification ? mapNotificationToGrpc(notification) : undefined };
+    return {
+      notification: notification
+        ? mapNotificationToGrpc(notification)
+        : undefined,
+    };
   }
 
   @GrpcMethod('NotificationService', 'MarkAsRead')
@@ -60,15 +68,18 @@ export class NotificationsGrpcController {
   }
 
   @GrpcMethod('NotificationService', 'MarkAllAsRead')
-  async markAllAsRead(data: MarkAllAsReadRequest): Promise<MarkAllAsReadResponse> {
+  async markAllAsRead(
+    data: MarkAllAsReadRequest,
+  ): Promise<MarkAllAsReadResponse> {
     await this.notificationsService.markAllAsRead(data.user_id);
     return { message: 'All notifications marked as read' };
   }
 
   @GrpcMethod('NotificationService', 'DeleteNotification')
-  async deleteNotification(data: DeleteNotificationRequest): Promise<DeleteNotificationResponse> {
+  async deleteNotification(
+    data: DeleteNotificationRequest,
+  ): Promise<DeleteNotificationResponse> {
     await this.notificationsService.delete(data.id, data.user_id);
     return { message: 'Notification deleted successfully' };
   }
 }
-

@@ -1,4 +1,12 @@
-import { IsOptional, IsString, IsEnum, IsDateString, IsNumber, Min, Max } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEnum,
+  IsDateString,
+  IsNumber,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -89,12 +97,26 @@ export class TaskQueryDto {
 
   @ApiPropertyOptional({
     description: 'Sort by field',
-    enum: ['createdAt', 'updatedAt', 'dueDate', 'priority', 'status', 'taskTitle'],
+    enum: [
+      'createdAt',
+      'updatedAt',
+      'dueDate',
+      'priority',
+      'status',
+      'taskTitle',
+    ],
     example: 'dueDate',
     default: 'createdAt',
   })
   @IsOptional()
-  @IsEnum(['createdAt', 'updatedAt', 'dueDate', 'priority', 'status', 'taskTitle'])
+  @IsEnum([
+    'createdAt',
+    'updatedAt',
+    'dueDate',
+    'priority',
+    'status',
+    'taskTitle',
+  ])
   sortBy?: string = 'createdAt';
 
   @ApiPropertyOptional({
@@ -107,4 +129,3 @@ export class TaskQueryDto {
   @IsEnum(['asc', 'desc'])
   sortOrder?: 'asc' | 'desc' = 'desc';
 }
-

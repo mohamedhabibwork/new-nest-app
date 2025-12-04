@@ -59,9 +59,13 @@ describe('SubmissionsController', () => {
     });
 
     it('should throw NotFoundException when form not found', async () => {
-      submissionsService.create.mockRejectedValue(new NotFoundException('Form not found'));
+      submissionsService.create.mockRejectedValue(
+        new NotFoundException('Form not found'),
+      );
 
-      await expect(controller.create(createDto)).rejects.toThrow(NotFoundException);
+      await expect(controller.create(createDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException when invalid field values', async () => {
@@ -69,7 +73,9 @@ describe('SubmissionsController', () => {
         new BadRequestException('Invalid field values'),
       );
 
-      await expect(controller.create(createDto)).rejects.toThrow(BadRequestException);
+      await expect(controller.create(createDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -95,7 +101,12 @@ describe('SubmissionsController', () => {
 
       submissionsService.findAll.mockResolvedValue(mockResponse);
 
-      const result = await controller.findAll(1, 50, '01ARZ3NDEKTSV4RRFFQ69G5FAV', undefined);
+      const result = await controller.findAll(
+        1,
+        50,
+        '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+        undefined,
+      );
 
       expect(submissionsService.findAll).toHaveBeenCalledWith(
         1,
@@ -128,10 +139,13 @@ describe('SubmissionsController', () => {
     });
 
     it('should throw NotFoundException when submission not found', async () => {
-      submissionsService.findOne.mockRejectedValue(new NotFoundException('Submission not found'));
+      submissionsService.findOne.mockRejectedValue(
+        new NotFoundException('Submission not found'),
+      );
 
-      await expect(controller.findOne(submissionId)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(submissionId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });
-

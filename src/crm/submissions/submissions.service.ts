@@ -1,16 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { withUlid, withUlidArray } from '../../common/utils/prisma-helpers';
-import { buildPaginationResponse, normalizePaginationParams } from '../../common/utils/pagination.util';
+import {
+  buildPaginationResponse,
+  normalizePaginationParams,
+} from '../../common/utils/pagination.util';
 import { CreateSubmissionDto } from './dto/create-submission.dto';
 import { Prisma } from '@prisma/client';
 import { ContactsService } from '../contacts/contacts.service';
+import { NotificationEventsService } from '../../pms/notifications/notification-events.service';
 
 @Injectable()
 export class SubmissionsService {
   constructor(
     private prisma: PrismaService,
     private contactsService: ContactsService,
+    private notificationEvents: NotificationEventsService,
   ) {}
 
   async create(data: CreateSubmissionDto) {
@@ -60,11 +65,11 @@ export class SubmissionsService {
         submitterEmail: data.submitterEmail,
         ipAddress: data.ipAddress,
         userAgent: data.userAgent,
-        utmParameters: data.utmParameters,
+        utmParameters: data.utmParameters as Prisma.InputJsonValue,
         referrerUrl: data.referrerUrl,
         processingStatus: 'pending',
         isDuplicate: false,
-        metadata: data.metadata,
+        metadata: data.metadata as Prisma.InputJsonValue,
       }),
     });
 
@@ -80,9 +85,9 @@ export class SubmissionsService {
             valueNumber: value.valueNumber,
             valueBoolean: value.valueBoolean,
             valueDate: value.valueDate ? new Date(value.valueDate) : undefined,
-            valueJson: value.valueJson,
-            valueArray: value.valueArray,
-            fileMetadata: value.fileMetadata,
+            valueJson: value.valueJson as Prisma.InputJsonValue,
+            valueArray: value.valueArray as Prisma.InputJsonValue,
+            fileMetadata: value.fileMetadata as Prisma.InputJsonValue,
           }),
         }),
       ),
@@ -100,6 +105,14 @@ export class SubmissionsService {
         },
       },
     });
+
+    // Notify form creator about submission
+    await this.notificationEvents.notifyFormSubmission(
+      submission.id,
+      form.id,
+      contact.id,
+      form.createdBy ? [form.createdBy] : [],
+    );
 
     return {
       ...submission,
@@ -162,9 +175,15 @@ export class SubmissionsService {
         // Map to contact fields
         if (propertyName === 'email') {
           updateData.email = mappedValue;
-        } else if (propertyName === 'firstName' || propertyName === 'first_name') {
+        } else if (
+          propertyName === 'firstName' ||
+          propertyName === 'first_name'
+        ) {
           updateData.firstName = mappedValue;
-        } else if (propertyName === 'lastName' || propertyName === 'last_name') {
+        } else if (
+          propertyName === 'lastName' ||
+          propertyName === 'last_name'
+        ) {
           updateData.lastName = mappedValue;
         } else if (propertyName === 'phone') {
           updateData.phone = mappedValue;
@@ -196,8 +215,14 @@ export class SubmissionsService {
     });
   }
 
-  async findAll(page?: number, limit?: number, formId?: string, contactId?: string) {
-    const { page: normalizedPage, limit: normalizedLimit } = normalizePaginationParams(page, limit);
+  async findAll(
+    page?: number,
+    limit?: number,
+    formId?: string,
+    contactId?: string,
+  ) {
+    const { page: normalizedPage, limit: normalizedLimit } =
+      normalizePaginationParams(page, limit);
 
     const where: Prisma.SubmissionWhereInput = {};
     if (formId) {
@@ -236,7 +261,12 @@ export class SubmissionsService {
       this.prisma.submission.count({ where }),
     ]);
 
-    return buildPaginationResponse(submissions, total, normalizedPage, normalizedLimit);
+    return buildPaginationResponse(
+      submissions,
+      total,
+      normalizedPage,
+      normalizedLimit,
+    );
   }
 
   async findOne(id: string) {
@@ -264,4 +294,3 @@ export class SubmissionsService {
     return submission;
   }
 }
-

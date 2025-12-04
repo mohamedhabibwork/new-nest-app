@@ -4,7 +4,6 @@ import { TicketsController } from './tickets.controller';
 import { TicketsService } from './tickets.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
-import { CreateTicketCommentDto } from './dto/create-ticket-comment.dto';
 import { TicketQueryDto } from './dto/ticket-query.dto';
 
 describe('TicketsController', () => {
@@ -17,8 +16,6 @@ describe('TicketsController', () => {
     findOne: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
-    createComment: jest.fn(),
-    getComments: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -72,15 +69,22 @@ describe('TicketsController', () => {
 
       const result = await controller.create(mockRequest, createDto);
 
-      expect(ticketsService.create).toHaveBeenCalledWith(mockRequest.user.id, createDto);
+      expect(ticketsService.create).toHaveBeenCalledWith(
+        mockRequest.user.id,
+        createDto,
+      );
       expect(result).toEqual(mockTicket);
       expect(result.ticketNumber).toMatch(/^TKT-\d+$/);
     });
 
     it('should throw NotFoundException when contact not found', async () => {
-      ticketsService.create.mockRejectedValue(new NotFoundException('Contact not found'));
+      ticketsService.create.mockRejectedValue(
+        new NotFoundException('Contact not found'),
+      );
 
-      await expect(controller.create(mockRequest, createDto)).rejects.toThrow(NotFoundException);
+      await expect(controller.create(mockRequest, createDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -167,9 +171,13 @@ describe('TicketsController', () => {
     });
 
     it('should throw NotFoundException when ticket not found', async () => {
-      ticketsService.findOne.mockRejectedValue(new NotFoundException('Ticket not found'));
+      ticketsService.findOne.mockRejectedValue(
+        new NotFoundException('Ticket not found'),
+      );
 
-      await expect(controller.findOne(ticketId)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(ticketId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -199,16 +207,22 @@ describe('TicketsController', () => {
 
       const result = await controller.update(ticketId, mockRequest, updateDto);
 
-      expect(ticketsService.update).toHaveBeenCalledWith(ticketId, mockRequest.user.id, updateDto);
+      expect(ticketsService.update).toHaveBeenCalledWith(
+        ticketId,
+        mockRequest.user.id,
+        updateDto,
+      );
       expect(result).toEqual(mockTicket);
     });
 
     it('should throw NotFoundException when ticket not found', async () => {
-      ticketsService.update.mockRejectedValue(new NotFoundException('Ticket not found'));
-
-      await expect(controller.update(ticketId, mockRequest, updateDto)).rejects.toThrow(
-        NotFoundException,
+      ticketsService.update.mockRejectedValue(
+        new NotFoundException('Ticket not found'),
       );
+
+      await expect(
+        controller.update(ticketId, mockRequest, updateDto),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw BadRequestException when invalid status transition', async () => {
@@ -216,9 +230,9 @@ describe('TicketsController', () => {
         new BadRequestException('Invalid status transition'),
       );
 
-      await expect(controller.update(ticketId, mockRequest, updateDto)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        controller.update(ticketId, mockRequest, updateDto),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -238,99 +252,23 @@ describe('TicketsController', () => {
 
       const result = await controller.remove(ticketId, mockRequest);
 
-      expect(ticketsService.remove).toHaveBeenCalledWith(ticketId, mockRequest.user.id);
+      expect(ticketsService.remove).toHaveBeenCalledWith(
+        ticketId,
+        mockRequest.user.id,
+      );
       expect(result).toEqual({ message: 'Ticket deleted successfully' });
     });
 
     it('should throw NotFoundException when ticket not found', async () => {
-      ticketsService.remove.mockRejectedValue(new NotFoundException('Ticket not found'));
-
-      await expect(controller.remove(ticketId, mockRequest)).rejects.toThrow(NotFoundException);
-    });
-  });
-
-  describe('createComment', () => {
-    const mockRequest = {
-      user: {
-        id: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-      },
-    };
-
-    const ticketId = '01ARZ3NDEKTSV4RRFFQ69G5FAV';
-    const createCommentDto: CreateTicketCommentDto = {
-      comment: 'This is a comment',
-      isInternal: false,
-    };
-
-    it('should create comment successfully', async () => {
-      const mockComment = {
-        id: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-        ticketId: ticketId,
-        comment: 'This is a comment',
-        isInternal: false,
-        userId: mockRequest.user.id,
-        createdAt: new Date(),
-      };
-
-      ticketsService.createComment.mockResolvedValue(mockComment);
-
-      const result = await controller.createComment(ticketId, mockRequest, createCommentDto);
-
-      expect(ticketsService.createComment).toHaveBeenCalledWith(
-        ticketId,
-        mockRequest.user.id,
-        createCommentDto,
+      ticketsService.remove.mockRejectedValue(
+        new NotFoundException('Ticket not found'),
       );
-      expect(result).toEqual(mockComment);
-    });
 
-    it('should throw NotFoundException when ticket not found', async () => {
-      ticketsService.createComment.mockRejectedValue(new NotFoundException('Ticket not found'));
-
-      await expect(
-        controller.createComment(ticketId, mockRequest, createCommentDto),
-      ).rejects.toThrow(NotFoundException);
+      await expect(controller.remove(ticketId, mockRequest)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
-  describe('getComments', () => {
-    const ticketId = '01ARZ3NDEKTSV4RRFFQ69G5FAV';
-
-    it('should return ticket comments', async () => {
-      const mockComments = [
-        {
-          id: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-          comment: 'This is a comment',
-          isInternal: false,
-          createdAt: new Date(),
-        },
-      ];
-
-      ticketsService.getComments.mockResolvedValue(mockComments);
-
-      const result = await controller.getComments(ticketId, false);
-
-      expect(ticketsService.getComments).toHaveBeenCalledWith(ticketId, false);
-      expect(result).toEqual(mockComments);
-    });
-
-    it('should return comments including internal when requested', async () => {
-      const mockComments = [
-        {
-          id: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-          comment: 'Internal comment',
-          isInternal: true,
-          createdAt: new Date(),
-        },
-      ];
-
-      ticketsService.getComments.mockResolvedValue(mockComments);
-
-      const result = await controller.getComments(ticketId, true);
-
-      expect(ticketsService.getComments).toHaveBeenCalledWith(ticketId, true);
-      expect(result).toEqual(mockComments);
-    });
-  });
+  // Comment methods removed - use CollaborationModule instead
 });
-

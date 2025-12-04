@@ -61,4 +61,3 @@ export class SubmissionsController {
     return this.submissionsService.findOne(id);
   }
 }
-

@@ -42,10 +42,42 @@ export class CreateFormColumnDto {
 
   @ApiProperty({
     description: 'Data type',
-    enum: ['text', 'textarea', 'email', 'phone', 'number', 'date', 'datetime', 'boolean', 'single_select', 'multi_select', 'file', 'files', 'json', 'array', 'url'],
+    enum: [
+      'text',
+      'textarea',
+      'email',
+      'phone',
+      'number',
+      'date',
+      'datetime',
+      'boolean',
+      'single_select',
+      'multi_select',
+      'file',
+      'files',
+      'json',
+      'array',
+      'url',
+    ],
     example: 'email',
   })
-  @IsEnum(['text', 'textarea', 'email', 'phone', 'number', 'date', 'datetime', 'boolean', 'single_select', 'multi_select', 'file', 'files', 'json', 'array', 'url'])
+  @IsEnum([
+    'text',
+    'textarea',
+    'email',
+    'phone',
+    'number',
+    'date',
+    'datetime',
+    'boolean',
+    'single_select',
+    'multi_select',
+    'file',
+    'files',
+    'json',
+    'array',
+    'url',
+  ])
   @IsNotEmpty()
   dataType: string;
 
@@ -109,4 +141,3 @@ export class CreateFormColumnDto {
   @IsOptional()
   defaultValue?: string;
 }
-

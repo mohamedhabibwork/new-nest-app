@@ -67,7 +67,10 @@ describe('FormsController', () => {
 
       const result = await controller.create(mockRequest, createDto);
 
-      expect(formsService.create).toHaveBeenCalledWith(mockRequest.user.id, createDto);
+      expect(formsService.create).toHaveBeenCalledWith(
+        mockRequest.user.id,
+        createDto,
+      );
       expect(result).toEqual(mockForm);
     });
   });
@@ -96,7 +99,12 @@ describe('FormsController', () => {
 
       const result = await controller.findAll(1, 50, 'lead_capture', 'active');
 
-      expect(formsService.findAll).toHaveBeenCalledWith(1, 50, 'lead_capture', 'active');
+      expect(formsService.findAll).toHaveBeenCalledWith(
+        1,
+        50,
+        'lead_capture',
+        'active',
+      );
       expect(result).toEqual(mockResponse);
     });
   });
@@ -123,9 +131,13 @@ describe('FormsController', () => {
     });
 
     it('should throw NotFoundException when form not found', async () => {
-      formsService.findOne.mockRejectedValue(new NotFoundException('Form not found'));
+      formsService.findOne.mockRejectedValue(
+        new NotFoundException('Form not found'),
+      );
 
-      await expect(controller.findOne(formId)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(formId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -153,7 +165,11 @@ describe('FormsController', () => {
 
       const result = await controller.update(formId, mockRequest, updateDto);
 
-      expect(formsService.update).toHaveBeenCalledWith(formId, mockRequest.user.id, updateDto);
+      expect(formsService.update).toHaveBeenCalledWith(
+        formId,
+        mockRequest.user.id,
+        updateDto,
+      );
       expect(result).toEqual(mockForm);
     });
   });
@@ -204,7 +220,9 @@ describe('FormsController', () => {
         new BadRequestException('Invalid field type'),
       );
 
-      await expect(controller.createColumn(createColumnDto)).rejects.toThrow(BadRequestException);
+      await expect(controller.createColumn(createColumnDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -226,7 +244,10 @@ describe('FormsController', () => {
 
       const result = await controller.updateColumn(columnId, updateDto);
 
-      expect(formsService.updateColumn).toHaveBeenCalledWith(columnId, updateDto);
+      expect(formsService.updateColumn).toHaveBeenCalledWith(
+        columnId,
+        updateDto,
+      );
       expect(result).toEqual(mockColumn);
     });
   });
@@ -246,4 +267,3 @@ describe('FormsController', () => {
     });
   });
 });
-

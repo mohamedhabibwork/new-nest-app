@@ -1,4 +1,12 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber, IsDateString, IsBoolean, Min } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsNumber,
+  IsDateString,
+  IsBoolean,
+  Min,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateTimeLogDto {
@@ -44,4 +52,3 @@ export class CreateTimeLogDto {
   @IsOptional()
   isBillable?: boolean;
 }
-

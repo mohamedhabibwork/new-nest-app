@@ -56,4 +56,3 @@ export class UpdateProjectDto {
   @IsOptional()
   priority?: string;
 }
-

@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { StreamableFile } from '@nestjs/common';
 import { Readable } from 'stream';
 import { FilesController } from './files.controller';
@@ -80,7 +84,11 @@ describe('FilesController', () => {
 
       filesService.uploadFile.mockResolvedValue(mockAttachment);
 
-      const result = await controller.uploadFile(mockFile, uploadDto, mockRequest);
+      const result = await controller.uploadFile(
+        mockFile,
+        uploadDto,
+        mockRequest,
+      );
 
       expect(filesService.uploadFile).toHaveBeenCalledWith(
         mockFile,
@@ -111,7 +119,11 @@ describe('FilesController', () => {
 
       filesService.uploadFile.mockResolvedValue(mockAttachment);
 
-      const result = await controller.uploadFile(mockFile, uploadDtoNullMetadata, mockRequest);
+      const result = await controller.uploadFile(
+        mockFile,
+        uploadDtoNullMetadata,
+        mockRequest,
+      );
 
       expect(filesService.uploadFile).toHaveBeenCalledWith(
         mockFile,
@@ -140,7 +152,11 @@ describe('FilesController', () => {
 
       filesService.uploadFile.mockResolvedValue(mockAttachment);
 
-      const result = await controller.uploadFile(mockFile, uploadDtoNoMetadata, mockRequest);
+      const result = await controller.uploadFile(
+        mockFile,
+        uploadDtoNoMetadata,
+        mockRequest,
+      );
 
       expect(filesService.uploadFile).toHaveBeenCalledWith(
         mockFile,
@@ -177,14 +193,21 @@ describe('FilesController', () => {
 
       const result = await controller.getFile(fileId, mockRequest);
 
-      expect(filesService.getFile).toHaveBeenCalledWith(fileId, mockRequest.user.id);
+      expect(filesService.getFile).toHaveBeenCalledWith(
+        fileId,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockFile);
     });
 
     it('should throw NotFoundException when file not found', async () => {
-      filesService.getFile.mockRejectedValue(new NotFoundException('File not found'));
+      filesService.getFile.mockRejectedValue(
+        new NotFoundException('File not found'),
+      );
 
-      await expect(controller.getFile(fileId, mockRequest)).rejects.toThrow(NotFoundException);
+      await expect(controller.getFile(fileId, mockRequest)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException when user has no access', async () => {
@@ -225,21 +248,39 @@ describe('FilesController', () => {
       filesService.getFileStream.mockResolvedValue(mockFileInfo);
       filesService.getFileSize.mockResolvedValue(1024);
 
-      const result = await controller.downloadFile(fileId, mockRequest, mockResponse);
+      const result = await controller.downloadFile(
+        fileId,
+        mockRequest,
+        mockResponse,
+      );
 
-      expect(filesService.getFileStream).toHaveBeenCalledWith(fileId, mockRequest.user.id);
-      expect(filesService.getFileSize).toHaveBeenCalledWith(fileId, mockRequest.user.id);
+      expect(filesService.getFileStream).toHaveBeenCalledWith(
+        fileId,
+        mockRequest.user.id,
+      );
+      expect(filesService.getFileSize).toHaveBeenCalledWith(
+        fileId,
+        mockRequest.user.id,
+      );
       expect(mockResponse.setHeader).toHaveBeenCalledWith(
         'Content-Type',
         'application/pdf',
       );
-      expect(mockResponse.setHeader).toHaveBeenCalledWith('Content-Disposition', expect.any(String));
-      expect(mockResponse.setHeader).toHaveBeenCalledWith('Content-Length', '1024');
+      expect(mockResponse.setHeader).toHaveBeenCalledWith(
+        'Content-Disposition',
+        expect.any(String),
+      );
+      expect(mockResponse.setHeader).toHaveBeenCalledWith(
+        'Content-Length',
+        '1024',
+      );
       expect(result).toBeInstanceOf(StreamableFile);
     });
 
     it('should throw NotFoundException when file not found', async () => {
-      filesService.getFileStream.mockRejectedValue(new NotFoundException('File not found'));
+      filesService.getFileStream.mockRejectedValue(
+        new NotFoundException('File not found'),
+      );
 
       await expect(
         controller.downloadFile(fileId, mockRequest, mockResponse),
@@ -263,12 +304,17 @@ describe('FilesController', () => {
 
       const result = await controller.deleteFile(fileId, mockRequest);
 
-      expect(filesService.deleteFile).toHaveBeenCalledWith(fileId, mockRequest.user.id);
+      expect(filesService.deleteFile).toHaveBeenCalledWith(
+        fileId,
+        mockRequest.user.id,
+      );
       expect(result).toEqual({ message: 'File deleted successfully' });
     });
 
     it('should throw NotFoundException when file not found', async () => {
-      filesService.deleteFile.mockRejectedValue(new NotFoundException('File not found'));
+      filesService.deleteFile.mockRejectedValue(
+        new NotFoundException('File not found'),
+      );
 
       await expect(controller.deleteFile(fileId, mockRequest)).rejects.toThrow(
         NotFoundException,
@@ -322,11 +368,13 @@ describe('FilesController', () => {
     });
 
     it('should throw NotFoundException when file not found', async () => {
-      filesService.moveFile.mockRejectedValue(new NotFoundException('File not found'));
-
-      await expect(controller.moveFile(fileId, moveBody, mockRequest)).rejects.toThrow(
-        NotFoundException,
+      filesService.moveFile.mockRejectedValue(
+        new NotFoundException('File not found'),
       );
+
+      await expect(
+        controller.moveFile(fileId, moveBody, mockRequest),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw BadRequestException when moving to same entity', async () => {
@@ -334,9 +382,9 @@ describe('FilesController', () => {
         new BadRequestException('File is already attached to this entity'),
       );
 
-      await expect(controller.moveFile(fileId, moveBody, mockRequest)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        controller.moveFile(fileId, moveBody, mockRequest),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -377,7 +425,13 @@ describe('FilesController', () => {
 
       filesService.listFiles.mockResolvedValue(mockResponse);
 
-      const result = await controller.listFiles(entityType, entityId, page, limit, mockRequest);
+      const result = await controller.listFiles(
+        entityType,
+        entityId,
+        page,
+        limit,
+        mockRequest,
+      );
 
       expect(filesService.listFiles).toHaveBeenCalledWith(
         entityType,
@@ -390,4 +444,3 @@ describe('FilesController', () => {
     });
   });
 });
-

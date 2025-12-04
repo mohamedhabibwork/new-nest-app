@@ -83,7 +83,7 @@ export class CreateCompanyDto {
 
   @ApiPropertyOptional({
     description: 'Annual revenue',
-    example: 10000000.50,
+    example: 10000000.5,
   })
   @Type(() => Number)
   @IsNumber()
@@ -124,4 +124,3 @@ export class CreateCompanyDto {
   @IsOptional()
   customProperties?: Record<string, unknown>;
 }
-

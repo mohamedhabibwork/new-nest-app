@@ -11,4 +11,3 @@ import { PrismaModule } from '../../prisma/prisma.module';
   exports: [RbacService, RolesGuard, PermissionsGuard],
 })
 export class RbacModule {}
-

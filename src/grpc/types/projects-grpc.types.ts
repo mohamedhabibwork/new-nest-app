@@ -1,6 +1,11 @@
-import { GrpcBaseRequest, GrpcPaginationParams, GrpcPaginationResponse } from './grpc-common.types';
+import {
+  GrpcBaseRequest,
+  GrpcPaginationParams,
+  GrpcPaginationResponse,
+} from './grpc-common.types';
 
-export interface ListProjectsRequest extends GrpcBaseRequest, GrpcPaginationParams {
+export interface ListProjectsRequest
+  extends GrpcBaseRequest, GrpcPaginationParams {
   workspace_id: string;
   status?: string;
   search?: string;
@@ -69,4 +74,3 @@ export interface DeleteProjectRequest extends GrpcBaseRequest {
 export interface DeleteProjectResponse {
   message: string;
 }
-

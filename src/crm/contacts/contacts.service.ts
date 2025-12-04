@@ -1,7 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { withUlid } from '../../common/utils/prisma-helpers';
-import { buildPaginationResponse, normalizePaginationParams } from '../../common/utils/pagination.util';
+import {
+  buildPaginationResponse,
+  normalizePaginationParams,
+} from '../../common/utils/pagination.util';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
 import { ContactQueryDto } from './dto/contact-query.dto';
@@ -55,7 +62,7 @@ export class ContactsService {
         ownerId: data.ownerId || userId,
         leadScore: data.leadScore || 0,
         lastContacted: data.lastContacted,
-        customProperties: data.customProperties,
+        customProperties: data.customProperties as Prisma.InputJsonValue,
         tags: data.tags,
         isDeleted: false,
       }),
@@ -82,7 +89,10 @@ export class ContactsService {
   }
 
   async findAll(queryDto: ContactQueryDto) {
-    const { page, limit } = normalizePaginationParams(queryDto.page, queryDto.limit);
+    const { page, limit } = normalizePaginationParams(
+      queryDto.page,
+      queryDto.limit,
+    );
 
     // Build where clause
     const where: Prisma.ContactWhereInput = {
@@ -109,7 +119,10 @@ export class ContactsService {
       where.leadSource = queryDto.leadSource;
     }
 
-    if (queryDto.minLeadScore !== undefined || queryDto.maxLeadScore !== undefined) {
+    if (
+      queryDto.minLeadScore !== undefined ||
+      queryDto.maxLeadScore !== undefined
+    ) {
       where.leadScore = {};
       if (queryDto.minLeadScore !== undefined) {
         where.leadScore.gte = queryDto.minLeadScore;
@@ -253,7 +266,11 @@ export class ContactsService {
       const existingContact = await this.prisma.contact.findUnique({
         where: { email: data.email },
       });
-      if (existingContact && existingContact.id !== id && !existingContact.isDeleted) {
+      if (
+        existingContact &&
+        existingContact.id !== id &&
+        !existingContact.isDeleted
+      ) {
         throw new BadRequestException('Contact with this email already exists');
       }
     }
@@ -273,7 +290,7 @@ export class ContactsService {
         ownerId: data.ownerId,
         leadScore: data.leadScore,
         lastContacted: data.lastContacted,
-        customProperties: data.customProperties,
+        customProperties: data.customProperties as Prisma.InputJsonValue,
         tags: data.tags,
       },
       include: {
@@ -321,4 +338,3 @@ export class ContactsService {
     });
   }
 }
-

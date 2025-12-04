@@ -19,4 +19,3 @@ export class CreateTaskDependencyDto {
   @IsNotEmpty()
   dependencyType: 'blocks' | 'blocked_by' | 'relates_to';
 }
-

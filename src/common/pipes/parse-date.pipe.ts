@@ -22,4 +22,3 @@ export class ParseDatePipe implements PipeTransform<string, Date> {
     return date;
   }
 }
-

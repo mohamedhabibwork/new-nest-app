@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber, Min } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsNumber,
+  Min,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateChecklistItemDto {
@@ -21,4 +27,3 @@ export class CreateChecklistItemDto {
   @Min(0)
   orderIndex?: number;
 }
-

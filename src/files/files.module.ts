@@ -22,4 +22,3 @@ import { WebSocketModule } from '../websocket/websocket.module';
   exports: [FilesService],
 })
 export class FilesModule {}
-

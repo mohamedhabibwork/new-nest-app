@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package assignments;
+
+service AssignmentService {
+  rpc ListAssignments (ListAssignmentsRequest) returns (ListAssignmentsResponse);
+  rpc GetAssignment (GetAssignmentRequest) returns (GetAssignmentResponse);
+  rpc CreateAssignment (CreateAssignmentRequest) returns (CreateAssignmentResponse);
+  rpc UpdateAssignment (UpdateAssignmentRequest) returns (UpdateAssignmentResponse);
+  rpc UpdateAssignmentStatus (UpdateAssignmentStatusRequest) returns (UpdateAssignmentResponse);
+  rpc DeleteAssignment (DeleteAssignmentRequest) returns (DeleteAssignmentResponse);
+}
+
+message ListAssignmentsRequest {
+  string user_id = 1;
+  string assignable_type = 2;
+  string assignable_id = 3;
+  string assignee_id = 4;
+  string status = 5;
+  string priority = 6;
+  int32 page = 7;
+  int32 limit = 8;
+}
+
+message ListAssignmentsResponse {
+  repeated Assignment assignments = 1;
+  Pagination pagination = 2;
+}
+
+message GetAssignmentRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message GetAssignmentResponse {
+  Assignment assignment = 1;
+}
+
+message CreateAssignmentRequest {
+  string user_id = 1;
+  string assignable_type = 2;
+  string assignable_id = 3;
+  string assignee_id = 4;
+  string priority = 5;
+  string due_date = 6;
+  string notes = 7;
+}
+
+message CreateAssignmentResponse {
+  Assignment assignment = 1;
+}
+
+message UpdateAssignmentRequest {
+  string id = 1;
+  string user_id = 2;
+  string priority = 3;
+  string due_date = 4;
+  string notes = 5;
+}
+
+message UpdateAssignmentStatusRequest {
+  string id = 1;
+  string user_id = 2;
+  string status = 3;
+}
+
+message UpdateAssignmentResponse {
+  Assignment assignment = 1;
+}
+
+message DeleteAssignmentRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message DeleteAssignmentResponse {
+  string message = 1;
+}
+
+message Assignment {
+  string id = 1;
+  string assignable_type = 2;
+  string assignable_id = 3;
+  string assignee_id = 4;
+  string assigner_id = 5;
+  string status = 6;
+  string priority = 7;
+  string due_date = 8;
+  string notes = 9;
+  string assigned_at = 10;
+  string completed_at = 11;
+  string updated_at = 12;
+  User assignee = 13;
+  User assigner = 14;
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+}
+
+message Pagination {
+  int32 page = 1;
+  int32 limit = 2;
+  int32 total = 3;
+  int32 total_pages = 4;
+  bool has_next = 5;
+  bool has_previous = 6;
+}
+

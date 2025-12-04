@@ -3,15 +3,24 @@ import { Expose } from 'class-transformer';
 
 export class TaskAssignmentResponseDto {
   @Expose()
-  @ApiProperty({ description: 'Assignment ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Assignment ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
-  @ApiProperty({ description: 'Task ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Task ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   taskId: string;
 
   @Expose()
-  @ApiProperty({ description: 'User ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'User ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   userId: string;
 
   @Expose()
@@ -19,7 +28,10 @@ export class TaskAssignmentResponseDto {
   assignedAt: Date;
 
   @Expose()
-  @ApiProperty({ description: 'Whether this is the primary assignee', example: false })
+  @ApiProperty({
+    description: 'Whether this is the primary assignee',
+    example: false,
+  })
   isPrimary: boolean;
 
   @Expose()
@@ -31,4 +43,3 @@ export class TaskAssignmentResponseDto {
     lastName: string | null;
   };
 }
-

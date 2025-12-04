@@ -3,11 +3,17 @@ import { Expose } from 'class-transformer';
 
 export class TimeLogResponseDto {
   @Expose()
-  @ApiProperty({ description: 'Time log ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Time log ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
-  @ApiProperty({ description: 'Task ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Task ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   taskId: string;
 
   @Expose()
@@ -34,4 +40,3 @@ export class TimeLogResponseDto {
   @ApiProperty({ description: 'Creation timestamp' })
   createdAt: Date;
 }
-

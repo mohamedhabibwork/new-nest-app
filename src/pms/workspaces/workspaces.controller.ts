@@ -58,12 +58,42 @@ export class WorkspacesController {
     return this.workspacesService.create(req.user.id, createDto);
   }
 
-  @ApiOperation({ summary: 'Get all workspaces for the current user with pagination, filtering, and sorting' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number', example: 1 })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page', example: 50 })
-  @ApiQuery({ name: 'search', required: false, type: String, description: 'Search in workspace name' })
-  @ApiQuery({ name: 'sortBy', required: false, enum: ['createdAt', 'updatedAt', 'workspaceName'], description: 'Sort by field' })
-  @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'], description: 'Sort order' })
+  @ApiOperation({
+    summary:
+      'Get all workspaces for the current user with pagination, filtering, and sorting',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page',
+    example: 50,
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Search in workspace name',
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    enum: ['createdAt', 'updatedAt', 'workspaceName'],
+    description: 'Sort by field',
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['asc', 'desc'],
+    description: 'Sort order',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of workspaces with pagination',
@@ -79,28 +109,42 @@ export class WorkspacesController {
   }
 
   @ApiOperation({ summary: 'Get a workspace by ID' })
-  @ApiParam({ name: 'id', description: 'Workspace ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Workspace ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Workspace details',
     type: WorkspaceResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Workspace not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden - No access to workspace' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - No access to workspace',
+  })
   @Get(':id')
   findOne(@Param('id') id: string, @Request() req: { user: { id: string } }) {
     return this.workspacesService.findOne(id, req.user.id);
   }
 
   @ApiOperation({ summary: 'Update a workspace' })
-  @ApiParam({ name: 'id', description: 'Workspace ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Workspace ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Workspace updated successfully',
     type: WorkspaceResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Workspace not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden - No access to workspace' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - No access to workspace',
+  })
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -111,13 +155,20 @@ export class WorkspacesController {
   }
 
   @ApiOperation({ summary: 'Delete a workspace' })
-  @ApiParam({ name: 'id', description: 'Workspace ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Workspace ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Workspace deleted successfully',
   })
   @ApiResponse({ status: 404, description: 'Workspace not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden - No access to workspace' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - No access to workspace',
+  })
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   remove(@Param('id') id: string, @Request() req: { user: { id: string } }) {
@@ -176,7 +227,10 @@ export class WorkspacesController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Cancel workspace invitation' })
   @ApiParam({ name: 'id', description: 'Invitation ID' })
-  @ApiResponse({ status: 204, description: 'Invitation cancelled successfully' })
+  @ApiResponse({
+    status: 204,
+    description: 'Invitation cancelled successfully',
+  })
   async cancelInvitation(@Param('id') id: string) {
     return this.invitationService.cancelInvitation(id);
   }
@@ -185,9 +239,11 @@ export class WorkspacesController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Resend workspace invitation email' })
   @ApiParam({ name: 'id', description: 'Invitation ID' })
-  @ApiResponse({ status: 200, description: 'Invitation email resent successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Invitation email resent successfully',
+  })
   async resendInvitation(@Param('id') id: string) {
     return this.invitationService.resendInvitation(id);
   }
 }
-

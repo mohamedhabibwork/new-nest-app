@@ -49,19 +49,29 @@ export class DealsController {
     return this.dealsService.create(req.user.id, createDto);
   }
 
-  @ApiOperation({ summary: 'Get all deals with pagination, filtering, and sorting' })
+  @ApiOperation({
+    summary: 'Get all deals with pagination, filtering, and sorting',
+  })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'contactId', required: false, type: String })
   @ApiQuery({ name: 'companyId', required: false, type: String })
   @ApiQuery({ name: 'pipelineId', required: false, type: String })
   @ApiQuery({ name: 'stageId', required: false, type: String })
-  @ApiQuery({ name: 'status', required: false, enum: ['open', 'won', 'lost', 'abandoned'] })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: ['open', 'won', 'lost', 'abandoned'],
+  })
   @ApiQuery({ name: 'ownerId', required: false, type: String })
   @ApiQuery({ name: 'closeDateFrom', required: false, type: String })
   @ApiQuery({ name: 'closeDateTo', required: false, type: String })
   @ApiQuery({ name: 'search', required: false, type: String })
-  @ApiQuery({ name: 'sortBy', required: false, enum: ['createdAt', 'updatedAt', 'closeDate', 'amount', 'probability'] })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    enum: ['createdAt', 'updatedAt', 'closeDate', 'amount', 'probability'],
+  })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'] })
   @ApiResponse({
     status: 200,
@@ -129,4 +139,3 @@ export class DealsController {
     return this.dealsService.moveToStage(dealId, stageId, req.user.id);
   }
 }
-

@@ -1,6 +1,11 @@
-import { GrpcBaseRequest, GrpcPaginationParams, GrpcPaginationResponse } from './grpc-common.types';
+import {
+  GrpcBaseRequest,
+  GrpcPaginationParams,
+  GrpcPaginationResponse,
+} from './grpc-common.types';
 
-export interface ListFilesRequest extends GrpcBaseRequest, GrpcPaginationParams {
+export interface ListFilesRequest
+  extends GrpcBaseRequest, GrpcPaginationParams {
   entity_type: string;
   entity_id: string;
 }
@@ -56,4 +61,3 @@ export interface MoveFileRequest extends GrpcBaseRequest {
 export interface MoveFileResponse {
   file: FileResponse;
 }
-

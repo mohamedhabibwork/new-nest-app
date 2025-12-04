@@ -1,4 +1,11 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsObject, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  IsObject,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateFormDto {
@@ -19,10 +26,24 @@ export class CreateFormDto {
 
   @ApiProperty({
     description: 'Form type',
-    enum: ['lead_capture', 'contact_update', 'survey', 'ticket', 'registration', 'other'],
+    enum: [
+      'lead_capture',
+      'contact_update',
+      'survey',
+      'ticket',
+      'registration',
+      'other',
+    ],
     example: 'lead_capture',
   })
-  @IsEnum(['lead_capture', 'contact_update', 'survey', 'ticket', 'registration', 'other'])
+  @IsEnum([
+    'lead_capture',
+    'contact_update',
+    'survey',
+    'ticket',
+    'registration',
+    'other',
+  ])
   @IsNotEmpty()
   formType: string;
 
@@ -40,4 +61,3 @@ export class CreateFormDto {
   @IsOptional()
   automationRules?: Record<string, unknown>;
 }
-

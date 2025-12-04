@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { TeamsController } from './teams.controller';
 import { TeamsService } from './teams.service';
 import { AddTeamMemberDto } from './dto/add-team-member.dto';
@@ -53,7 +57,10 @@ describe('TeamsController', () => {
 
       const result = await controller.getTeams(workspaceId);
 
-      expect(teamsService.getTeams).toHaveBeenCalledWith(workspaceId, undefined);
+      expect(teamsService.getTeams).toHaveBeenCalledWith(
+        workspaceId,
+        undefined,
+      );
       expect(result).toEqual(mockTeams);
     });
 
@@ -126,11 +133,13 @@ describe('TeamsController', () => {
     });
 
     it('should throw NotFoundException when team not found', async () => {
-      teamsService.addUserToTeam.mockRejectedValue(new NotFoundException('Team not found'));
-
-      await expect(controller.addMember(teamId, addDto, mockRequest)).rejects.toThrow(
-        NotFoundException,
+      teamsService.addUserToTeam.mockRejectedValue(
+        new NotFoundException('Team not found'),
       );
+
+      await expect(
+        controller.addMember(teamId, addDto, mockRequest),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw BadRequestException when user already a member', async () => {
@@ -138,19 +147,21 @@ describe('TeamsController', () => {
         new BadRequestException('User is already a member of this team'),
       );
 
-      await expect(controller.addMember(teamId, addDto, mockRequest)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        controller.addMember(teamId, addDto, mockRequest),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw ForbiddenException when user has no permission', async () => {
       teamsService.addUserToTeam.mockRejectedValue(
-        new ForbiddenException('You do not have permission to manage team members'),
+        new ForbiddenException(
+          'You do not have permission to manage team members',
+        ),
       );
 
-      await expect(controller.addMember(teamId, addDto, mockRequest)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        controller.addMember(teamId, addDto, mockRequest),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -176,7 +187,9 @@ describe('TeamsController', () => {
         userId,
         mockRequest.user.id,
       );
-      expect(result).toEqual({ message: 'User removed from team successfully' });
+      expect(result).toEqual({
+        message: 'User removed from team successfully',
+      });
     });
 
     it('should throw NotFoundException when team member not found', async () => {
@@ -191,7 +204,9 @@ describe('TeamsController', () => {
 
     it('should throw ForbiddenException when user has no permission', async () => {
       teamsService.removeUserFromTeam.mockRejectedValue(
-        new ForbiddenException('You do not have permission to manage team members'),
+        new ForbiddenException(
+          'You do not have permission to manage team members',
+        ),
       );
 
       await expect(
@@ -227,10 +242,13 @@ describe('TeamsController', () => {
     });
 
     it('should throw NotFoundException when team not found', async () => {
-      teamsService.getTeamMembers.mockRejectedValue(new NotFoundException('Team not found'));
+      teamsService.getTeamMembers.mockRejectedValue(
+        new NotFoundException('Team not found'),
+      );
 
-      await expect(controller.getMembers(teamId)).rejects.toThrow(NotFoundException);
+      await expect(controller.getMembers(teamId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });
-

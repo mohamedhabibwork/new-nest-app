@@ -73,20 +73,32 @@ describe('ActivitiesController', () => {
 
       const result = await controller.create(mockRequest, createDto);
 
-      expect(activitiesService.create).toHaveBeenCalledWith(mockRequest.user.id, createDto);
+      expect(activitiesService.create).toHaveBeenCalledWith(
+        mockRequest.user.id,
+        createDto,
+      );
       expect(result).toEqual(mockActivity);
     });
 
     it('should throw NotFoundException when contact not found', async () => {
-      activitiesService.create.mockRejectedValue(new NotFoundException('Contact not found'));
+      activitiesService.create.mockRejectedValue(
+        new NotFoundException('Contact not found'),
+      );
 
-      await expect(controller.create(mockRequest, createDto)).rejects.toThrow(NotFoundException);
-      expect(activitiesService.create).toHaveBeenCalledWith(mockRequest.user.id, createDto);
+      await expect(controller.create(mockRequest, createDto)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(activitiesService.create).toHaveBeenCalledWith(
+        mockRequest.user.id,
+        createDto,
+      );
     });
 
     it('should throw BadRequestException when invalid related entity', async () => {
       activitiesService.create.mockRejectedValue(
-        new BadRequestException('At least one related entity (contact, company, or deal) is required'),
+        new BadRequestException(
+          'At least one related entity (contact, company, or deal) is required',
+        ),
       );
 
       const invalidDto: CreateActivityDto = {
@@ -156,7 +168,9 @@ describe('ActivitiesController', () => {
 
       const result = await controller.findAll(queryDtoWithFilter);
 
-      expect(activitiesService.findAll).toHaveBeenCalledWith(queryDtoWithFilter);
+      expect(activitiesService.findAll).toHaveBeenCalledWith(
+        queryDtoWithFilter,
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -182,7 +196,9 @@ describe('ActivitiesController', () => {
 
       const result = await controller.findAll(queryDtoWithContact);
 
-      expect(activitiesService.findAll).toHaveBeenCalledWith(queryDtoWithContact);
+      expect(activitiesService.findAll).toHaveBeenCalledWith(
+        queryDtoWithContact,
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -237,9 +253,13 @@ describe('ActivitiesController', () => {
     });
 
     it('should throw NotFoundException when activity not found', async () => {
-      activitiesService.findOne.mockRejectedValue(new NotFoundException('Activity not found'));
+      activitiesService.findOne.mockRejectedValue(
+        new NotFoundException('Activity not found'),
+      );
 
-      await expect(controller.findOne(activityId)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(activityId)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(activitiesService.findOne).toHaveBeenCalledWith(activityId);
     });
   });
@@ -270,7 +290,11 @@ describe('ActivitiesController', () => {
 
       activitiesService.update.mockResolvedValue(mockActivity);
 
-      const result = await controller.update(activityId, mockRequest, updateDto);
+      const result = await controller.update(
+        activityId,
+        mockRequest,
+        updateDto,
+      );
 
       expect(activitiesService.update).toHaveBeenCalledWith(
         activityId,
@@ -281,11 +305,13 @@ describe('ActivitiesController', () => {
     });
 
     it('should throw NotFoundException when activity not found', async () => {
-      activitiesService.update.mockRejectedValue(new NotFoundException('Activity not found'));
-
-      await expect(controller.update(activityId, mockRequest, updateDto)).rejects.toThrow(
-        NotFoundException,
+      activitiesService.update.mockRejectedValue(
+        new NotFoundException('Activity not found'),
       );
+
+      await expect(
+        controller.update(activityId, mockRequest, updateDto),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -305,15 +331,21 @@ describe('ActivitiesController', () => {
 
       const result = await controller.remove(activityId, mockRequest);
 
-      expect(activitiesService.remove).toHaveBeenCalledWith(activityId, mockRequest.user.id);
+      expect(activitiesService.remove).toHaveBeenCalledWith(
+        activityId,
+        mockRequest.user.id,
+      );
       expect(result).toEqual({ message: 'Activity deleted successfully' });
     });
 
     it('should throw NotFoundException when activity not found', async () => {
-      activitiesService.remove.mockRejectedValue(new NotFoundException('Activity not found'));
+      activitiesService.remove.mockRejectedValue(
+        new NotFoundException('Activity not found'),
+      );
 
-      await expect(controller.remove(activityId, mockRequest)).rejects.toThrow(NotFoundException);
+      await expect(controller.remove(activityId, mockRequest)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });
-

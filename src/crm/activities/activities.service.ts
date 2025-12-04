@@ -1,7 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { withUlid } from '../../common/utils/prisma-helpers';
-import { buildPaginationResponse, normalizePaginationParams } from '../../common/utils/pagination.util';
+import {
+  buildPaginationResponse,
+  normalizePaginationParams,
+} from '../../common/utils/pagination.util';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
 import { ActivityQueryDto } from './dto/activity-query.dto';
@@ -14,7 +21,9 @@ export class ActivitiesService {
   async create(userId: string, data: CreateActivityDto) {
     // Validate that at least one entity (contact, company, or deal) is provided
     if (!data.contactId && !data.companyId && !data.dealId) {
-      throw new BadRequestException('At least one of contactId, companyId, or dealId must be provided');
+      throw new BadRequestException(
+        'At least one of contactId, companyId, or dealId must be provided',
+      );
     }
 
     // Verify contact exists if provided
@@ -51,7 +60,7 @@ export class ActivitiesService {
         direction: data.direction,
         activityDate: new Date(data.activityDate),
         durationMinutes: data.durationMinutes,
-        metadata: data.metadata,
+        metadata: data.metadata as Prisma.InputJsonValue,
       }),
       include: {
         contact: {
@@ -92,7 +101,10 @@ export class ActivitiesService {
   }
 
   async findAll(queryDto: ActivityQueryDto) {
-    const { page, limit } = normalizePaginationParams(queryDto.page, queryDto.limit);
+    const { page, limit } = normalizePaginationParams(
+      queryDto.page,
+      queryDto.limit,
+    );
 
     // Build where clause
     const where: Prisma.CrmActivityWhereInput = {};
@@ -253,12 +265,17 @@ export class ActivitiesService {
     }
 
     // Ensure at least one entity is still present
-    const finalContactId = data.contactId !== undefined ? data.contactId : activity.contactId;
-    const finalCompanyId = data.companyId !== undefined ? data.companyId : activity.companyId;
-    const finalDealId = data.dealId !== undefined ? data.dealId : activity.dealId;
+    const finalContactId =
+      data.contactId !== undefined ? data.contactId : activity.contactId;
+    const finalCompanyId =
+      data.companyId !== undefined ? data.companyId : activity.companyId;
+    const finalDealId =
+      data.dealId !== undefined ? data.dealId : activity.dealId;
 
     if (!finalContactId && !finalCompanyId && !finalDealId) {
-      throw new BadRequestException('At least one of contactId, companyId, or dealId must be provided');
+      throw new BadRequestException(
+        'At least one of contactId, companyId, or dealId must be provided',
+      );
     }
 
     return this.prisma.crmActivity.update({
@@ -271,9 +288,11 @@ export class ActivitiesService {
         subject: data.subject,
         description: data.description,
         direction: data.direction,
-        activityDate: data.activityDate ? new Date(data.activityDate) : undefined,
+        activityDate: data.activityDate
+          ? new Date(data.activityDate)
+          : undefined,
         durationMinutes: data.durationMinutes,
-        metadata: data.metadata,
+        metadata: data.metadata as Prisma.InputJsonValue,
       },
       include: {
         contact: {
@@ -313,4 +332,3 @@ export class ActivitiesService {
     return { message: 'Activity deleted successfully' };
   }
 }
-

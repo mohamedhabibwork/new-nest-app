@@ -112,9 +112,13 @@ describe('PipelinesController', () => {
     });
 
     it('should throw NotFoundException when pipeline not found', async () => {
-      pipelinesService.findOne.mockRejectedValue(new NotFoundException('Pipeline not found'));
+      pipelinesService.findOne.mockRejectedValue(
+        new NotFoundException('Pipeline not found'),
+      );
 
-      await expect(controller.findOne(pipelineId)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(pipelineId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -138,14 +142,21 @@ describe('PipelinesController', () => {
 
       const result = await controller.update(pipelineId, updateDto);
 
-      expect(pipelinesService.update).toHaveBeenCalledWith(pipelineId, updateDto);
+      expect(pipelinesService.update).toHaveBeenCalledWith(
+        pipelineId,
+        updateDto,
+      );
       expect(result).toEqual(mockPipeline);
     });
 
     it('should throw NotFoundException when pipeline not found', async () => {
-      pipelinesService.update.mockRejectedValue(new NotFoundException('Pipeline not found'));
+      pipelinesService.update.mockRejectedValue(
+        new NotFoundException('Pipeline not found'),
+      );
 
-      await expect(controller.update(pipelineId, updateDto)).rejects.toThrow(NotFoundException);
+      await expect(controller.update(pipelineId, updateDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -164,9 +175,13 @@ describe('PipelinesController', () => {
     });
 
     it('should throw NotFoundException when pipeline not found', async () => {
-      pipelinesService.remove.mockRejectedValue(new NotFoundException('Pipeline not found'));
+      pipelinesService.remove.mockRejectedValue(
+        new NotFoundException('Pipeline not found'),
+      );
 
-      await expect(controller.remove(pipelineId)).rejects.toThrow(NotFoundException);
+      await expect(controller.remove(pipelineId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException when pipeline has deals', async () => {
@@ -174,7 +189,9 @@ describe('PipelinesController', () => {
         new BadRequestException('Cannot delete pipeline with deals'),
       );
 
-      await expect(controller.remove(pipelineId)).rejects.toThrow(BadRequestException);
+      await expect(controller.remove(pipelineId)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -206,17 +223,25 @@ describe('PipelinesController', () => {
     });
 
     it('should throw NotFoundException when pipeline not found', async () => {
-      pipelinesService.createStage.mockRejectedValue(new NotFoundException('Pipeline not found'));
+      pipelinesService.createStage.mockRejectedValue(
+        new NotFoundException('Pipeline not found'),
+      );
 
-      await expect(controller.createStage(createStageDto)).rejects.toThrow(NotFoundException);
+      await expect(controller.createStage(createStageDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException when duplicate stage name', async () => {
       pipelinesService.createStage.mockRejectedValue(
-        new BadRequestException('Stage with this name already exists in pipeline'),
+        new BadRequestException(
+          'Stage with this name already exists in pipeline',
+        ),
       );
 
-      await expect(controller.createStage(createStageDto)).rejects.toThrow(BadRequestException);
+      await expect(controller.createStage(createStageDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -264,9 +289,13 @@ describe('PipelinesController', () => {
     });
 
     it('should throw NotFoundException when stage not found', async () => {
-      pipelinesService.findOneStage.mockRejectedValue(new NotFoundException('Stage not found'));
+      pipelinesService.findOneStage.mockRejectedValue(
+        new NotFoundException('Stage not found'),
+      );
 
-      await expect(controller.findOneStage(stageId)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOneStage(stageId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -292,14 +321,21 @@ describe('PipelinesController', () => {
 
       const result = await controller.updateStage(stageId, updateDto);
 
-      expect(pipelinesService.updateStage).toHaveBeenCalledWith(stageId, updateDto);
+      expect(pipelinesService.updateStage).toHaveBeenCalledWith(
+        stageId,
+        updateDto,
+      );
       expect(result).toEqual(mockStage);
     });
 
     it('should throw NotFoundException when stage not found', async () => {
-      pipelinesService.updateStage.mockRejectedValue(new NotFoundException('Stage not found'));
+      pipelinesService.updateStage.mockRejectedValue(
+        new NotFoundException('Stage not found'),
+      );
 
-      await expect(controller.updateStage(stageId, updateDto)).rejects.toThrow(NotFoundException);
+      await expect(controller.updateStage(stageId, updateDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -314,13 +350,19 @@ describe('PipelinesController', () => {
       const result = await controller.removeStage(stageId);
 
       expect(pipelinesService.removeStage).toHaveBeenCalledWith(stageId);
-      expect(result).toEqual({ message: 'Pipeline stage deleted successfully' });
+      expect(result).toEqual({
+        message: 'Pipeline stage deleted successfully',
+      });
     });
 
     it('should throw NotFoundException when stage not found', async () => {
-      pipelinesService.removeStage.mockRejectedValue(new NotFoundException('Stage not found'));
+      pipelinesService.removeStage.mockRejectedValue(
+        new NotFoundException('Stage not found'),
+      );
 
-      await expect(controller.removeStage(stageId)).rejects.toThrow(NotFoundException);
+      await expect(controller.removeStage(stageId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException when stage has deals', async () => {
@@ -328,8 +370,9 @@ describe('PipelinesController', () => {
         new BadRequestException('Cannot delete stage with deals'),
       );
 
-      await expect(controller.removeStage(stageId)).rejects.toThrow(BadRequestException);
+      await expect(controller.removeStage(stageId)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });
-

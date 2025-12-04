@@ -8,7 +8,7 @@ export class EmailService {
 
   constructor(private configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
-      host: configService.get('SMTP_HOST') || 'smtp.gmail.com',
+      host: configService.get('SMTP_HOST') || '127.0.0.1',
       port: parseInt(configService.get('SMTP_PORT') || '587'),
       secure: configService.get('SMTP_SECURE') === 'true',
       auth: {
@@ -19,11 +19,16 @@ export class EmailService {
   }
 
   async sendVerificationEmail(email: string, token: string): Promise<void> {
-    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
-    const verificationUrl = `${frontendUrl}/auth/verify-email?token=${token}`;
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const apiUrl = this.configService.get('API_URL') || frontendUrl;
+    // Use non-versioned URL for email links (backward compatibility)
+    const verificationUrl = `${apiUrl}/auth/verify-email?token=${token}`;
 
     const mailOptions = {
-      from: this.configService.get('SMTP_FROM') || this.configService.get('SMTP_USER'),
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
       to: email,
       subject: 'Verify your email address',
       html: `
@@ -38,11 +43,15 @@ export class EmailService {
   }
 
   async sendPasswordResetEmail(email: string, token: string): Promise<void> {
-    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    // Note: reset-password is POST, so this URL should point to frontend form
     const resetUrl = `${frontendUrl}/auth/reset-password?token=${token}`;
 
     const mailOptions = {
-      from: this.configService.get('SMTP_FROM') || this.configService.get('SMTP_USER'),
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
       to: email,
       subject: 'Password Reset Request',
       html: `
@@ -63,11 +72,14 @@ export class EmailService {
     taskId: string,
     assignedBy: string,
   ): Promise<void> {
-    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
     const taskUrl = `${frontendUrl}/tasks/${taskId}`;
 
     const mailOptions = {
-      from: this.configService.get('SMTP_FROM') || this.configService.get('SMTP_USER'),
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
       to: email,
       subject: `Task Assigned: ${taskTitle}`,
       html: `
@@ -88,11 +100,14 @@ export class EmailService {
     taskId: string,
     changes: string[],
   ): Promise<void> {
-    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
     const taskUrl = `${frontendUrl}/tasks/${taskId}`;
 
     const mailOptions = {
-      from: this.configService.get('SMTP_FROM') || this.configService.get('SMTP_USER'),
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
       to: email,
       subject: `Task Updated: ${taskTitle}`,
       html: `
@@ -117,11 +132,14 @@ export class EmailService {
     commentAuthor: string,
     commentText: string,
   ): Promise<void> {
-    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
     const taskUrl = `${frontendUrl}/tasks/${taskId}`;
 
     const mailOptions = {
-      from: this.configService.get('SMTP_FROM') || this.configService.get('SMTP_USER'),
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
       to: email,
       subject: `New Comment on Task: ${taskTitle}`,
       html: `
@@ -143,11 +161,14 @@ export class EmailService {
     projectId: string,
     createdBy: string,
   ): Promise<void> {
-    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
     const projectUrl = `${frontendUrl}/projects/${projectId}`;
 
     const mailOptions = {
-      from: this.configService.get('SMTP_FROM') || this.configService.get('SMTP_USER'),
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
       to: email,
       subject: `New Project: ${projectName}`,
       html: `
@@ -162,7 +183,6 @@ export class EmailService {
     await this.transporter.sendMail(mailOptions);
   }
 
-
   async sendNotificationEmail(
     email: string,
     notificationType: string,
@@ -170,14 +190,17 @@ export class EmailService {
     entityType?: string,
     entityId?: string,
   ): Promise<void> {
-    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
     let entityUrl = frontendUrl;
     if (entityType && entityId) {
       entityUrl = `${frontendUrl}/${entityType}s/${entityId}`;
     }
 
     const mailOptions = {
-      from: this.configService.get('SMTP_FROM') || this.configService.get('SMTP_USER'),
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
       to: email,
       subject: `Notification: ${notificationType}`,
       html: `
@@ -197,7 +220,8 @@ export class EmailService {
     inviterName: string,
     role: string,
   ): Promise<void> {
-    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
     const registrationUrl = `${frontendUrl}/register?token=${invitationToken}`;
 
     const html = `
@@ -236,7 +260,9 @@ export class EmailService {
 
   async send2FACodeEmail(email: string, code: string): Promise<void> {
     const mailOptions = {
-      from: this.configService.get('SMTP_FROM') || this.configService.get('SMTP_USER'),
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
       to: email,
       subject: 'Your 2FA Verification Code',
       html: `
@@ -245,6 +271,369 @@ export class EmailService {
         <h3 style="font-size: 24px; letter-spacing: 4px;">${code}</h3>
         <p>This code will expire in 10 minutes.</p>
         <p>If you did not request this code, please ignore this email.</p>
+      `,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  // ============================================
+  // Polymorphic System Email Templates
+  // ============================================
+
+  async sendShareCreatedEmail(
+    email: string,
+    shareableType: string,
+    shareableId: string,
+    sharedByName: string,
+    permission: string,
+  ): Promise<void> {
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const entityUrl = `${frontendUrl}/${shareableType}s/${shareableId}`;
+
+    const mailOptions = {
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
+      to: email,
+      subject: `${sharedByName} shared a ${shareableType} with you`,
+      html: `
+        <h2>Content Shared</h2>
+        <p><strong>${sharedByName}</strong> has shared a ${shareableType} with you.</p>
+        <p>Permission: <strong>${permission}</strong></p>
+        <p><a href="${entityUrl}">View ${shareableType}</a></p>
+      `,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendAssignmentCreatedEmail(
+    email: string,
+    assignableType: string,
+    assignableId: string,
+    assignerName: string,
+    priority?: string,
+    dueDate?: Date,
+  ): Promise<void> {
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const entityUrl = `${frontendUrl}/${assignableType}s/${assignableId}`;
+
+    const mailOptions = {
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
+      to: email,
+      subject: `New Assignment: ${assignableType}`,
+      html: `
+        <h2>New Assignment</h2>
+        <p><strong>${assignerName}</strong> has assigned you a ${assignableType}.</p>
+        ${priority ? `<p>Priority: <strong>${priority}</strong></p>` : ''}
+        ${dueDate ? `<p>Due Date: <strong>${new Date(dueDate).toLocaleDateString()}</strong></p>` : ''}
+        <p><a href="${entityUrl}">View ${assignableType}</a></p>
+      `,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendAssignmentStatusChangedEmail(
+    email: string,
+    assignableType: string,
+    assignableId: string,
+    assigneeName: string,
+    status: string,
+  ): Promise<void> {
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const entityUrl = `${frontendUrl}/${assignableType}s/${assignableId}`;
+
+    const mailOptions = {
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
+      to: email,
+      subject: `Assignment Status Updated: ${assignableType}`,
+      html: `
+        <h2>Assignment Status Updated</h2>
+        <p><strong>${assigneeName}</strong> has updated the assignment status to <strong>${status}</strong>.</p>
+        <p><a href="${entityUrl}">View ${assignableType}</a></p>
+      `,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendMentionedEmail(
+    email: string,
+    mentionableType: string,
+    mentionableId: string,
+    mentionedByName: string,
+    commentText: string,
+  ): Promise<void> {
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const entityUrl = `${frontendUrl}/${mentionableType}s/${mentionableId}`;
+
+    const mailOptions = {
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
+      to: email,
+      subject: `${mentionedByName} mentioned you in a ${mentionableType}`,
+      html: `
+        <h2>You've been mentioned</h2>
+        <p><strong>${mentionedByName}</strong> mentioned you in a ${mentionableType}:</p>
+        <p style="background-color: #f5f5f5; padding: 10px; border-left: 3px solid #4F46E5;">${commentText}</p>
+        <p><a href="${entityUrl}">View ${mentionableType}</a></p>
+      `,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendTagCreatedEmail(
+    email: string,
+    tagName: string,
+    creatorName: string,
+  ): Promise<void> {
+    const mailOptions = {
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
+      to: email,
+      subject: `New Tag Created: ${tagName}`,
+      html: `
+        <h2>New Tag Created</h2>
+        <p><strong>${creatorName}</strong> has created a new tag: <strong>${tagName}</strong></p>
+      `,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendTaggableTaggedEmail(
+    email: string,
+    taggableType: string,
+    taggableId: string,
+    tagName: string,
+    taggedByName: string,
+  ): Promise<void> {
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const entityUrl = `${frontendUrl}/${taggableType}s/${taggableId}`;
+
+    const mailOptions = {
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
+      to: email,
+      subject: `${taggableType} tagged: ${tagName}`,
+      html: `
+        <h2>Content Tagged</h2>
+        <p><strong>${taggedByName}</strong> has tagged a ${taggableType} with <strong>${tagName}</strong>.</p>
+        <p><a href="${entityUrl}">View ${taggableType}</a></p>
+      `,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  // ============================================
+  // CRM Email Templates
+  // ============================================
+
+  async sendTicketCreatedEmail(
+    email: string,
+    ticketNumber: string,
+    subject: string,
+    contactName: string,
+    priority?: string,
+  ): Promise<void> {
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const ticketUrl = `${frontendUrl}/tickets/${ticketNumber}`;
+
+    const mailOptions = {
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
+      to: email,
+      subject: `New Ticket Created: ${ticketNumber}`,
+      html: `
+        <h2>New Ticket Created</h2>
+        <p>A new ticket has been created:</p>
+        <h3>${ticketNumber}: ${subject}</h3>
+        <p>Contact: <strong>${contactName}</strong></p>
+        ${priority ? `<p>Priority: <strong>${priority}</strong></p>` : ''}
+        <p><a href="${ticketUrl}">View Ticket</a></p>
+      `,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendTicketAssignedEmail(
+    email: string,
+    ticketNumber: string,
+    subject: string,
+    assignedByName: string,
+  ): Promise<void> {
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const ticketUrl = `${frontendUrl}/tickets/${ticketNumber}`;
+
+    const mailOptions = {
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
+      to: email,
+      subject: `Ticket Assigned: ${ticketNumber}`,
+      html: `
+        <h2>Ticket Assigned</h2>
+        <p><strong>${assignedByName}</strong> has assigned you a ticket:</p>
+        <h3>${ticketNumber}: ${subject}</h3>
+        <p><a href="${ticketUrl}">View Ticket</a></p>
+      `,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendTicketStatusChangedEmail(
+    email: string,
+    ticketNumber: string,
+    subject: string,
+    status: string,
+    changedByName: string,
+  ): Promise<void> {
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const ticketUrl = `${frontendUrl}/tickets/${ticketNumber}`;
+
+    const mailOptions = {
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
+      to: email,
+      subject: `Ticket Status Updated: ${ticketNumber}`,
+      html: `
+        <h2>Ticket Status Updated</h2>
+        <p>The ticket <strong>${ticketNumber}: ${subject}</strong> status has been changed to <strong>${status}</strong> by <strong>${changedByName}</strong>.</p>
+        <p><a href="${ticketUrl}">View Ticket</a></p>
+      `,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendDealCreatedEmail(
+    email: string,
+    dealName: string,
+    dealId: string,
+    amount: number,
+    currency: string,
+    createdByName: string,
+  ): Promise<void> {
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const dealUrl = `${frontendUrl}/deals/${dealId}`;
+
+    const mailOptions = {
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
+      to: email,
+      subject: `New Deal Created: ${dealName}`,
+      html: `
+        <h2>New Deal Created</h2>
+        <p><strong>${createdByName}</strong> has created a new deal:</p>
+        <h3>${dealName}</h3>
+        <p>Amount: <strong>${currency} ${amount.toLocaleString()}</strong></p>
+        <p><a href="${dealUrl}">View Deal</a></p>
+      `,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendDealStageChangedEmail(
+    email: string,
+    dealName: string,
+    dealId: string,
+    stageName: string,
+    changedByName: string,
+  ): Promise<void> {
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const dealUrl = `${frontendUrl}/deals/${dealId}`;
+
+    const mailOptions = {
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
+      to: email,
+      subject: `Deal Stage Updated: ${dealName}`,
+      html: `
+        <h2>Deal Stage Updated</h2>
+        <p>The deal <strong>${dealName}</strong> has been moved to stage <strong>${stageName}</strong> by <strong>${changedByName}</strong>.</p>
+        <p><a href="${dealUrl}">View Deal</a></p>
+      `,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendFormSubmissionEmail(
+    email: string,
+    formName: string,
+    formId: string,
+    submissionId: string,
+    contactName?: string,
+  ): Promise<void> {
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const submissionUrl = `${frontendUrl}/forms/${formId}/submissions/${submissionId}`;
+
+    const mailOptions = {
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
+      to: email,
+      subject: `New Form Submission: ${formName}`,
+      html: `
+        <h2>New Form Submission</h2>
+        <p>A new submission has been received for the form <strong>${formName}</strong>.</p>
+        ${contactName ? `<p>Submitted by: <strong>${contactName}</strong></p>` : ''}
+        <p><a href="${submissionUrl}">View Submission</a></p>
+      `,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
+
+  async sendCampaignSentEmail(
+    email: string,
+    campaignName: string,
+    campaignId: string,
+    sentCount: number,
+  ): Promise<void> {
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const campaignUrl = `${frontendUrl}/campaigns/${campaignId}`;
+
+    const mailOptions = {
+      from:
+        this.configService.get('SMTP_FROM') ||
+        this.configService.get('SMTP_USER'),
+      to: email,
+      subject: `Campaign Sent: ${campaignName}`,
+      html: `
+        <h2>Campaign Sent</h2>
+        <p>The email campaign <strong>${campaignName}</strong> has been sent to <strong>${sentCount}</strong> recipients.</p>
+        <p><a href="${campaignUrl}">View Campaign</a></p>
       `,
     };
 

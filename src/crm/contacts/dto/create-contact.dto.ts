@@ -68,10 +68,26 @@ export class CreateContactDto {
 
   @ApiPropertyOptional({
     description: 'Lifecycle stage',
-    enum: ['lead', 'mql', 'sql', 'opportunity', 'customer', 'evangelist', 'other'],
+    enum: [
+      'lead',
+      'mql',
+      'sql',
+      'opportunity',
+      'customer',
+      'evangelist',
+      'other',
+    ],
     example: 'lead',
   })
-  @IsEnum(['lead', 'mql', 'sql', 'opportunity', 'customer', 'evangelist', 'other'])
+  @IsEnum([
+    'lead',
+    'mql',
+    'sql',
+    'opportunity',
+    'customer',
+    'evangelist',
+    'other',
+  ])
   @IsOptional()
   lifecycleStage?: string;
 
@@ -136,4 +152,3 @@ export class CreateContactDto {
   @IsOptional()
   tags?: string;
 }
-

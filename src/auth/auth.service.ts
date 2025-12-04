@@ -59,35 +59,39 @@ export class AuthService {
     let workspaceId: string | null = null;
     let role: string | null = null;
     if (invitationToken) {
-        try {
-          const invitation = await this.prisma.workspaceInvitation.findUnique({
-            where: { invitationToken },
-          });
+      try {
+        const invitation = await this.prisma.workspaceInvitation.findUnique({
+          where: { invitationToken },
+        });
 
-          if (invitation && invitation.status === 'pending' && invitation.email === email) {
-            if (invitation.expiresAt < new Date()) {
-              // Mark as expired
-              await this.prisma.workspaceInvitation.update({
-                where: { id: invitation.id },
-                data: { status: 'expired' },
-              });
-            } else {
-              // Accept invitation
-              await this.prisma.workspaceInvitation.update({
-                where: { id: invitation.id },
-                data: {
-                  status: 'accepted',
-                  acceptedAt: new Date(),
-                },
-              });
-              workspaceId = invitation.workspaceId;
-              role = invitation.role;
-            }
+        if (
+          invitation &&
+          invitation.status === 'pending' &&
+          invitation.email === email
+        ) {
+          if (invitation.expiresAt < new Date()) {
+            // Mark as expired
+            await this.prisma.workspaceInvitation.update({
+              where: { id: invitation.id },
+              data: { status: 'expired' },
+            });
+          } else {
+            // Accept invitation
+            await this.prisma.workspaceInvitation.update({
+              where: { id: invitation.id },
+              data: {
+                status: 'accepted',
+                acceptedAt: new Date(),
+              },
+            });
+            workspaceId = invitation.workspaceId;
+            role = invitation.role;
           }
-        } catch (error) {
-          // Ignore invitation errors, continue with registration
-          console.error('Error processing invitation:', error);
         }
+      } catch (error) {
+        // Ignore invitation errors, continue with registration
+        console.error('Error processing invitation:', error);
+      }
     }
 
     // Queue verification email
@@ -157,11 +161,7 @@ export class AuthService {
     expiresAt.setHours(expiresAt.getHours() + 24);
 
     // Create session
-    await this.sessionService.createSession(
-      user.id,
-      jti,
-      expiresAt,
-    );
+    await this.sessionService.createSession(user.id, jti, expiresAt);
 
     // Create JWT with JTI
     const payload = { sub: user.id, email: user.email, jti };
@@ -235,6 +235,47 @@ export class AuthService {
     };
   }
 
+  /**
+   * Generate JWT token for a user (used after passkey authentication)
+   */
+  async generateTokenForUser(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.emailVerified) {
+      throw new UnauthorizedException(
+        'Please verify your email before logging in',
+      );
+    }
+
+    // Generate JTI (JWT ID) for session tracking
+    const jti = generateUlid();
+
+    // Calculate expiration time (default 24h)
+    const expiresIn = '24h';
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24);
+
+    // Create session
+    await this.sessionService.createSession(user.id, jti, expiresAt);
+
+    // Create JWT with JTI
+    const payload = { sub: user.id, email: user.email, jti };
+    const accessToken = this.jwtService.sign(payload, { expiresIn });
+
+    const { password: _, ...result } = user;
+
+    return {
+      access_token: accessToken,
+      user: result,
+    };
+  }
+
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.prisma.user.findUnique({
       where: { email },
@@ -258,7 +299,11 @@ export class AuthService {
     return result;
   }
 
-  async validateJwtPayload(payload: { sub: string; email?: string; jti?: string }) {
+  async validateJwtPayload(payload: {
+    sub: string;
+    email?: string;
+    jti?: string;
+  }) {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
     });

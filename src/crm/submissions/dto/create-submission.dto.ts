@@ -21,7 +21,16 @@ export class SubmissionValueDto {
 
   @ApiProperty({
     description: 'Value type',
-    enum: ['text', 'number', 'boolean', 'date', 'json', 'array', 'file', 'files'],
+    enum: [
+      'text',
+      'number',
+      'boolean',
+      'date',
+      'json',
+      'array',
+      'file',
+      'files',
+    ],
   })
   @IsString()
   @IsNotEmpty()
@@ -111,4 +120,3 @@ export class CreateSubmissionDto {
   @IsOptional()
   metadata?: Record<string, unknown>;
 }
-

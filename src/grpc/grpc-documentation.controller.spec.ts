@@ -9,7 +9,9 @@ describe('GrpcDocumentationController', () => {
       controllers: [GrpcDocumentationController],
     }).compile();
 
-    controller = module.get<GrpcDocumentationController>(GrpcDocumentationController);
+    controller = module.get<GrpcDocumentationController>(
+      GrpcDocumentationController,
+    );
   });
 
   describe('getGrpcEndpoints', () => {
@@ -77,4 +79,3 @@ describe('GrpcDocumentationController', () => {
     });
   });
 });
-

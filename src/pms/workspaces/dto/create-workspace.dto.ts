@@ -22,4 +22,3 @@ export class CreateWorkspaceDto {
   @MaxLength(1000)
   description?: string;
 }
-

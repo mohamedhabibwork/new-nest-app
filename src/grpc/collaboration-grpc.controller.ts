@@ -19,7 +19,11 @@ import type {
   CreateTimeLogRequest,
   CreateTimeLogResponse,
 } from './types';
-import { mapCommentToGrpc, mapTimeLogToGrpc, toGrpcPaginationResponse } from './utils';
+import {
+  mapCommentToGrpc,
+  mapTimeLogToGrpc,
+  toGrpcPaginationResponse,
+} from './utils';
 
 @Controller()
 export class CollaborationGrpcController {
@@ -27,14 +31,16 @@ export class CollaborationGrpcController {
 
   @GrpcMethod('CollaborationService', 'ListComments')
   async listComments(data: ListCommentsRequest): Promise<ListCommentsResponse> {
-    const result = await this.collaborationService.getTaskComments(
+    const result = await this.collaborationService.getComments(
       {
         page: data.page || 1,
         limit: data.limit || 50,
+        commentableType: data.commentable_type,
+        commentableId: data.commentable_id,
         sortBy: data.sort_by || 'createdAt',
         sortOrder: data.sort_order || 'asc',
+        includeDeleted: data.include_deleted || false,
       },
-      data.task_id,
       data.user_id,
     );
     return {
@@ -45,14 +51,15 @@ export class CollaborationGrpcController {
 
   @GrpcMethod('CollaborationService', 'GetComment')
   async getComment(data: GetCommentRequest): Promise<GetCommentResponse> {
-    const result = await this.collaborationService.getTaskComments(
+    // Get all comments and find the one we need
+    // In a real implementation, you might want to add a findOne method to the service
+    const result = await this.collaborationService.getComments(
       {
         page: 1,
         limit: 1000,
         sortBy: 'createdAt',
         sortOrder: 'asc',
       },
-      data.task_id,
       data.user_id,
     );
     const comment = result.data.find((c) => c.id === data.id);
@@ -60,25 +67,39 @@ export class CollaborationGrpcController {
   }
 
   @GrpcMethod('CollaborationService', 'CreateComment')
-  async createComment(data: CreateCommentRequest): Promise<CreateCommentResponse> {
-    const comment = await this.collaborationService.createComment(data.user_id, {
-      taskId: data.task_id,
-      commentText: data.comment_text,
-      parentCommentId: data.parent_comment_id,
-    });
+  async createComment(
+    data: CreateCommentRequest,
+  ): Promise<CreateCommentResponse> {
+    const comment = await this.collaborationService.createComment(
+      data.user_id,
+      {
+        commentableType: data.commentable_type,
+        commentableId: data.commentable_id,
+        commentText: data.comment_text,
+        parentCommentId: data.parent_comment_id,
+      },
+    );
     return { comment: mapCommentToGrpc(comment) };
   }
 
   @GrpcMethod('CollaborationService', 'UpdateComment')
-  async updateComment(data: UpdateCommentRequest): Promise<UpdateCommentResponse> {
-    const comment = await this.collaborationService.updateComment(data.id, data.user_id, {
-      commentText: data.comment_text,
-    });
+  async updateComment(
+    data: UpdateCommentRequest,
+  ): Promise<UpdateCommentResponse> {
+    const comment = await this.collaborationService.updateComment(
+      data.id,
+      data.user_id,
+      {
+        commentText: data.comment_text,
+      },
+    );
     return { comment: mapCommentToGrpc(comment) };
   }
 
   @GrpcMethod('CollaborationService', 'DeleteComment')
-  async deleteComment(data: DeleteCommentRequest): Promise<DeleteCommentResponse> {
+  async deleteComment(
+    data: DeleteCommentRequest,
+  ): Promise<DeleteCommentResponse> {
     await this.collaborationService.deleteComment(data.id, data.user_id);
     return { message: 'Comment deleted successfully' };
   }
@@ -121,18 +142,22 @@ export class CollaborationGrpcController {
   }
 
   @GrpcMethod('CollaborationService', 'CreateTimeLog')
-  async createTimeLog(data: CreateTimeLogRequest): Promise<CreateTimeLogResponse> {
+  async createTimeLog(
+    data: CreateTimeLogRequest,
+  ): Promise<CreateTimeLogResponse> {
     if (!data.log_date) {
       throw new Error('log_date is required');
     }
-    const timeLog = await this.collaborationService.createTimeLog(data.user_id, {
-      taskId: data.task_id,
-      hoursLogged: data.hours_logged,
-      logDate: new Date(data.log_date),
-      description: data.description,
-      isBillable: data.is_billable,
-    });
+    const timeLog = await this.collaborationService.createTimeLog(
+      data.user_id,
+      {
+        taskId: data.task_id,
+        hoursLogged: data.hours_logged,
+        logDate: new Date(data.log_date),
+        description: data.description,
+        isBillable: data.is_billable,
+      },
+    );
     return { time_log: mapTimeLogToGrpc(timeLog) };
   }
 }
-

@@ -1,4 +1,11 @@
-import { IsOptional, IsString, IsNumber, IsEnum, Min, Max } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsEnum,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -30,6 +37,32 @@ export class CommentQueryDto {
   limit?: number = 50;
 
   @ApiPropertyOptional({
+    description: 'Filter by commentable type',
+    example: 'task',
+    enum: ['task', 'project', 'ticket'],
+  })
+  @IsOptional()
+  @IsString()
+  @IsEnum(['task', 'project', 'ticket'])
+  commentableType?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter by commentable ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
+  @IsOptional()
+  @IsString()
+  commentableId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Include deleted comments',
+    example: false,
+    default: false,
+  })
+  @IsOptional()
+  includeDeleted?: boolean = false;
+
+  @ApiPropertyOptional({
     description: 'Sort by field',
     enum: ['createdAt', 'updatedAt'],
     example: 'createdAt',
@@ -49,4 +82,3 @@ export class CommentQueryDto {
   @IsEnum(['asc', 'desc'])
   sortOrder?: 'asc' | 'desc' = 'asc';
 }
-

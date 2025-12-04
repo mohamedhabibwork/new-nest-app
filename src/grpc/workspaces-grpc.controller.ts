@@ -20,7 +20,9 @@ export class WorkspacesGrpcController {
   constructor(private workspacesService: WorkspacesService) {}
 
   @GrpcMethod('WorkspaceService', 'ListWorkspaces')
-  async listWorkspaces(data: ListWorkspacesRequest): Promise<ListWorkspacesResponse> {
+  async listWorkspaces(
+    data: ListWorkspacesRequest,
+  ): Promise<ListWorkspacesResponse> {
     const result = await this.workspacesService.findAll(
       {
         page: data.page || 1,
@@ -39,12 +41,17 @@ export class WorkspacesGrpcController {
 
   @GrpcMethod('WorkspaceService', 'GetWorkspace')
   async getWorkspace(data: GetWorkspaceRequest): Promise<GetWorkspaceResponse> {
-    const workspace = await this.workspacesService.findOne(data.id, data.user_id);
+    const workspace = await this.workspacesService.findOne(
+      data.id,
+      data.user_id,
+    );
     return { workspace: mapWorkspaceToGrpc(workspace) };
   }
 
   @GrpcMethod('WorkspaceService', 'CreateWorkspace')
-  async createWorkspace(data: CreateWorkspaceRequest): Promise<CreateWorkspaceResponse> {
+  async createWorkspace(
+    data: CreateWorkspaceRequest,
+  ): Promise<CreateWorkspaceResponse> {
     const workspace = await this.workspacesService.create(data.user_id, {
       workspaceName: data.workspace_name,
       description: data.description,
@@ -53,18 +60,25 @@ export class WorkspacesGrpcController {
   }
 
   @GrpcMethod('WorkspaceService', 'UpdateWorkspace')
-  async updateWorkspace(data: UpdateWorkspaceRequest): Promise<UpdateWorkspaceResponse> {
-    const workspace = await this.workspacesService.update(data.id, data.user_id, {
-      workspaceName: data.workspace_name,
-      description: data.description,
-    });
+  async updateWorkspace(
+    data: UpdateWorkspaceRequest,
+  ): Promise<UpdateWorkspaceResponse> {
+    const workspace = await this.workspacesService.update(
+      data.id,
+      data.user_id,
+      {
+        workspaceName: data.workspace_name,
+        description: data.description,
+      },
+    );
     return { workspace: mapWorkspaceToGrpc(workspace) };
   }
 
   @GrpcMethod('WorkspaceService', 'DeleteWorkspace')
-  async deleteWorkspace(data: DeleteWorkspaceRequest): Promise<DeleteWorkspaceResponse> {
+  async deleteWorkspace(
+    data: DeleteWorkspaceRequest,
+  ): Promise<DeleteWorkspaceResponse> {
     await this.workspacesService.remove(data.id, data.user_id);
     return { message: 'Workspace deleted successfully' };
   }
 }
-

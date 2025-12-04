@@ -3,15 +3,24 @@ import { Expose } from 'class-transformer';
 
 export class TeamMemberResponseDto {
   @Expose()
-  @ApiProperty({ description: 'Team member ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Team member ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
-  @ApiProperty({ description: 'Team ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Team ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   teamId: string;
 
   @Expose()
-  @ApiProperty({ description: 'User ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'User ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   userId: string;
 
   @Expose()

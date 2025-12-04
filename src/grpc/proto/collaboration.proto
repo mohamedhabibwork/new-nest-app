@@ -17,12 +17,19 @@ service CollaborationService {
 }
 
 message ListCommentsRequest {
-  string task_id = 1;
-  string user_id = 2;
+  string user_id = 1;
+  string commentable_type = 2; // task, project, ticket
+  string commentable_id = 3;
+  int32 page = 4;
+  int32 limit = 5;
+  string sort_by = 6;
+  string sort_order = 7;
+  bool include_deleted = 8;
 }
 
 message ListCommentsResponse {
   repeated Comment comments = 1;
+  Pagination pagination = 2;
 }
 
 message GetCommentRequest {
@@ -36,9 +43,10 @@ message GetCommentResponse {
 
 message CreateCommentRequest {
   string user_id = 1;
-  string task_id = 2;
-  string comment_text = 3;
-  string parent_comment_id = 4;
+  string commentable_type = 2; // task, project, ticket
+  string commentable_id = 3;
+  string comment_text = 4;
+  string parent_comment_id = 5;
 }
 
 message CreateCommentResponse {
@@ -66,12 +74,40 @@ message DeleteCommentResponse {
 
 message Comment {
   string id = 1;
-  string task_id = 2;
-  string user_id = 3;
-  string comment_text = 4;
-  string parent_comment_id = 5;
-  string created_at = 6;
-  string updated_at = 7;
+  string commentable_type = 2;
+  string commentable_id = 3;
+  string user_id = 4;
+  string comment_text = 5;
+  string parent_comment_id = 6;
+  bool is_deleted = 7;
+  string deleted_at = 8;
+  string created_at = 9;
+  string updated_at = 10;
+  User user = 11;
+  repeated Mention mentions = 12;
+}
+
+message Mention {
+  string id = 1;
+  string mentioned_user_id = 2;
+  User mentioned_user = 3;
+  string created_at = 4;
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+}
+
+message Pagination {
+  int32 page = 1;
+  int32 limit = 2;
+  int32 total = 3;
+  int32 total_pages = 4;
+  bool has_next = 5;
+  bool has_previous = 6;
 }
 
 message ListTimeLogsRequest {

@@ -3,7 +3,10 @@ import { Expose } from 'class-transformer';
 
 export class CompanyResponseDto {
   @Expose()
-  @ApiProperty({ description: 'Company ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Company ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
@@ -39,7 +42,7 @@ export class CompanyResponseDto {
   employeeCount?: number;
 
   @Expose()
-  @ApiPropertyOptional({ description: 'Annual revenue', example: 10000000.50 })
+  @ApiPropertyOptional({ description: 'Annual revenue', example: 10000000.5 })
   annualRevenue?: number;
 
   @Expose()
@@ -69,4 +72,3 @@ export class CompanyResponseDto {
   @ApiProperty({ description: 'Last update timestamp' })
   updatedAt: Date;
 }
-

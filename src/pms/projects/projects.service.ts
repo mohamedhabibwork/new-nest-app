@@ -1,10 +1,17 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RbacService } from '../rbac/rbac.service';
 import { NotificationEventsService } from '../notifications/notification-events.service';
 import { WebSocketEventsService } from '../../websocket/websocket-events.service';
 import { withUlid } from '../../common/utils/prisma-helpers';
-import { buildPaginationResponse, normalizePaginationParams } from '../../common/utils/pagination.util';
+import {
+  buildPaginationResponse,
+  normalizePaginationParams,
+} from '../../common/utils/pagination.util';
 import { ProjectQueryDto } from './dto/project-query.dto';
 import { Prisma } from '@prisma/client';
 
@@ -64,11 +71,9 @@ export class ProjectsService {
 
     // Notify workspace owner about new project (if different from creator)
     if (workspace.ownerId !== userId) {
-      await this.notificationEvents.notifyProjectCreated(
-        project.id,
-        userId,
-        [workspace.ownerId],
-      );
+      await this.notificationEvents.notifyProjectCreated(project.id, userId, [
+        workspace.ownerId,
+      ]);
     }
 
     // Emit WebSocket event
@@ -78,7 +83,10 @@ export class ProjectsService {
   }
 
   async findAll(queryDto: ProjectQueryDto, userId: string) {
-    const { page, limit } = normalizePaginationParams(queryDto.page, queryDto.limit);
+    const { page, limit } = normalizePaginationParams(
+      queryDto.page,
+      queryDto.limit,
+    );
 
     // Build where clause
     const where: Prisma.ProjectWhereInput = {};
@@ -94,7 +102,9 @@ export class ProjectsService {
       }
 
       if (workspace.ownerId !== userId) {
-        throw new ForbiddenException('You do not have access to this workspace');
+        throw new ForbiddenException(
+          'You do not have access to this workspace',
+        );
       }
 
       where.workspaceId = queryDto.workspaceId;
@@ -236,4 +246,3 @@ export class ProjectsService {
     });
   }
 }
-

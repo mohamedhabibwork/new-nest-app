@@ -29,4 +29,3 @@ export interface JwtPayload {
   iat?: number; // Issued at
   exp?: number; // Expiration
 }
-

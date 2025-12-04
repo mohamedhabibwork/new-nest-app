@@ -8,7 +8,12 @@ export class WebSocketEventsService {
   /**
    * Emit task created event
    */
-  emitTaskCreated(taskId: string, projectId: string, workspaceId: string, task: any) {
+  emitTaskCreated(
+    taskId: string,
+    projectId: string,
+    workspaceId: string,
+    task: any,
+  ) {
     this.pmsGateway.server.to(`project:${projectId}`).emit('task:created', {
       taskId,
       projectId,
@@ -21,7 +26,12 @@ export class WebSocketEventsService {
   /**
    * Emit task updated event
    */
-  emitTaskUpdated(taskId: string, projectId: string, workspaceId: string, changes: any) {
+  emitTaskUpdated(
+    taskId: string,
+    projectId: string,
+    workspaceId: string,
+    changes: any,
+  ) {
     this.pmsGateway.server.to(`task:${taskId}`).emit('task:updated', {
       taskId,
       projectId,
@@ -59,7 +69,11 @@ export class WebSocketEventsService {
   /**
    * Emit comment added event
    */
-  emitCommentAdded(taskId: string, projectId: string, comment: any) {
+  emitCommentAdded(
+    taskId: string,
+    projectId: string | undefined,
+    comment: unknown,
+  ) {
     this.pmsGateway.server.to(`task:${taskId}`).emit('comment:added', {
       taskId,
       projectId,
@@ -71,7 +85,12 @@ export class WebSocketEventsService {
   /**
    * Emit comment updated event
    */
-  emitCommentUpdated(taskId: string, projectId: string, commentId: string, comment: any) {
+  emitCommentUpdated(
+    taskId: string,
+    projectId: string,
+    commentId: string,
+    comment: any,
+  ) {
     this.pmsGateway.server.to(`task:${taskId}`).emit('comment:updated', {
       taskId,
       projectId,
@@ -85,12 +104,14 @@ export class WebSocketEventsService {
    * Emit project created event
    */
   emitProjectCreated(projectId: string, workspaceId: string, project: any) {
-    this.pmsGateway.server.to(`workspace:${workspaceId}`).emit('project:created', {
-      projectId,
-      workspaceId,
-      project,
-      timestamp: new Date().toISOString(),
-    });
+    this.pmsGateway.server
+      .to(`workspace:${workspaceId}`)
+      .emit('project:created', {
+        projectId,
+        workspaceId,
+        project,
+        timestamp: new Date().toISOString(),
+      });
   }
 
   /**
@@ -103,12 +124,14 @@ export class WebSocketEventsService {
       changes,
       timestamp: new Date().toISOString(),
     });
-    this.pmsGateway.server.to(`workspace:${workspaceId}`).emit('project:updated', {
-      projectId,
-      workspaceId,
-      changes,
-      timestamp: new Date().toISOString(),
-    });
+    this.pmsGateway.server
+      .to(`workspace:${workspaceId}`)
+      .emit('project:updated', {
+        projectId,
+        workspaceId,
+        changes,
+        timestamp: new Date().toISOString(),
+      });
   }
 
   /**
@@ -153,5 +176,120 @@ export class WebSocketEventsService {
       timestamp: new Date().toISOString(),
     });
   }
-}
 
+  /**
+   * Emit share created event
+   */
+  emitShareCreated(share: any) {
+    const room = `${share.shareableType}:${share.shareableId}`;
+    this.pmsGateway.server.to(room).emit('share:created', {
+      share,
+      timestamp: new Date().toISOString(),
+    });
+    // Also emit to recipient
+    if (share.sharedWithType === 'users') {
+      this.pmsGateway.server
+        .to(`user:${share.sharedWithId}`)
+        .emit('share:created', {
+          share,
+          timestamp: new Date().toISOString(),
+        });
+    }
+  }
+
+  /**
+   * Emit share updated event
+   */
+  emitShareUpdated(share: any) {
+    const room = `${share.shareableType}:${share.shareableId}`;
+    this.pmsGateway.server.to(room).emit('share:updated', {
+      share,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * Emit share removed event
+   */
+  emitShareRemoved(
+    shareId: string,
+    shareableType: string,
+    shareableId: string,
+  ) {
+    const room = `${shareableType}:${shareableId}`;
+    this.pmsGateway.server.to(room).emit('share:removed', {
+      shareId,
+      shareableType,
+      shareableId,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * Emit assignment created event
+   */
+  emitAssignmentCreated(assignment: any) {
+    const room = `${assignment.assignableType}:${assignment.assignableId}`;
+    this.pmsGateway.server.to(room).emit('assignment:created', {
+      assignment,
+      timestamp: new Date().toISOString(),
+    });
+    // Also emit to assignee
+    this.pmsGateway.server
+      .to(`user:${assignment.assigneeId}`)
+      .emit('assignment:created', {
+        assignment,
+        timestamp: new Date().toISOString(),
+      });
+  }
+
+  /**
+   * Emit assignment updated event
+   */
+  emitAssignmentUpdated(assignment: any) {
+    const room = `${assignment.assignableType}:${assignment.assignableId}`;
+    this.pmsGateway.server.to(room).emit('assignment:updated', {
+      assignment,
+      timestamp: new Date().toISOString(),
+    });
+    // Also emit to assignee
+    this.pmsGateway.server
+      .to(`user:${assignment.assigneeId}`)
+      .emit('assignment:updated', {
+        assignment,
+        timestamp: new Date().toISOString(),
+      });
+  }
+
+  /**
+   * Emit assignment removed event
+   */
+  emitAssignmentRemoved(
+    assignmentId: string,
+    assignableType: string,
+    assignableId: string,
+  ) {
+    const room = `${assignableType}:${assignableId}`;
+    this.pmsGateway.server.to(room).emit('assignment:removed', {
+      assignmentId,
+      assignableType,
+      assignableId,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * Emit mention created event
+   */
+  emitMentionCreated(mention: {
+    mentionedUserId: string;
+    [key: string]: unknown;
+  }) {
+    this.pmsGateway.server
+      .to(`user:${mention.mentionedUserId}`)
+      .emit('mention:created', {
+        mention,
+        timestamp: new Date().toISOString(),
+      });
+  }
+}

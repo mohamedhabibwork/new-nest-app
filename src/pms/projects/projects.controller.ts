@@ -52,7 +52,9 @@ export class ProjectsController {
     return this.projectsService.create(req.user.id, createDto);
   }
 
-  @ApiOperation({ summary: 'Get all projects with pagination, filtering, and sorting' })
+  @ApiOperation({
+    summary: 'Get all projects with pagination, filtering, and sorting',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of projects with pagination',
@@ -68,7 +70,11 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Get a project by ID' })
-  @ApiParam({ name: 'id', description: 'Project ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Project ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Project details',
@@ -82,7 +88,11 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Update a project' })
-  @ApiParam({ name: 'id', description: 'Project ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Project ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Project updated successfully',
@@ -100,7 +110,11 @@ export class ProjectsController {
   }
 
   @ApiOperation({ summary: 'Delete a project' })
-  @ApiParam({ name: 'id', description: 'Project ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiParam({
+    name: 'id',
+    description: 'Project ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   @ApiResponse({
     status: 200,
     description: 'Project deleted successfully',
@@ -113,4 +127,3 @@ export class ProjectsController {
     return this.projectsService.remove(id, req.user.id);
   }
 }
-

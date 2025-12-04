@@ -41,4 +41,3 @@ export class GetBackupCodesDto {
   @IsNotEmpty()
   password: string;
 }
-

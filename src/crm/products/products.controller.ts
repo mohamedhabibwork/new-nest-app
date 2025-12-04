@@ -59,7 +59,8 @@ export class ProductsController {
   findAll(
     @Query('page', new ParseIntPipe({ optional: true })) page?: number,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
-    @Query('isActive', new ParseBoolPipe({ optional: true })) isActive?: boolean,
+    @Query('isActive', new ParseBoolPipe({ optional: true }))
+    isActive?: boolean,
   ) {
     return this.productsService.findAll(page, limit, isActive);
   }
@@ -100,4 +101,3 @@ export class ProductsController {
     return this.productsService.remove(id);
   }
 }
-

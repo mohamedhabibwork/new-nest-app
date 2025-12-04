@@ -65,7 +65,9 @@ describe('SegmentsController', () => {
         new BadRequestException('Invalid criteria'),
       );
 
-      await expect(controller.create(createDto)).rejects.toThrow(BadRequestException);
+      await expect(controller.create(createDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -110,9 +112,13 @@ describe('SegmentsController', () => {
     });
 
     it('should throw NotFoundException when segment not found', async () => {
-      segmentsService.findOne.mockRejectedValue(new NotFoundException('Segment not found'));
+      segmentsService.findOne.mockRejectedValue(
+        new NotFoundException('Segment not found'),
+      );
 
-      await expect(controller.findOne(segmentId)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne(segmentId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -180,9 +186,12 @@ describe('SegmentsController', () => {
 
       const result = await controller.getContacts(segmentId, 1, 50);
 
-      expect(segmentsService.getContacts).toHaveBeenCalledWith(segmentId, 1, 50);
+      expect(segmentsService.getContacts).toHaveBeenCalledWith(
+        segmentId,
+        1,
+        50,
+      );
       expect(result).toEqual(mockResponse);
     });
   });
 });
-

@@ -3,15 +3,24 @@ import { Expose } from 'class-transformer';
 
 export class WorkspaceInvitationResponseDto {
   @Expose()
-  @ApiProperty({ description: 'Invitation ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Invitation ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
-  @ApiProperty({ description: 'Workspace ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Workspace ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   workspaceId: string;
 
   @Expose()
-  @ApiProperty({ description: 'Invited email address', example: 'user@example.com' })
+  @ApiProperty({
+    description: 'Invited email address',
+    example: 'user@example.com',
+  })
   email: string;
 
   @Expose()
@@ -42,4 +51,3 @@ export class WorkspaceInvitationResponseDto {
   @ApiProperty({ description: 'Last update timestamp' })
   updatedAt: Date;
 }
-

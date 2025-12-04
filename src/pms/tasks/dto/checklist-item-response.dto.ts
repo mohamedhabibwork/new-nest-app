@@ -3,15 +3,24 @@ import { Expose } from 'class-transformer';
 
 export class ChecklistItemResponseDto {
   @Expose()
-  @ApiProperty({ description: 'Checklist item ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Checklist item ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
-  @ApiProperty({ description: 'Task ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Task ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   taskId: string;
 
   @Expose()
-  @ApiProperty({ description: 'Checklist item text', example: 'Review design mockups' })
+  @ApiProperty({
+    description: 'Checklist item text',
+    example: 'Review design mockups',
+  })
   itemText: string;
 
   @Expose()
@@ -30,4 +39,3 @@ export class ChecklistItemResponseDto {
   @ApiProperty({ description: 'Last update timestamp' })
   updatedAt: Date;
 }
-

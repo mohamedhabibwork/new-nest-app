@@ -1,12 +1,20 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RbacService } from '../rbac/rbac.service';
 import { NotificationEventsService } from '../notifications/notification-events.service';
 import { WebSocketEventsService } from '../../websocket/websocket-events.service';
 import { withUlid } from '../../common/utils/prisma-helpers';
-import { buildPaginationResponse, normalizePaginationParams } from '../../common/utils/pagination.util';
+import {
+  buildPaginationResponse,
+  normalizePaginationParams,
+} from '../../common/utils/pagination.util';
 import { TaskQueryDto } from './dto/task-query.dto';
 import { Prisma } from '@prisma/client';
+import { TaskWithProject } from '../../common/types/polymorphic.types';
 
 @Injectable()
 export class TasksService {
@@ -77,13 +85,21 @@ export class TasksService {
     }
 
     // Emit WebSocket event
-    this.wsEvents.emitTaskCreated(task.id, data.projectId, project.workspaceId, task);
+    this.wsEvents.emitTaskCreated(
+      task.id,
+      data.projectId,
+      project.workspaceId,
+      task,
+    );
 
     return task;
   }
 
   async findAll(queryDto: TaskQueryDto, userId: string) {
-    const { page, limit } = normalizePaginationParams(queryDto.page, queryDto.limit);
+    const { page, limit } = normalizePaginationParams(
+      queryDto.page,
+      queryDto.limit,
+    );
 
     // Build where clause
     const where: Prisma.TaskWhereInput = {};
@@ -152,13 +168,8 @@ export class TasksService {
       where.priority = queryDto.priority;
     }
 
-    if (queryDto.assigneeId) {
-      where.taskAssignments = {
-        some: {
-          userId: queryDto.assigneeId,
-        },
-      };
-    }
+    // Note: assigneeId filtering is handled via separate Assignment queries
+    // since assignments are polymorphic and not a direct relation on Task
 
     if (queryDto.dueDateFrom || queryDto.dueDateTo) {
       where.dueDate = {};
@@ -202,24 +213,8 @@ export class TasksService {
       this.prisma.task.findMany({
         where,
         include: {
-          taskAssignments: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  email: true,
-                  firstName: true,
-                  lastName: true,
-                },
-              },
-            },
-          },
           checklistItems: {
             orderBy: { orderIndex: 'asc' },
-          },
-          comments: {
-            take: 1,
-            orderBy: { createdAt: 'desc' },
           },
         },
         orderBy,
@@ -239,7 +234,8 @@ export class TasksService {
     limit: number = 50,
   ) {
     const task = await this.findOne(taskId, userId);
-    const { page: normalizedPage, limit: normalizedLimit } = normalizePaginationParams(page, limit);
+    const { page: normalizedPage, limit: normalizedLimit } =
+      normalizePaginationParams(page, limit);
     const skip = (normalizedPage - 1) * normalizedLimit;
 
     const [attachments, total] = await Promise.all([
@@ -270,33 +266,35 @@ export class TasksService {
       }),
     ]);
 
-    return buildPaginationResponse(attachments, total, normalizedPage, normalizedLimit);
+    return buildPaginationResponse(
+      attachments,
+      total,
+      normalizedPage,
+      normalizedLimit,
+    );
   }
 
-  async findOne(id: string, userId: string) {
+  async findOne(id: string, userId: string): Promise<TaskWithProject> {
     const task = await this.prisma.task.findUnique({
       where: { id },
       include: {
         project: {
           include: {
-            workspace: true,
-            projectMembers: true,
-          },
-        },
-        taskAssignments: {
-          include: {
-            user: {
+            workspace: {
               select: {
                 id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
+                ownerId: true,
+              },
+            },
+            projectMembers: {
+              select: {
+                userId: true,
+                memberRole: true,
               },
             },
           },
         },
         checklistItems: true,
-        comments: true,
         timeLogs: true,
       },
     });
@@ -306,8 +304,10 @@ export class TasksService {
     }
 
     // Check access
-    const isWorkspaceOwner = task.project.workspace.ownerId === userId;
-    const isProjectMember = task.project.projectMembers.some(
+    const taskWithProject = task as TaskWithProject;
+    const isWorkspaceOwner =
+      taskWithProject.project.workspace.ownerId === userId;
+    const isProjectMember = taskWithProject.project.projectMembers.some(
       (pm) => pm.userId === userId,
     );
 
@@ -315,7 +315,7 @@ export class TasksService {
       throw new ForbiddenException('You do not have access to this task');
     }
 
-    return task;
+    return task as TaskWithProject;
   }
 
   async update(
@@ -341,7 +341,7 @@ export class TasksService {
   async remove(id: string, userId: string) {
     const task = await this.findOne(id, userId);
     const projectId = task.projectId;
-    const workspaceId = task.project.workspaceId;
+    const workspaceId = task.project.workspace.id;
 
     await this.prisma.task.delete({
       where: { id },
@@ -354,116 +354,8 @@ export class TasksService {
   }
 
   // Task Assignment Methods
-  async assignUserToTask(
-    taskId: string,
-    assigneeUserId: string,
-    assignedByUserId: string,
-    isPrimary: boolean = false,
-  ) {
-    // Verify task access
-    const task = await this.findOne(taskId, assignedByUserId);
-
-    // Check if user exists
-    const user = await this.prisma.user.findUnique({
-      where: { id: assigneeUserId },
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    // Check if assignment already exists
-    const existingAssignment = await this.prisma.taskAssignment.findUnique({
-      where: {
-        taskId_userId: {
-          taskId,
-          userId: assigneeUserId,
-        },
-      },
-    });
-
-    if (existingAssignment) {
-      throw new ForbiddenException('User is already assigned to this task');
-    }
-
-    // If setting as primary, unset other primary assignments
-    if (isPrimary) {
-      await this.prisma.taskAssignment.updateMany({
-        where: {
-          taskId,
-          isPrimary: true,
-        },
-        data: {
-          isPrimary: false,
-        },
-      });
-    }
-
-    // Create assignment
-    const assignment = await this.prisma.taskAssignment.create({
-      data: withUlid({
-        taskId,
-        userId: assigneeUserId,
-        isPrimary,
-      }),
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
-    });
-
-    // Notify assigned user
-    await this.notificationEvents.notifyTaskAssigned(
-      taskId,
-      assigneeUserId,
-      assignedByUserId,
-    );
-
-    // Emit WebSocket event
-    this.wsEvents.emitTaskUpdated(taskId, task.projectId, task.project.workspaceId, {
-      ...task,
-      taskAssignments: [...(task.taskAssignments || []), assignment],
-    });
-
-    return assignment;
-  }
-
-  async unassignUserFromTask(taskId: string, userId: string, requestedByUserId: string) {
-    // Verify task access
-    await this.findOne(taskId, requestedByUserId);
-
-    const assignment = await this.prisma.taskAssignment.findUnique({
-      where: {
-        taskId_userId: {
-          taskId,
-          userId,
-        },
-      },
-    });
-
-    if (!assignment) {
-      throw new NotFoundException('Assignment not found');
-    }
-
-    await this.prisma.taskAssignment.delete({
-      where: {
-        id: assignment.id,
-      },
-    });
-
-    // Emit WebSocket event
-    const task = await this.findOne(taskId, requestedByUserId);
-    this.wsEvents.emitTaskUpdated(taskId, task.projectId, task.project.workspaceId, task);
-
-    return { message: 'User unassigned from task successfully' };
-  }
-
+  // Assignment methods removed - use AssignmentsModule instead
+  // Convenience method to get assignments for a task (uses polymorphic Assignment model)
   async getTaskAssignments(
     taskId: string,
     userId: string,
@@ -473,13 +365,26 @@ export class TasksService {
     // Verify task access
     await this.findOne(taskId, userId);
 
-    const skip = (page - 1) * limit;
+    const { page: normalizedPage, limit: normalizedLimit } =
+      normalizePaginationParams(page, limit);
+    const skip = (normalizedPage - 1) * normalizedLimit;
 
     const [assignments, total] = await Promise.all([
-      this.prisma.taskAssignment.findMany({
-        where: { taskId },
+      this.prisma.assignment.findMany({
+        where: {
+          assignableType: 'task',
+          assignableId: taskId,
+        },
         include: {
-          user: {
+          assignee: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          assigner: {
             select: {
               id: true,
               email: true,
@@ -488,82 +393,26 @@ export class TasksService {
             },
           },
         },
-        orderBy: [
-          { isPrimary: 'desc' },
-          { assignedAt: 'desc' },
-        ],
+        orderBy: {
+          assignedAt: 'desc',
+        },
         skip,
-        take: limit,
+        take: normalizedLimit,
       }),
-      this.prisma.taskAssignment.count({
-        where: { taskId },
+      this.prisma.assignment.count({
+        where: {
+          assignableType: 'task',
+          assignableId: taskId,
+        },
       }),
     ]);
 
-    return {
-      data: assignments,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-        hasNext: page < Math.ceil(total / limit),
-        hasPrevious: page > 1,
-      },
-    };
-  }
-
-  async updateAssignment(
-    taskId: string,
-    assignmentId: string,
-    userId: string,
-    isPrimary: boolean,
-  ) {
-    // Verify task access
-    await this.findOne(taskId, userId);
-
-    const assignment = await this.prisma.taskAssignment.findUnique({
-      where: { id: assignmentId },
-    });
-
-    if (!assignment || assignment.taskId !== taskId) {
-      throw new NotFoundException('Assignment not found');
-    }
-
-    // If setting as primary, unset other primary assignments
-    if (isPrimary) {
-      await this.prisma.taskAssignment.updateMany({
-        where: {
-          taskId,
-          isPrimary: true,
-          id: { not: assignmentId },
-        },
-        data: {
-          isPrimary: false,
-        },
-      });
-    }
-
-    const updatedAssignment = await this.prisma.taskAssignment.update({
-      where: { id: assignmentId },
-      data: { isPrimary },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
-    });
-
-    // Emit WebSocket event
-    const task = await this.findOne(taskId, userId);
-    this.wsEvents.emitTaskUpdated(taskId, task.projectId, task.project.workspaceId, task);
-
-    return updatedAssignment;
+    return buildPaginationResponse(
+      assignments,
+      total,
+      normalizedPage,
+      normalizedLimit,
+    );
   }
 
   // Task Dependency Methods
@@ -586,7 +435,9 @@ export class TasksService {
 
     // Check if tasks are in the same project
     if (task.projectId !== dependsOnTask.projectId) {
-      throw new ForbiddenException('Tasks must be in the same project to create a dependency');
+      throw new ForbiddenException(
+        'Tasks must be in the same project to create a dependency',
+      );
     }
 
     // Check if dependency already exists
@@ -604,9 +455,14 @@ export class TasksService {
     }
 
     // Check for circular dependencies
-    const wouldCreateCycle = await this.checkCircularDependency(taskId, dependsOnTaskId);
+    const wouldCreateCycle = await this.checkCircularDependency(
+      taskId,
+      dependsOnTaskId,
+    );
     if (wouldCreateCycle) {
-      throw new ForbiddenException('This dependency would create a circular reference');
+      throw new ForbiddenException(
+        'This dependency would create a circular reference',
+      );
     }
 
     // Create dependency
@@ -629,19 +485,33 @@ export class TasksService {
     });
 
     // Emit WebSocket event
-    this.wsEvents.emitTaskUpdated(taskId, task.projectId, task.project.workspaceId, task);
+    const taskWithProject = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      select: { projectId: true, project: { select: { workspaceId: true } } },
+    });
+    if (taskWithProject) {
+      this.wsEvents.emitTaskUpdated(
+        taskId,
+        taskWithProject.projectId,
+        taskWithProject.project.workspaceId,
+        task,
+      );
+    }
 
     return dependency;
   }
 
-  private async checkCircularDependency(taskId: string, dependsOnTaskId: string): Promise<boolean> {
+  private async checkCircularDependency(
+    taskId: string,
+    dependsOnTaskId: string,
+  ): Promise<boolean> {
     // Check if dependsOnTaskId depends on taskId (directly or indirectly)
     const visited = new Set<string>();
     const queue = [dependsOnTaskId];
 
     while (queue.length > 0) {
       const currentTaskId = queue.shift()!;
-      
+
       if (currentTaskId === taskId) {
         return true; // Circular dependency found
       }
@@ -666,7 +536,11 @@ export class TasksService {
     return false;
   }
 
-  async removeTaskDependency(taskId: string, dependencyId: string, userId: string) {
+  async removeTaskDependency(
+    taskId: string,
+    dependencyId: string,
+    userId: string,
+  ) {
     // Verify task access
     await this.findOne(taskId, userId);
 
@@ -684,7 +558,18 @@ export class TasksService {
 
     // Emit WebSocket event
     const task = await this.findOne(taskId, userId);
-    this.wsEvents.emitTaskUpdated(taskId, task.projectId, task.project.workspaceId, task);
+    const taskWithProject = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      select: { projectId: true, project: { select: { workspaceId: true } } },
+    });
+    if (taskWithProject) {
+      this.wsEvents.emitTaskUpdated(
+        taskId,
+        taskWithProject.projectId,
+        taskWithProject.project.workspaceId,
+        task,
+      );
+    }
 
     return { message: 'Dependency removed successfully' };
   }
@@ -764,7 +649,18 @@ export class TasksService {
     });
 
     // Emit WebSocket event
-    this.wsEvents.emitTaskUpdated(taskId, task.projectId, task.project.workspaceId, task);
+    const taskWithProject = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      select: { projectId: true, project: { select: { workspaceId: true } } },
+    });
+    if (taskWithProject) {
+      this.wsEvents.emitTaskUpdated(
+        taskId,
+        taskWithProject.projectId,
+        taskWithProject.project.workspaceId,
+        task,
+      );
+    }
 
     return checklistItem;
   }
@@ -792,7 +688,18 @@ export class TasksService {
     });
 
     // Emit WebSocket event
-    this.wsEvents.emitTaskUpdated(taskId, task.projectId, task.project.workspaceId, task);
+    const taskWithProject = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      select: { projectId: true, project: { select: { workspaceId: true } } },
+    });
+    if (taskWithProject) {
+      this.wsEvents.emitTaskUpdated(
+        taskId,
+        taskWithProject.projectId,
+        taskWithProject.project.workspaceId,
+        task,
+      );
+    }
 
     return updatedItem;
   }
@@ -814,7 +721,18 @@ export class TasksService {
     });
 
     // Emit WebSocket event
-    this.wsEvents.emitTaskUpdated(taskId, task.projectId, task.project.workspaceId, task);
+    const taskWithProject = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      select: { projectId: true, project: { select: { workspaceId: true } } },
+    });
+    if (taskWithProject) {
+      this.wsEvents.emitTaskUpdated(
+        taskId,
+        taskWithProject.projectId,
+        taskWithProject.project.workspaceId,
+        task,
+      );
+    }
 
     return { message: 'Checklist item deleted successfully' };
   }
@@ -833,10 +751,7 @@ export class TasksService {
     const [items, total] = await Promise.all([
       this.prisma.checklistItem.findMany({
         where: { taskId },
-        orderBy: [
-          { orderIndex: 'asc' },
-          { createdAt: 'asc' },
-        ],
+        orderBy: [{ orderIndex: 'asc' }, { createdAt: 'asc' }],
         skip,
         take: limit,
       }),
@@ -858,7 +773,11 @@ export class TasksService {
     };
   }
 
-  async reorderChecklistItems(taskId: string, userId: string, itemIds: string[]) {
+  async reorderChecklistItems(
+    taskId: string,
+    userId: string,
+    itemIds: string[],
+  ) {
     // Verify task access
     const task = await this.findOne(taskId, userId);
 
@@ -871,7 +790,9 @@ export class TasksService {
     });
 
     if (items.length !== itemIds.length) {
-      throw new ForbiddenException('Some checklist items do not belong to this task');
+      throw new ForbiddenException(
+        'Some checklist items do not belong to this task',
+      );
     }
 
     // Update order indices
@@ -885,9 +806,19 @@ export class TasksService {
     await Promise.all(updatePromises);
 
     // Emit WebSocket event
-    this.wsEvents.emitTaskUpdated(taskId, task.projectId, task.project.workspaceId, task);
+    const taskWithProject = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      select: { projectId: true, project: { select: { workspaceId: true } } },
+    });
+    if (taskWithProject) {
+      this.wsEvents.emitTaskUpdated(
+        taskId,
+        taskWithProject.projectId,
+        taskWithProject.project.workspaceId,
+        task,
+      );
+    }
 
     return { message: 'Checklist items reordered successfully' };
   }
 }
-

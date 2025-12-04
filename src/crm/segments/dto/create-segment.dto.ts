@@ -1,4 +1,11 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsArray, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -13,10 +20,26 @@ export class SegmentCriteriaDto {
 
   @ApiProperty({
     description: 'Operator',
-    enum: ['equals', 'not_equals', 'contains', 'greater_than', 'less_than', 'is_empty', 'is_not_empty'],
+    enum: [
+      'equals',
+      'not_equals',
+      'contains',
+      'greater_than',
+      'less_than',
+      'is_empty',
+      'is_not_empty',
+    ],
     example: 'equals',
   })
-  @IsEnum(['equals', 'not_equals', 'contains', 'greater_than', 'less_than', 'is_empty', 'is_not_empty'])
+  @IsEnum([
+    'equals',
+    'not_equals',
+    'contains',
+    'greater_than',
+    'less_than',
+    'is_empty',
+    'is_not_empty',
+  ])
   @IsNotEmpty()
   operator: string;
 
@@ -71,4 +94,3 @@ export class CreateSegmentDto {
   @IsOptional()
   criteria?: SegmentCriteriaDto[];
 }
-

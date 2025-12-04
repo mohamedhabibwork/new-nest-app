@@ -29,4 +29,3 @@ export class ParseEnumPipe<T = any> implements PipeTransform<string, T> {
     return value as T;
   }
 }
-

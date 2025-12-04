@@ -30,7 +30,8 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private configService: ConfigService,
   ) {
     // Update CORS origin dynamically
-    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
     // Note: WebSocketGateway decorator options are static, so we set it in constructor
     // The origin in decorator is a fallback
   }

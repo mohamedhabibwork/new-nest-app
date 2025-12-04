@@ -75,4 +75,3 @@ export class CreateTicketDto {
   @IsOptional()
   customProperties?: Record<string, unknown>;
 }
-

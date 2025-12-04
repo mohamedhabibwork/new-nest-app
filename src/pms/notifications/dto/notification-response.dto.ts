@@ -3,7 +3,10 @@ import { Expose } from 'class-transformer';
 
 export class NotificationResponseDto {
   @Expose()
-  @ApiProperty({ description: 'Notification ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiProperty({
+    description: 'Notification ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   id: string;
 
   @Expose()
@@ -23,15 +26,20 @@ export class NotificationResponseDto {
   entityType?: string;
 
   @Expose()
-  @ApiPropertyOptional({ description: 'Entity ID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' })
+  @ApiPropertyOptional({
+    description: 'Entity ID',
+    example: '01ARZ3NDEKTSV4RRFFQ69G5FAV',
+  })
   entityId?: string;
 
   @Expose()
-  @ApiProperty({ description: 'Whether the notification is read', example: false })
+  @ApiProperty({
+    description: 'Whether the notification is read',
+    example: false,
+  })
   isRead: boolean;
 
   @Expose()
   @ApiProperty({ description: 'Creation timestamp' })
   createdAt: Date;
 }
-

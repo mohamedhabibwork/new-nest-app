@@ -21,15 +21,14 @@ export function TransformFileUrl(configService?: ConfigService) {
     if (obj?.filePath && configService) {
       const baseUrl = configService.get('APP_URL') || 'http://localhost:3000';
       const storageType = obj?.storageType || 'local';
-      
+
       if (storageType === 's3') {
         return obj.fileUrl || value;
       }
-      
+
       return `${baseUrl}/files/${obj.id}/download`;
     }
 
     return value;
   });
 }
-

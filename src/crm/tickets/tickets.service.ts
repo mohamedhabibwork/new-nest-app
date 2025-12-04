@@ -1,17 +1,27 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { withUlid } from '../../common/utils/prisma-helpers';
-import { buildPaginationResponse, normalizePaginationParams } from '../../common/utils/pagination.util';
+import {
+  buildPaginationResponse,
+  normalizePaginationParams,
+} from '../../common/utils/pagination.util';
 import { generateTicketNumber } from './utils/ticket-number.util';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
-import { CreateTicketCommentDto } from './dto/create-ticket-comment.dto';
 import { TicketQueryDto } from './dto/ticket-query.dto';
 import { Prisma } from '@prisma/client';
+import { NotificationEventsService } from '../../pms/notifications/notification-events.service';
 
 @Injectable()
 export class TicketsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationEvents: NotificationEventsService,
+  ) {}
 
   async create(userId: string, data: CreateTicketDto) {
     // Verify contact exists
@@ -46,7 +56,7 @@ export class TicketsService {
         status: data.status || 'new',
         priority: data.priority || 'normal',
         category: data.category,
-        customProperties: data.customProperties,
+        customProperties: data.customProperties as Prisma.InputJsonValue,
       }),
       include: {
         contact: {
@@ -68,11 +78,25 @@ export class TicketsService {
       },
     });
 
+    // Notify if ticket was assigned
+    if (ticket.assignedTo) {
+      await this.notificationEvents.notifyTicketCreated(
+        ticket.id,
+        ticket.ticketNumber,
+        userId,
+        data.contactId,
+        ticket.assignedTo,
+      );
+    }
+
     return ticket;
   }
 
   async findAll(queryDto: TicketQueryDto) {
-    const { page, limit } = normalizePaginationParams(queryDto.page, queryDto.limit);
+    const { page, limit } = normalizePaginationParams(
+      queryDto.page,
+      queryDto.limit,
+    );
 
     const where: Prisma.TicketWhereInput = {};
 
@@ -139,11 +163,7 @@ export class TicketsService {
               lastName: true,
             },
           },
-          _count: {
-            select: {
-              comments: true,
-            },
-          },
+          _count: true,
         },
         orderBy,
         skip,
@@ -175,19 +195,6 @@ export class TicketsService {
             lastName: true,
           },
         },
-        comments: {
-          orderBy: { createdAt: 'asc' },
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-              },
-            },
-          },
-        },
       },
     });
 
@@ -202,7 +209,22 @@ export class TicketsService {
     const ticket = await this.findOne(id);
 
     // Handle status transitions and SLA tracking
-    const updateData: any = { ...data };
+    const updateData: {
+      subject?: string;
+      description?: string;
+      status?: string;
+      priority?: string;
+      category?: string;
+      assignedTo?: string | null;
+      customProperties?: Prisma.InputJsonValue;
+      resolvedAt?: Date | null;
+      closedAt?: Date | null;
+    } = {
+      ...data,
+      customProperties: data.customProperties
+        ? (data.customProperties as Prisma.InputJsonValue)
+        : undefined,
+    };
 
     if (data.status) {
       const now = new Date();
@@ -216,8 +238,10 @@ export class TicketsService {
         }
       }
       // If moving from resolved/closed back to open/pending, clear timestamps
-      if ((data.status === 'open' || data.status === 'pending') && 
-          (ticket.status === 'resolved' || ticket.status === 'closed')) {
+      if (
+        (data.status === 'open' || data.status === 'pending') &&
+        (ticket.status === 'resolved' || ticket.status === 'closed')
+      ) {
         updateData.resolvedAt = null;
         updateData.closedAt = null;
       }
@@ -235,7 +259,7 @@ export class TicketsService {
       }
     }
 
-    return this.prisma.ticket.update({
+    const updatedTicket = await this.prisma.ticket.update({
       where: { id },
       data: updateData,
       include: {
@@ -257,6 +281,43 @@ export class TicketsService {
         },
       },
     });
+
+    // Notify if assignment changed
+    if (
+      data.assignedTo !== undefined &&
+      data.assignedTo &&
+      data.assignedTo !== ticket.assignedTo
+    ) {
+      await this.notificationEvents.notifyTicketAssigned(
+        updatedTicket.id,
+        updatedTicket.ticketNumber,
+        userId,
+        data.assignedTo,
+      );
+    }
+
+    // Notify if status changed
+    if (data.status && data.status !== ticket.status) {
+      const notifyUserIds: string[] = [];
+      if (updatedTicket.assignedTo) {
+        notifyUserIds.push(updatedTicket.assignedTo);
+      }
+      // Add contact owner if exists
+      if (updatedTicket.contact) {
+        // Contact doesn't have owner in schema, so we'll just notify assignee
+      }
+      if (notifyUserIds.length > 0) {
+        await this.notificationEvents.notifyTicketStatusChanged(
+          updatedTicket.id,
+          updatedTicket.ticketNumber,
+          data.status,
+          userId,
+          notifyUserIds,
+        );
+      }
+    }
+
+    return updatedTicket;
   }
 
   async remove(id: string, userId: string) {
@@ -269,52 +330,5 @@ export class TicketsService {
     return { message: 'Ticket deleted successfully' };
   }
 
-  // Ticket Comment Methods
-  async createComment(ticketId: string, userId: string, data: CreateTicketCommentDto) {
-    const ticket = await this.findOne(ticketId);
-
-    const comment = await this.prisma.ticketComment.create({
-      data: withUlid({
-        ticketId,
-        userId,
-        comment: data.comment,
-        isInternal: data.isInternal || false,
-      }),
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
-    });
-
-    return comment;
-  }
-
-  async getComments(ticketId: string, includeInternal: boolean = false) {
-    await this.findOne(ticketId);
-
-    return this.prisma.ticketComment.findMany({
-      where: {
-        ticketId,
-        isInternal: includeInternal ? undefined : false,
-      },
-      orderBy: { createdAt: 'asc' },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
-    });
-  }
+  // Comment methods removed - use CollaborationModule for polymorphic comments
 }
-

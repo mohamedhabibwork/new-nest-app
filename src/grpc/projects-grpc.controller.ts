@@ -13,7 +13,11 @@ import type {
   DeleteProjectRequest,
   DeleteProjectResponse,
 } from './types';
-import { mapProjectToGrpc, toGrpcPaginationResponse, fromGrpcDate } from './utils';
+import {
+  mapProjectToGrpc,
+  toGrpcPaginationResponse,
+  fromGrpcDate,
+} from './utils';
 
 @Controller()
 export class ProjectsGrpcController {
@@ -46,7 +50,9 @@ export class ProjectsGrpcController {
   }
 
   @GrpcMethod('ProjectService', 'CreateProject')
-  async createProject(data: CreateProjectRequest): Promise<CreateProjectResponse> {
+  async createProject(
+    data: CreateProjectRequest,
+  ): Promise<CreateProjectResponse> {
     const project = await this.projectsService.create(data.user_id, {
       workspaceId: data.workspace_id,
       projectName: data.project_name,
@@ -59,7 +65,9 @@ export class ProjectsGrpcController {
   }
 
   @GrpcMethod('ProjectService', 'UpdateProject')
-  async updateProject(data: UpdateProjectRequest): Promise<UpdateProjectResponse> {
+  async updateProject(
+    data: UpdateProjectRequest,
+  ): Promise<UpdateProjectResponse> {
     const project = await this.projectsService.update(data.id, data.user_id, {
       projectName: data.project_name,
       description: data.description,
@@ -72,9 +80,10 @@ export class ProjectsGrpcController {
   }
 
   @GrpcMethod('ProjectService', 'DeleteProject')
-  async deleteProject(data: DeleteProjectRequest): Promise<DeleteProjectResponse> {
+  async deleteProject(
+    data: DeleteProjectRequest,
+  ): Promise<DeleteProjectResponse> {
     await this.projectsService.remove(data.id, data.user_id);
     return { message: 'Project deleted successfully' };
   }
 }
-

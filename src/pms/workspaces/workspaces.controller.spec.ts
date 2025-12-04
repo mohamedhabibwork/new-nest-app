@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { WorkspacesController } from './workspaces.controller';
 import { WorkspacesService } from './workspaces.service';
 import { WorkspaceInvitationService } from './services/workspace-invitation.service';
@@ -151,7 +155,10 @@ describe('WorkspacesController', () => {
 
       const result = await controller.findAll(queryDto, mockRequest);
 
-      expect(workspacesService.findAll).toHaveBeenCalledWith(queryDto, mockRequest.user.id);
+      expect(workspacesService.findAll).toHaveBeenCalledWith(
+        queryDto,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -178,7 +185,10 @@ describe('WorkspacesController', () => {
 
       const result = await controller.findAll(queryDto, mockRequest);
 
-      expect(workspacesService.findAll).toHaveBeenCalledWith(queryDto, mockRequest.user.id);
+      expect(workspacesService.findAll).toHaveBeenCalledWith(
+        queryDto,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -206,7 +216,10 @@ describe('WorkspacesController', () => {
 
       const result = await controller.findAll(queryDto, mockRequest);
 
-      expect(workspacesService.findAll).toHaveBeenCalledWith(queryDto, mockRequest.user.id);
+      expect(workspacesService.findAll).toHaveBeenCalledWith(
+        queryDto,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockResponse);
     });
   });
@@ -234,7 +247,10 @@ describe('WorkspacesController', () => {
 
       const result = await controller.findOne(workspaceId, mockRequest);
 
-      expect(workspacesService.findOne).toHaveBeenCalledWith(workspaceId, mockRequest.user.id);
+      expect(workspacesService.findOne).toHaveBeenCalledWith(
+        workspaceId,
+        mockRequest.user.id,
+      );
       expect(result).toEqual(mockWorkspace);
     });
 
@@ -243,10 +259,13 @@ describe('WorkspacesController', () => {
         new NotFoundException('Workspace not found'),
       );
 
-      await expect(controller.findOne(workspaceId, mockRequest)).rejects.toThrow(
-        NotFoundException,
+      await expect(
+        controller.findOne(workspaceId, mockRequest),
+      ).rejects.toThrow(NotFoundException);
+      expect(workspacesService.findOne).toHaveBeenCalledWith(
+        workspaceId,
+        mockRequest.user.id,
       );
-      expect(workspacesService.findOne).toHaveBeenCalledWith(workspaceId, mockRequest.user.id);
     });
 
     it('should throw ForbiddenException when user has no access', async () => {
@@ -254,9 +273,9 @@ describe('WorkspacesController', () => {
         new ForbiddenException('No access to workspace'),
       );
 
-      await expect(controller.findOne(workspaceId, mockRequest)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        controller.findOne(workspaceId, mockRequest),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -285,7 +304,11 @@ describe('WorkspacesController', () => {
 
       workspacesService.update.mockResolvedValue(mockWorkspace);
 
-      const result = await controller.update(workspaceId, mockRequest, updateDto);
+      const result = await controller.update(
+        workspaceId,
+        mockRequest,
+        updateDto,
+      );
 
       expect(workspacesService.update).toHaveBeenCalledWith(
         workspaceId,
@@ -300,9 +323,9 @@ describe('WorkspacesController', () => {
         new NotFoundException('Workspace not found'),
       );
 
-      await expect(controller.update(workspaceId, mockRequest, updateDto)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        controller.update(workspaceId, mockRequest, updateDto),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException when user has no access', async () => {
@@ -310,9 +333,9 @@ describe('WorkspacesController', () => {
         new ForbiddenException('No access to workspace'),
       );
 
-      await expect(controller.update(workspaceId, mockRequest, updateDto)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        controller.update(workspaceId, mockRequest, updateDto),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -332,7 +355,10 @@ describe('WorkspacesController', () => {
 
       const result = await controller.remove(workspaceId, mockRequest);
 
-      expect(workspacesService.remove).toHaveBeenCalledWith(workspaceId, mockRequest.user.id);
+      expect(workspacesService.remove).toHaveBeenCalledWith(
+        workspaceId,
+        mockRequest.user.id,
+      );
       expect(result).toEqual({ message: 'Workspace deleted successfully' });
     });
 
@@ -384,7 +410,11 @@ describe('WorkspacesController', () => {
 
       invitationService.inviteUserToWorkspace.mockResolvedValue(mockInvitation);
 
-      const result = await controller.inviteUser(workspaceId, inviteUserDto, mockRequest);
+      const result = await controller.inviteUser(
+        workspaceId,
+        inviteUserDto,
+        mockRequest,
+      );
 
       expect(invitationService.inviteUserToWorkspace).toHaveBeenCalledWith(
         workspaceId,
@@ -431,11 +461,15 @@ describe('WorkspacesController', () => {
         },
       ];
 
-      invitationService.getWorkspaceInvitations.mockResolvedValue(mockInvitations);
+      invitationService.getWorkspaceInvitations.mockResolvedValue(
+        mockInvitations,
+      );
 
       const result = await controller.getInvitations(workspaceId);
 
-      expect(invitationService.getWorkspaceInvitations).toHaveBeenCalledWith(workspaceId);
+      expect(invitationService.getWorkspaceInvitations).toHaveBeenCalledWith(
+        workspaceId,
+      );
       expect(result).toEqual(mockInvitations);
     });
   });
@@ -468,9 +502,9 @@ describe('WorkspacesController', () => {
         new NotFoundException('Invitation not found'),
       );
 
-      await expect(controller.acceptInvitation(token, mockRequest)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        controller.acceptInvitation(token, mockRequest),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -482,7 +516,9 @@ describe('WorkspacesController', () => {
 
       const result = await controller.cancelInvitation(invitationId);
 
-      expect(invitationService.cancelInvitation).toHaveBeenCalledWith(invitationId);
+      expect(invitationService.cancelInvitation).toHaveBeenCalledWith(
+        invitationId,
+      );
       expect(result).toBeUndefined();
     });
 
@@ -507,8 +543,12 @@ describe('WorkspacesController', () => {
 
       const result = await controller.resendInvitation(invitationId);
 
-      expect(invitationService.resendInvitation).toHaveBeenCalledWith(invitationId);
-      expect(result).toEqual({ message: 'Invitation email resent successfully' });
+      expect(invitationService.resendInvitation).toHaveBeenCalledWith(
+        invitationId,
+      );
+      expect(result).toEqual({
+        message: 'Invitation email resent successfully',
+      });
     });
 
     it('should throw NotFoundException when invitation not found', async () => {
@@ -522,4 +562,3 @@ describe('WorkspacesController', () => {
     });
   });
 });
-

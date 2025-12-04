@@ -13,4 +13,3 @@ import { QueueModule } from '../../queue/queue.module';
   exports: [WorkspacesService, WorkspaceInvitationService],
 })
 export class WorkspacesModule {}
-

@@ -73,7 +73,10 @@ describe('NotificationsController', () => {
 
       notificationsService.getUserNotifications.mockResolvedValue(mockResponse);
 
-      const result = await controller.getUserNotifications(queryDto, mockRequest);
+      const result = await controller.getUserNotifications(
+        queryDto,
+        mockRequest,
+      );
 
       expect(notificationsService.getUserNotifications).toHaveBeenCalledWith(
         queryDto,
@@ -103,7 +106,10 @@ describe('NotificationsController', () => {
 
       notificationsService.getUserNotifications.mockResolvedValue(mockResponse);
 
-      const result = await controller.getUserNotifications(queryDto, mockRequest);
+      const result = await controller.getUserNotifications(
+        queryDto,
+        mockRequest,
+      );
 
       expect(notificationsService.getUserNotifications).toHaveBeenCalledWith(
         queryDto,
@@ -134,7 +140,10 @@ describe('NotificationsController', () => {
 
       notificationsService.getUserNotifications.mockResolvedValue(mockResponse);
 
-      const result = await controller.getUserNotifications(queryDto, mockRequest);
+      const result = await controller.getUserNotifications(
+        queryDto,
+        mockRequest,
+      );
 
       expect(notificationsService.getUserNotifications).toHaveBeenCalledWith(
         queryDto,
@@ -143,7 +152,6 @@ describe('NotificationsController', () => {
       expect(result).toEqual(mockResponse);
     });
   });
-
 
   describe('markAsRead', () => {
     const mockRequest = {
@@ -204,7 +212,9 @@ describe('NotificationsController', () => {
 
       const result = await controller.markAllAsRead(mockRequest);
 
-      expect(notificationsService.markAllAsRead).toHaveBeenCalledWith(mockRequest.user.id);
+      expect(notificationsService.markAllAsRead).toHaveBeenCalledWith(
+        mockRequest.user.id,
+      );
       expect(result).toEqual({
         message: 'All notifications marked as read',
         count: 5,
@@ -250,4 +260,3 @@ describe('NotificationsController', () => {
     });
   });
 });
-
